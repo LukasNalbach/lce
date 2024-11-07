@@ -41,3 +41,4 @@ add_library(gsaca_ds INTERFACE)
 target_link_libraries(gsaca_ds INTERFACE OpenMP::OpenMP_CXX ips4o -latomic)
 target_include_directories(gsaca_ds INTERFACE ${CMAKE_CURRENT_SOURCE_DIR}/gsaca-double-sort)
 
+add_subdirectory(la_vector)

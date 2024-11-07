@@ -50,18 +50,14 @@ target_include_directories(alx_lce_classic_for_sss INTERFACE ${ALX_INCLUDE_DIR})
 target_link_libraries(alx_lce_classic_for_sss INTERFACE gsaca_ds libsais64 libsais alx_rmq fmt::fmt-header-only)
 target_link_libraries(alx_lce INTERFACE alx_lce_classic_for_sss)
 
-option(ALX_BUILD_LCE_SDSL "Also build lce data structure that depends on SDSL" OFF)
-if(ALX_BUILD_LCE_SDSL)
-  find_package(SDSL REQUIRED)
-  find_package(divsufsort REQUIRED)
-  find_package(divsufsort64 REQUIRED)
+find_package(SDSL REQUIRED)
+find_package(divsufsort REQUIRED)
+find_package(divsufsort64 REQUIRED)
 
-  add_library(alx_lce_sdsl_cst INTERFACE)
-  target_compile_definitions(alx_lce_sdsl_cst INTERFACE -DALX_BUILD_LCE_SDSL)
-  target_include_directories(alx_lce_sdsl_cst INTERFACE
-  ${SDSL_INCLUDE_DIRS}
-  ${ALX_INCLUDE_DIR}
-  )
-  target_link_libraries(alx_lce_sdsl_cst INTERFACE ${SDSL} ${divsufsort} ${divsufsort64})
-  target_link_libraries(alx_lce INTERFACE alx_lce_sdsl_cst)
-endif()
+add_library(alx_lce_sdsl_cst INTERFACE)
+target_include_directories(alx_lce_sdsl_cst INTERFACE
+${SDSL_INCLUDE_DIRS}
+${ALX_INCLUDE_DIR}
+)
+target_link_libraries(alx_lce_sdsl_cst INTERFACE ${SDSL} ${divsufsort} ${divsufsort64})
+target_link_libraries(alx_lce INTERFACE alx_lce_sdsl_cst)

@@ -71,7 +71,8 @@ int main(int argc, char** argv) {
     }
   }
 
-  text = alx::util::load_vector<uint8_t>(text_path);
+  text = alx::util::load_vector<uint8_t>(text_path,
+    std::numeric_limits<size_t>::max(), 4096 * 4);
   using gsaca_lyndon::uint40_t;
 
   if(output_path == "") {

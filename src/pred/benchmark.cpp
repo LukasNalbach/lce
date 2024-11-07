@@ -29,13 +29,15 @@
 #include "pred/j_index.hpp"
 #include "pred/pgm_index.hpp"
 #include "pred/pred_index.hpp"
+#include "pred/sd_array_index.hpp"
+#include "pred/la_vector_index.hpp"
 #include "util/io.hpp"
 #include "util/timer.hpp"
 
 namespace fs = std::filesystem;
 
 std::vector<std::string> algorithms{"all", "binsearch_std", "index", "j_index",
-                                    "pgm"};
+                                    "pgm", "sd_array", "la_vector"};
 
 class benchmark {
  public:
@@ -84,7 +86,7 @@ class benchmark {
     queries.resize(num_queries);
     // std::random_device rd;
     std::mt19937 gen(1337);
-    std::uniform_int_distribution<> distrib(0, data.back());
+    std::uniform_int_distribution<uint64_t> distrib(0, data.back());
     for (size_t i = 0; i < num_queries; ++i) {
       queries[i] = distrib(gen);
     }
@@ -192,4 +194,26 @@ int main(int argc, char** argv) {
   b.run<alx::pred::pgm_index<uint64_t, 32>>("pgm_index32");
   b.run<alx::pred::pgm_index<uint64_t, 64>>("pgm_index64");
   b.run<alx::pred::pgm_index<uint64_t, 128>>("pgm_index128");
+  
+  b.run<alx::pred::sd_array_index<uint64_t, 1>>("sd_array1");
+  b.run<alx::pred::sd_array_index<uint64_t, 2>>("sd_array2");
+  b.run<alx::pred::sd_array_index<uint64_t, 4>>("sd_array4");
+  b.run<alx::pred::sd_array_index<uint64_t, 8>>("sd_array8");
+  b.run<alx::pred::sd_array_index<uint64_t, 16>>("sd_array16");
+  b.run<alx::pred::sd_array_index<uint64_t, 32>>("sd_array32");
+  b.run<alx::pred::sd_array_index<uint64_t, 64>>("sd_array64");
+  b.run<alx::pred::sd_array_index<uint64_t, 128>>("sd_array128");
+  b.run<alx::pred::sd_array_index<uint64_t, 256>>("sd_array256");
+  b.run<alx::pred::sd_array_index<uint64_t, 512>>("sd_array512");
+
+  b.run<alx::pred::la_vector_index<uint64_t, 1>>("la_vector1");
+  b.run<alx::pred::la_vector_index<uint64_t, 2>>("la_vector2");
+  b.run<alx::pred::la_vector_index<uint64_t, 4>>("la_vector4");
+  b.run<alx::pred::la_vector_index<uint64_t, 8>>("la_vector8");
+  b.run<alx::pred::la_vector_index<uint64_t, 16>>("la_vector16");
+  b.run<alx::pred::la_vector_index<uint64_t, 32>>("la_vector32");
+  b.run<alx::pred::la_vector_index<uint64_t, 64>>("la_vector64");
+  b.run<alx::pred::la_vector_index<uint64_t, 128>>("la_vector128");
+  b.run<alx::pred::la_vector_index<uint64_t, 256>>("la_vector256");
+  b.run<alx::pred::la_vector_index<uint64_t, 512>>("la_vector512");
 }

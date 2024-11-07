@@ -15,7 +15,7 @@
 #include <omp.h>
 
 #include <algorithm>
-#include <boost/integer.hpp>
+//#include <boost/integer.hpp>
 #include <filesystem>
 #include <gsaca-double-sort/uint_types.hpp>  // uint40_t
 #include <iostream>
@@ -23,9 +23,7 @@
 #include <tlx/cmdline_parser.hpp>
 #include <vector>
 
-#ifdef ALX_BUILD_LCE_SDSL
 #include "lce/lce_sdsl_cst.hpp"
-#endif
 #include "lce/lce_classic.hpp"
 #include "lce/lce_fp.hpp"
 #include "lce/lce_naive.hpp"
@@ -150,7 +148,7 @@ class benchmark {
     alx::util::timer t;
     if (text.empty()) {
       text = alx::util::load_vector<uint8_t>(
-          text_path, std::numeric_limits<size_t>::max(), 8);
+          text_path, std::numeric_limits<size_t>::max(), 4096 * 4, 8);
       assert(text.size() != 0);
       assert(text.size() % 8 == 0);
     }
@@ -382,7 +380,5 @@ int main(int argc, char** argv) {
   b.run<lce_sss<uint8_t, 2048, uint40_t, true>>("sss2048pl");
 
   b.run<lce_classic<uint8_t, uint40_t>>("classic");
-  #ifdef ALX_BUILD_LCE_SDSL
-    b.run<lce_sdsl_cst>("sdsl_cst");
-  #endif
+  b.run<lce_sdsl_cst>("sdsl_cst");
 }

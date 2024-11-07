@@ -179,7 +179,7 @@ class lce_fp {
     const uint128_t fingerprint_to_l = (l != 0) ? fp_to(l - 1) : 0;
     const uint128_t fingerprint_to_r = (r != 0) ? fp_to(r - 1) : 0;
 
-    while (dist <= max_lce && fp_exp(fingerprint_to_l, l, exp) ==
+    while (2 * dist <= max_lce && fp_exp(fingerprint_to_l, l, exp) ==
                                   fp_exp(fingerprint_to_r, r, exp)) {
       ++exp;
       dist *= 2;

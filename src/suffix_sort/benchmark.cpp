@@ -64,7 +64,8 @@ class benchmark {
 
   void load_text() {
     alx::util::timer t;
-    text = alx::util::load_vector<uint8_t>(text_path);
+    text = alx::util::load_vector<uint8_t>(text_path,
+      std::numeric_limits<size_t>::max(), 4096 * 4);
     text.resize(text.size() +
                 ((text.size() % 8) == 0 ? 0 : 8 - (text.size() % 8)));
     assert(text.size() != 0);

@@ -30,3 +30,9 @@
 	path = extlib/malloc_count
 	url = https://github.com/ByteHamster-etc/malloc_count/
 	branch = aligned_alloc
+[submodule "extlib/sdsl-lite"]
+	path = extlib/sdsl-lite
+	url = git@github.com:simongog/sdsl-lite.git
+[submodule "extlib/la_vector"]
+	path = extlib/la_vector
+	url = git@github.com:gvinciguerra/la_vector.git
