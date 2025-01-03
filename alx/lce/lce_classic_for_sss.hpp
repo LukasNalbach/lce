@@ -51,10 +51,12 @@ class lce_classic_for_sss {
     gsaca_for_lce(reduced_fps, sa.data(), reduced_fps_size);
 
 #ifdef ALX_BENCHMARK_INTERNAL
-    fmt::print(" gsaca_time={}", t.get_and_reset());
+    fmt::print(" sa_time={}", t.get_and_reset());
 #ifdef ALX_BENCHMARK_SPACE
-    fmt::print(" gsaca_mem={}", malloc_count_current() - mem_before);
-    fmt::print(" gsaca_mem_peak={}", malloc_count_peak() - mem_before);
+    fmt::print(" sa_mem={}", malloc_count_current() - mem_before);
+    fmt::print(" sa_mem_peak={}", malloc_count_peak() - mem_before);
+    mem_before = malloc_count_current();
+    malloc_count_reset_peak();
 #endif
 #endif
 
@@ -64,6 +66,16 @@ class lce_classic_for_sss {
     for (size_t i = 0; i < sa.size(); ++i) {
       m_isa[sa[i]] = i;
     }
+
+#ifdef ALX_BENCHMARK_INTERNAL
+    fmt::print(" isa_time={}", t.get_and_reset());
+#ifdef ALX_BENCHMARK_SPACE
+    fmt::print(" isa_mem={}", malloc_count_current() - mem_before);
+    fmt::print(" isa_mem_peak={}", malloc_count_peak() - mem_before);
+    mem_before = malloc_count_current();
+    malloc_count_reset_peak();
+#endif
+#endif
 
     // build lcp
     m_lcp.resize(sa.size());
@@ -104,8 +116,27 @@ class lce_classic_for_sss {
         }
       }
     }
-    // built rmq
+
+#ifdef ALX_BENCHMARK_INTERNAL
+    fmt::print(" lcp_time={}", t.get_and_reset());
+#ifdef ALX_BENCHMARK_SPACE
+    fmt::print(" lcp_mem={}", malloc_count_current() - mem_before);
+    fmt::print(" lcp_mem_peak={}", malloc_count_peak() - mem_before);
+    mem_before = malloc_count_current();
+    malloc_count_reset_peak();
+#endif
+#endif
+
+    // build rmq
     m_rmq = alx::rmq::rmq_n<t_index_type>(m_lcp);
+
+#ifdef ALX_BENCHMARK_INTERNAL
+    fmt::print(" rmq_time={}", t.get_and_reset());
+#ifdef ALX_BENCHMARK_SPACE
+    fmt::print(" rmq_mem={}", malloc_count_current() - mem_before);
+    fmt::print(" rmq_mem_peak={}", malloc_count_peak() - mem_before);
+#endif
+#endif
   }
 
   // Return the number of common letters in text[i..] and text[j..]. Here i and

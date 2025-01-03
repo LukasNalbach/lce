@@ -18,7 +18,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
-#include <gsaca-double-sort/uint_types.hpp>  // uint40_t
+#include <gsaca-double-sort/uint_types.hpp>
 #include <iostream>
 #include <iterator>
 #include <random>
@@ -26,6 +26,8 @@
 #include <vector>
 
 #include "pred/binsearch_std.hpp"
+#include "pred/binsearch_cache.hpp"
+#include "pred/rank_index.hpp"
 #include "pred/j_index.hpp"
 #include "pred/pgm_index.hpp"
 #include "pred/pred_index.hpp"
@@ -36,8 +38,12 @@
 
 namespace fs = std::filesystem;
 
-std::vector<std::string> algorithms{"all", "binsearch_std", "index", "j_index",
-                                    "pgm", "sd_array", "la_vector"};
+std::vector<std::string> algorithms{
+  "all", "binsearch_std", "binsearch_cache", "rank_index", "pred_index", "j_index", "pgm",
+  "sd_array1", "sd_array2", "sd_array4", "sd_array8", "sd_array16",
+  "sd_array32", "sd_array64", "sd_array128", "sd_array256", "sd_array512", 
+  "la_vector1", "la_vector2", "la_vector4", "la_vector8", "la_vector16",
+  "la_vector32", "la_vector64", "la_vector128", "la_vector256", "la_vector512"};
 
 class benchmark {
  public:
@@ -180,7 +186,10 @@ int main(int argc, char** argv) {
   }
 
   b.run<alx::pred::binsearch_std<uint64_t>>("binsearch_std");
+  b.run<alx::pred::binsearch_cache<uint64_t>>("binsearch_cache");
   b.run<alx::pred::j_index<uint64_t>>("j_index");
+  b.run<alx::pred::rank_index<uint64_t>>("rank_index");
+
   b.run<alx::pred::pred_index<uint64_t, 6, uint32_t>>("pred_index6");
   b.run<alx::pred::pred_index<uint64_t, 7, uint32_t>>("pred_index7");
   b.run<alx::pred::pred_index<uint64_t, 8, uint32_t>>("pred_index8");

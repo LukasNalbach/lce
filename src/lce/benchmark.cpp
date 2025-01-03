@@ -15,9 +15,8 @@
 #include <omp.h>
 
 #include <algorithm>
-//#include <boost/integer.hpp>
 #include <filesystem>
-#include <gsaca-double-sort/uint_types.hpp>  // uint40_t
+#include <gsaca-double-sort/uint_types.hpp>
 #include <iostream>
 #include <string>
 #include <tlx/cmdline_parser.hpp>
@@ -75,10 +74,12 @@ std::vector<std::string> algorithms{"naive",
                                     "sss2048pl",
                                     "classic",
                                     "sdsl_cst"};
-std::vector<std::string> algorithm_sets{"all", "seq", "par", "main"};
 
-std::vector<std::string> algorithms_seq{"naive", "naive_std", "naive_wordwise",
-                                        "naive_wordwise_xor"};
+std::vector<std::string> algorithm_sets{"all", "naive", "par", "main"};
+
+std::vector<std::string> algorithms_naive{"naive", "naive_std", "naive_wordwise",
+                                          "naive_wordwise_xor"};
+
 std::vector<std::string> algorithms_par{
     "fp64",           "fp128",          "fp256",           "fp512",
     "sss_naive256",   "sss_naive512",   "sss_naive1024",   "sss_naive2048",
@@ -90,7 +91,7 @@ std::vector<std::string> algorithms_par{
 };
 
 std::vector<std::string> algorithms_main{
-    "naive_wordwise_xor", "fp32",          "sss_naive512", "sss_naive512pl",
+    "naive_wordwise_xor", "fp64",          "sss_naive512", "sss_naive512pl",
     "sss_noss512",        "sss_noss512pl", "sss512",       "sss512pl"};
 
 class benchmark {
@@ -189,35 +190,9 @@ class benchmark {
       for (size_t i = num_unique_queries; i < queries.size(); ++i) {
         queries[i] = queries[i % num_unique_queries];
       }
-
-      /*size_t wanted_bucket_size = 1000;
-      size_t bucket_range = (text.size() / queries.size() * wanted_bucket_size);
-
-      size_t num_buckets = (text.size() / bucket_range) + 1;
-      double expected_bucket_size = 1.0 * queries.size() / num_buckets;
-
-      std::vector<size_t> bin_histogram(num_buckets);
-      for (auto const& q : queries) {
-        bin_histogram[q / bucket_range]++;
-      }
-      double chi_square{0};
-      for (auto const& bin : bin_histogram) {
-        double counted = bin;
-        chi_square += ((counted - expected_bucket_size) *
-                       (counted - expected_bucket_size)) /
-                      expected_bucket_size;
-      }
-      double max_chi = (queries.size() - expected_bucket_size) *
-                           (queries.size() - expected_bucket_size) /
-                           expected_bucket_size +
-                       ((num_buckets - 1) * expected_bucket_size *
-                        expected_bucket_size / expected_bucket_size);
-      fmt::print(" q_chi2={}", chi_square);
-      fmt::print(" q_chi2/max={}", chi_square / max_chi);
-      */
     }
+
     assert(queries.size() == 0 || queries.size() == num_queries * 2);
-    // fmt::print(" q_path={}", cur_query_path.string());
     fmt::print(" q_size={}", queries.size() / 2);
     fmt::print(" q_load_time={}", t.get());
   }
@@ -244,9 +219,9 @@ class benchmark {
                     algo_name) == algorithms_main.end()) {
         return;
       }
-    } else if (algorithm == "seq") {
-      if (std::find(algorithms_seq.begin(), algorithms_seq.end(), algo_name) ==
-          algorithms_seq.end()) {
+    } else if (algorithm == "naive") {
+      if (std::find(algorithms_naive.begin(), algorithms_naive.end(), algo_name) ==
+          algorithms_naive.end()) {
         return;
       }
     } else if (algorithm == "par") {
@@ -339,6 +314,8 @@ int main(int argc, char** argv) {
   }
 
   using namespace alx::lce;
+  using gsaca_lyndon::uint40_t;
+
   b.run<lce_naive<>>("naive");
   b.run<lce_naive_std<>>("naive_std");
   b.run<lce_naive_wordwise<>>("naive_wordwise");
@@ -351,7 +328,6 @@ int main(int argc, char** argv) {
   b.run<lce_fp<uint8_t, (size_t{1} << 40)>>("fp_unlimited");
   b.run<rklce::lce_rk_prezza>("rk-prezza");
 
-  using gsaca_lyndon::uint40_t;
   b.run<lce_sss_naive<uint8_t, 256, uint40_t, false>>("sss_naive256");
   b.run<lce_sss_naive<uint8_t, 512, uint40_t, false>>("sss_naive512");
   b.run<lce_sss_naive<uint8_t, 1024, uint40_t, false>>("sss_naive1024");

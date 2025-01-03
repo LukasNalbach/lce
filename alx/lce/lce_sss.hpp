@@ -54,35 +54,25 @@ class lce_sss {
     // check_string_synchronizing_set(text, m_sync_set);
 
 #ifdef ALX_BENCHMARK_INTERNAL
-    fmt::print(" sss_construct_time={}", t.get_and_reset());
+    fmt::print(" sss_time={}", t.get_and_reset());
     fmt::print(" sss_size={}", m_sync_set.size());
     fmt::print(" sss_runs={}", m_sync_set.num_runs());
-
 #ifdef ALX_BENCHMARK_SPACE
-    fmt::print(" sss_construct_mem={}", malloc_count_current() - mem_before);
-    fmt::print(" sss_construct_mem_peak={}", malloc_count_peak() - mem_before);
-#endif
-#endif
-
-#ifdef ALX_BENCHMARK_INTERNAL
-#ifdef ALX_BENCHMARK_SPACE
+    fmt::print(" sss_mem={}", malloc_count_current() - mem_before);
+    fmt::print(" sss_mem_peak={}", malloc_count_peak() - mem_before);
     mem_before = malloc_count_current();
     malloc_count_reset_peak();
 #endif
 #endif
+
     m_pred = alx::pred::pred_index<t_index_type, std::bit_width(t_tau) - 1,
                                    t_index_type>(m_sync_set.get_sss());
 
 #ifdef ALX_BENCHMARK_INTERNAL
-    fmt::print(" pred_construct_time={}", t.get_and_reset());
+    fmt::print(" pred_time={}", t.get_and_reset());
 #ifdef ALX_BENCHMARK_SPACE
-    fmt::print(" pred_construct_mem={}", malloc_count_current() - mem_before);
-    fmt::print(" pred_construct_mem_peak={}", malloc_count_peak() - mem_before);
-#endif
-#endif
-
-#ifdef ALX_BENCHMARK_INTERNAL
-#ifdef ALX_BENCHMARK_SPACE
+    fmt::print(" pred_mem={}", malloc_count_current() - mem_before);
+    fmt::print(" pred_mem_peak={}", malloc_count_peak() - mem_before);
     mem_before = malloc_count_current();
     malloc_count_reset_peak();
 #endif
@@ -93,33 +83,16 @@ class lce_sss {
         reinterpret_cast<uint8_t const*>(m_text), m_size, m_sync_set);
 
 #ifdef ALX_BENCHMARK_INTERNAL
-    fmt::print(" meta_symbols_time={}", t.get_and_reset());
+    fmt::print(" alphabet_reduction_time={}", t.get_and_reset());
 #ifdef ALX_BENCHMARK_SPACE
-    fmt::print(" meta_reduction_mem={}", malloc_count_current() - mem_before);
-    fmt::print(" meta_reduction_mem_peak={}", malloc_count_peak() - mem_before);
-#endif
-#endif
-
-#ifdef ALX_BENCHMARK_INTERNAL
-#ifdef ALX_BENCHMARK_SPACE
-    mem_before = malloc_count_current();
-    malloc_count_reset_peak();
+    fmt::print(" alphabet_reduction_mem={}", malloc_count_current() - mem_before);
+    fmt::print(" alphabet_reduction_mem_peak={}", malloc_count_peak() - mem_before);
 #endif
 #endif
 
     m_fp_lce = alx::lce::lce_classic_for_sss<t_index_type, t_tau>(
         reinterpret_cast<uint8_t const*>(m_text), m_size, reduced_fps.data(),
         reduced_fps.size(), sss);
-
-#ifdef ALX_BENCHMARK_INTERNAL
-    fmt::print(" meta_lce_construct_time={}", t.get_and_reset());
-#ifdef ALX_BENCHMARK_SPACE
-    fmt::print(" meta_lce_construct_mem={}",
-               malloc_count_current() - mem_before);
-    fmt::print(" meta_lce_construct_mem_peak={}",
-               malloc_count_peak() - mem_before);
-#endif
-#endif
   }
 
   template <typename C>

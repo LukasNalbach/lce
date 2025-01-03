@@ -23,6 +23,10 @@ struct result {
   inline operator size_t() const {
     return pos;
   }
+
+  inline operator long long int() const {
+    return pos;
+  }
 };
 
 bool operator==(const result& lhs, const result& rhs) {

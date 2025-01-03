@@ -9,7 +9,7 @@
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 
-#include <gsaca-double-sort/uint_types.hpp>  // uint40_t
+#include <gsaca-double-sort/uint_types.hpp>
 #include <tlx/cmdline_parser.hpp>
 
 #include "rolling_hash/string_synchronizing_set.hpp"
