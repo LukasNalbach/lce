@@ -1,0 +1,20 @@
+add_library(lce_mersenne_modular_arithmetic INTERFACE)
+target_include_directories(lce_mersenne_modular_arithmetic INTERFACE ${LCE_INCLUDE_DIR})
+
+add_library(lce_modular_arithmetic INTERFACE)
+target_include_directories(lce_modular_arithmetic INTERFACE ${LCE_INCLUDE_DIR})
+target_link_libraries(lce_modular_arithmetic INTERFACE hurchalla_modular_arithmetic)
+
+add_library(lce_reduce_fingerprints INTERFACE)
+target_include_directories(lce_reduce_fingerprints INTERFACE ${LCE_INCLUDE_DIR})
+
+add_library(rolling_hash INTERFACE)
+target_include_directories(rolling_hash INTERFACE ${LCE_INCLUDE_DIR})
+target_link_libraries(rolling_hash INTERFACE lce_modular_arithmetic lce_mersenne_modular_arithmetic)
+
+add_library(lce_ring_buffer INTERFACE)
+target_include_directories(lce_ring_buffer INTERFACE ${LCE_INCLUDE_DIR})
+
+add_library(lce_string_synchronizing_set INTERFACE)
+target_include_directories(lce_string_synchronizing_set INTERFACE ${LCE_INCLUDE_DIR})
+target_link_libraries(lce_string_synchronizing_set INTERFACE lce_ring_buffer rolling_hash OpenMP::OpenMP_CXX parallel-hashmap)
