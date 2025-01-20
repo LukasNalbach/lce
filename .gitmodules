@@ -1,0 +1,35 @@
+[submodule "extlib/tlx"]
+	path = extlib/tlx
+	url = git@github.com:tlx/tlx.git
+[submodule "extlib/fmt"]
+	path = extlib/fmt
+	url = git@github.com:fmtlib/fmt.git
+[submodule "extlib/modular_arithmetic"]
+	path = extlib/modular_arithmetic
+	url = git@github.com:hurchalla/modular_arithmetic.git
+[submodule "extlib/rk-lce"]
+	path = extlib/rk-lce
+	url = git@github.com:nicolaprezza/rk-lce.git
+[submodule "extlib/parallel-hashmap"]
+	path = extlib/parallel-hashmap
+	url = git@github.com:greg7mdp/parallel-hashmap.git
+[submodule "extlib/PGM-index"]
+	path = extlib/PGM-index
+	url = git@github.com:gvinciguerra/PGM-index.git
+[submodule "extlib/ips4o"]
+	path = extlib/ips4o
+	url = git@github.com:ips4o/ips4o.git
+[submodule "extlib/la_vector"]
+	path = extlib/la_vector
+	url = git@github.com:gvinciguerra/la_vector.git
+[submodule "extlib/libsais"]
+	path = extlib/libsais
+	url = git@github.com:IlyaGrebnov/libsais.git
+[submodule "extlib/gsaca-double-sort"]
+	path = extlib/gsaca-double-sort
+	url = git@github.com:jonas-ellert/gsaca-double-sort.git
+	branch = gsaca-for-lce
+[submodule "extlib/malloc_count"]
+	path = extlib/malloc_count
+	url = git@github.com:ByteHamster-etc/malloc_count.git
+	branch = aligned_alloc
