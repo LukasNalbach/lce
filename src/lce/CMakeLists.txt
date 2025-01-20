@@ -13,5 +13,8 @@ if(LCE_USE_SDSL)
   target_link_libraries(benchmark_lce PRIVATE ds_sdsl_cst)
 endif()
 
-add_executable(genqueries genqueries.cpp)
-target_link_libraries(genqueries PRIVATE tlx_clp)
+add_executable(gen_queries gen_queries.cpp)
+target_link_libraries(gen_queries PRIVATE tlx_clp)
+
+add_executable(gen_sa_lcp gen_sa_lcp.cpp)
+target_link_libraries(gen_sa_lcp PRIVATE libsais)
