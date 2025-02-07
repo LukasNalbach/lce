@@ -89,27 +89,23 @@ class lce_naive_wordwise {
   // Here l must be smaller than r.
   static size_t lce_lr(char_type const* text, size_t size, size_t l, size_t r) {
     assert(l < r);
-
+    static constexpr size_t blk_size = sizeof(__uint128_t) / sizeof(char_type);
     const uint64_t max_lce = size - r;
-    uint64_t lce = 0;
+    const uint64_t max_blks = max_lce / blk_size;
+    __uint128_t const* const blk_i = reinterpret_cast<__uint128_t const*>(text + l);
+    __uint128_t const* const blk_j = reinterpret_cast<__uint128_t const*>(text + r);
+    size_t lce_val = 0;
 
-    // Accelerate search by comparing 16-byte blocks
-    uint128_t const* const text_blocks_i =
-        reinterpret_cast<uint128_t const*>(text + l);
-    uint128_t const* const text_blocks_j =
-        reinterpret_cast<uint128_t const*>(text + r);
-    size_t lce_val = std::distance(
-        text_blocks_j,
-        std::mismatch(
-            text_blocks_j,
-            text_blocks_j + max_lce / (sizeof(uint128_t) / sizeof(char_type)),
-            text_blocks_i)
-            .first);
-    lce_val *= sizeof(uint128_t) / sizeof(char_type);
-    // The last block did not match. Here we compare its single characters
-    while (lce_val < max_lce && text[l + lce_val] == text[r + lce_val]) {
-      ++lce_val;
+    while (lce_val < max_blks && blk_i[lce_val] == blk_j[lce_val]) {
+      lce_val++;
     }
+
+    lce_val *= blk_size;
+
+    while (lce_val < max_lce && text[l + lce_val] == text[r + lce_val]) {
+      lce_val++;
+    }
+
     return lce_val;
   }
 

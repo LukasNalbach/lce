@@ -89,34 +89,28 @@ class lce_naive_wordwise_xor {
   // Here l must be smaller than r.
   static size_t lce_lr(char_type const* text, size_t size, size_t l, size_t r) {
     assert(l < r);
-
+    static constexpr size_t blk_size = sizeof(__uint128_t) / sizeof(char_type);
     const uint64_t max_lce = size - r;
-    uint64_t lce = 0;
+    const uint64_t max_blks = max_lce / blk_size;
+    __uint128_t const* const blk_i = reinterpret_cast<__uint128_t const*>(text + l);
+    __uint128_t const* const blk_j = reinterpret_cast<__uint128_t const*>(text + r);
+    size_t lce_val = 0;
 
-    // Accelerate search by comparing 16-byte blocks
-    __uint128_t const* const text_blocks_i =
-        reinterpret_cast<__uint128_t const*>(text + l);
-    __uint128_t const* const text_blocks_j =
-        reinterpret_cast<__uint128_t const*>(text + r);
-    size_t lce_val = std::distance(
-        text_blocks_j,
-        std::mismatch(
-            text_blocks_j,
-            text_blocks_j + max_lce / (sizeof(__uint128_t) / sizeof(char_type)),
-            text_blocks_i)
-            .first);
-    if ((lce_val + 1) * (sizeof(__uint128_t) / sizeof(char_type)) > max_lce) [[unlikely]] {
-      lce_val *= sizeof(__uint128_t) / sizeof(char_type);
-      while (r + lce_val < size && text[l + lce_val] == text[r + lce_val]) {
+    while (lce_val < max_blks && blk_i[lce_val] == blk_j[lce_val]) {
+      lce_val++;
+    }
+
+    if (lce_val == max_blks) [[unlikely]] {
+      lce_val *= blk_size;
+
+      while (lce_val < max_lce && text[l + lce_val] == text[r + lce_val]) {
         lce_val++;
       }
+
       return lce_val;
     }
-    size_t lce_rest =
-        std::countr_zero(text_blocks_i[lce_val] ^ text_blocks_j[lce_val]) /
-        (8 * sizeof(char_type));
-    lce_val *= sizeof(__uint128_t) / sizeof(char_type);
-    return std::min(max_lce, lce_val + lce_rest);
+
+    return lce_val * blk_size + std::countr_zero(blk_i[lce_val] ^ blk_j[lce_val]) / (8 * sizeof(char_type));
   }
 
   // Return {b, lce}, where lce is the number of common letters in text[i..]
