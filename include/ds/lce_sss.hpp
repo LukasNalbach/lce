@@ -138,7 +138,7 @@ class lce_sss {
             std::min(lce_local_max, static_cast<size_t>(sss[l_] - l));
       }
 
-      size_t lce_local = lce::ds::lce_naive_wordwise<t_char_type>::lce_lr(
+      size_t lce_local = lce::ds::lce_naive_wordwise_xor<t_char_type>::lce_lr(
           m_text, r + lce_local_max, l, r);
 
       // Case 0: Mismatch at first 3*tau symbols
@@ -149,7 +149,7 @@ class lce_sss {
       // Naive part until synchronizing position
       size_t lce_max{m_size - r};
       size_t lce_local_max{std::min(3 * t_tau, lce_max)};
-      size_t lce_local = lce::ds::lce_naive_wordwise<t_char_type>::lce_lr(
+      size_t lce_local = lce::ds::lce_naive_wordwise_xor<t_char_type>::lce_lr(
           m_text, r + lce_local_max, l, r);
 
       // Case 0: Mismatch at first 3*tau symbols
@@ -164,13 +164,13 @@ class lce_sss {
       // Case 1: Positions l' and r' don't sync, (because they are at the end of
       // runs).
       size_t final_lce = std::min(sss[l_] - l, sss[r_] - r) + 2 * t_tau - 1;
-      assert(final_lce == lce::ds::lce_naive_wordwise<t_char_type>::lce_lr(
+      assert(final_lce == lce::ds::lce_naive_wordwise_xor<t_char_type>::lce_lr(
                               m_text, m_size, l, r));
       return final_lce;
     } else {
       // Case 2: Positions l' and r' are synchronized.
       size_t final_lce = (sss[l_] - l) + m_fp_lce.lce_lr(l_, r_);
-      assert(final_lce == lce::ds::lce_naive_wordwise<t_char_type>::lce_lr(
+      assert(final_lce == lce::ds::lce_naive_wordwise_xor<t_char_type>::lce_lr(
                               m_text, m_size, l, r));
       return final_lce;
     }

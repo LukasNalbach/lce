@@ -53,7 +53,7 @@ std::vector<typename sss_type::index_type> reduce_fps_3tau_lexicographic(
           return false;
         }
         assert(lhs != rhs);
-        size_t lce = lce_naive_wordwise<uint8_t>::lce_up_to(text, text_size,
+        size_t lce = lce_naive_wordwise_xor<uint8_t>::lce_up_to(text, text_size,
                                                             lhs, rhs, 3 * tau);
 
         if (std::max(lhs, rhs) + lce == text_size) {
@@ -169,7 +169,7 @@ bool leq_three_tau(uint8_t const* text, size_t text_size, size_t text_pos_i,
   constexpr size_t tau = sync_set.tau;
   size_t const max_length = std::min(
       {text_size - text_pos_i, text_size - text_pos_j, 3 * sync_set.tau});
-  size_t text_lce = lce_naive_wordwise<uint8_t>::lce_up_to(
+  size_t text_lce = lce_naive_wordwise_xor<uint8_t>::lce_up_to(
       text, text_size, text_pos_i, text_pos_j, 3 * tau);
   return (text_lce < max_length &&
           text[text_pos_i + text_lce] < text[text_pos_j + text_lce]) ||
@@ -181,7 +181,7 @@ template <typename sss_type>
 bool eq_three_tau(uint8_t const* text, size_t text_size, size_t text_pos_i,
                   size_t text_pos_j, sss_type const& sync_set) {
   assert(text_pos_i != text_pos_j);
-  size_t lce = lce_naive_wordwise<uint8_t>::lce_up_to(
+  size_t lce = lce_naive_wordwise_xor<uint8_t>::lce_up_to(
       text, text_size, text_pos_i, text_pos_j, 3 * sync_set.tau);
 
   if (std::max(text_pos_i, text_pos_j) + lce == text_size) {
