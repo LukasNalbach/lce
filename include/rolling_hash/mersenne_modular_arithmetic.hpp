@@ -12,6 +12,7 @@
 #include <bit>
 #include <iterator>
 #include <random>
+#include <algorithm>
 
 // Return whether num is a mersenne prime.
 namespace lce::mersenne {

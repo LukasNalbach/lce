@@ -10,6 +10,7 @@
 
 #include <limits>
 #include <numeric>
+#include <algorithm>
 
 #include "rmq/rmq_n.hpp"
 #include "rmq/rmq_naive.hpp"

@@ -13,7 +13,7 @@
 #include <memory>
 #include <vector>
 
-#include "ds/lce_naive_wordwise.hpp"
+#include "ds/lce_naive_wordwise_xor.hpp"
 #include "pred/pred_index.hpp"
 #include "rolling_hash/string_synchronizing_set.hpp"
 
