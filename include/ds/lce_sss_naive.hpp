@@ -121,7 +121,7 @@ class lce_sss_naive {
             std::min(lce_local_max, static_cast<size_t>(sss[l_] - l));
       }
 
-      size_t lce_local = lce::ds::lce_naive_wordwise<t_char_type>::lce_lr(
+      size_t lce_local = lce::ds::lce_naive_wordwise_xor<t_char_type>::lce_lr(
           m_text, r + lce_local_max, l, r);
 
       // Case 0: Mismatch at first 3*tau symbols
@@ -132,7 +132,7 @@ class lce_sss_naive {
       // Naive part until synchronizing position
       size_t lce_max{m_size - r};
       size_t lce_local_max{std::min(3 * t_tau, lce_max)};
-      size_t lce_local = lce::ds::lce_naive_wordwise<t_char_type>::lce_lr(
+      size_t lce_local = lce::ds::lce_naive_wordwise_xor<t_char_type>::lce_lr(
           m_text, r + lce_local_max, l, r);
 
       // Case 0: Mismatch at first 3*tau symbols
@@ -160,7 +160,7 @@ class lce_sss_naive {
     {
       size_t lce_max{m_size - sss[r__]};
       size_t lce_local_max{std::min(3 * t_tau, lce_max)};
-      size_t lce_local = lce::ds::lce_naive_wordwise<t_char_type>::lce_lr(
+      size_t lce_local = lce::ds::lce_naive_wordwise_xor<t_char_type>::lce_lr(
           m_text, sss[r__] + lce_local_max, sss[l__], sss[r__]);
       if (lce_local < lce_local_max || lce_local == lce_max) {
         return (sss[l__] - l) + lce_local;
@@ -171,7 +171,7 @@ class lce_sss_naive {
     assert(r__ + 1 < sss.size() - 1);
     size_t final_lce =
         std::min(sss[l__ + 1] - l, sss[r__ + 1] - r) + 2 * t_tau - 1;
-    assert(final_lce == lce::ds::lce_naive_wordwise<t_char_type>::lce_lr(
+    assert(final_lce == lce::ds::lce_naive_wordwise_xor<t_char_type>::lce_lr(
                             m_text, m_size, l, r));
     return final_lce;
   }
@@ -214,7 +214,7 @@ class lce_sss_naive {
     // Naive part until synchronizing position
     size_t lce_max{std::min(m_size - r, up_to)};
     size_t lce_local_max{std::min(3 * t_tau, lce_max)};
-    size_t lce_local = lce::ds::lce_naive_wordwise<t_char_type>::lce_lr(
+    size_t lce_local = lce::ds::lce_naive_wordwise_xor<t_char_type>::lce_lr(
         m_text, r + lce_local_max, l, r);
 
     return lce_local;
@@ -233,7 +233,7 @@ class lce_sss_naive {
     size_t l_mm = sss[l_ + block_lce - 1];
     size_t r_mm = sss[r_ + block_lce - 1];
 
-    size_t lce_rest = lce::ds::lce_naive_wordwise<t_char_type>::lce_lr(
+    size_t lce_rest = lce::ds::lce_naive_wordwise_xor<t_char_type>::lce_lr(
         m_text, m_size, l_mm, r_mm);
 
     size_t lce = (l_mm - l) + lce_rest;

@@ -96,10 +96,10 @@ class lce_classic {
         assert(suffix_array_pos != 0);
 
         size_t preceding_suffix_pos = sa[suffix_array_pos - 1];
-        current_lcp += lce_naive_wordwise<char_type>::lce_uneq(
+        current_lcp += lce_naive_wordwise_xor<char_type>::lce_uneq(
             text, size, i + current_lcp, preceding_suffix_pos + current_lcp);
         m_lcp[suffix_array_pos] = current_lcp;
-        assert(lce_naive_wordwise<char_type>::lce_uneq(
+        assert(lce_naive_wordwise_xor<char_type>::lce_uneq(
                    text, size, i, preceding_suffix_pos) == current_lcp);
 
         if (current_lcp != 0) {

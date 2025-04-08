@@ -98,11 +98,11 @@ class lce_classic_for_sss {
         assert(suffix_array_pos != 0);
 
         size_t preceding_suffix_pos = sa[suffix_array_pos - 1];
-        current_lcp += lce_naive_wordwise<uint8_t>::lce_uneq(
+        current_lcp += lce_naive_wordwise_xor<uint8_t>::lce_uneq(
             text, text_size, sss[i] + current_lcp,
             sss[preceding_suffix_pos] + current_lcp);
         m_lcp[suffix_array_pos] = current_lcp;
-        assert(lce_naive_wordwise<uint8_t>::lce_uneq(
+        assert(lce_naive_wordwise_xor<uint8_t>::lce_uneq(
                    text, text_size, sss[i], sss[preceding_suffix_pos]) ==
                current_lcp);
 
