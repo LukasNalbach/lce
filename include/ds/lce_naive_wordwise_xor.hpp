@@ -17,7 +17,6 @@ template <typename t_char_type = uint8_t>
 class lce_naive_wordwise_xor {
  public:
   typedef t_char_type char_type;
-  __extension__ typedef unsigned __int128 uint128_t;
 
   lce_naive_wordwise_xor() : m_text(nullptr), m_size(0) {
   }
@@ -89,11 +88,11 @@ class lce_naive_wordwise_xor {
   // Here l must be smaller than r.
   static size_t lce_lr(char_type const* text, size_t size, size_t l, size_t r) {
     assert(l < r);
-    static constexpr size_t blk_size = sizeof(__uint128_t) / sizeof(char_type);
+    static constexpr size_t blk_size = sizeof(uint64_t) / sizeof(char_type);
     const uint64_t max_lce = size - r;
     const uint64_t max_blks = max_lce / blk_size;
-    __uint128_t const* const blk_i = reinterpret_cast<__uint128_t const*>(text + l);
-    __uint128_t const* const blk_j = reinterpret_cast<__uint128_t const*>(text + r);
+    uint64_t const* const blk_i = reinterpret_cast<uint64_t const*>(text + l);
+    uint64_t const* const blk_j = reinterpret_cast<uint64_t const*>(text + r);
     size_t lce_val = 0;
 
     while (lce_val < max_blks && blk_i[lce_val] == blk_j[lce_val]) {
