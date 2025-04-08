@@ -12,7 +12,7 @@
 #include <cstdint>
 #include <gsaca-double-sort-par.hpp>
 
-#include "ds/lce_naive_wordwise.hpp"
+#include "ds/lce_naive_wordwise_xor.hpp"
 #include "rmq/rmq_n.hpp"
 
 #ifdef LCE_BENCHMARK_INTERNAL

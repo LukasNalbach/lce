@@ -223,7 +223,7 @@ int main(int argc, char** argv) {
     auto const lcp_i = lcp.read();
 
     // find which query output to write to
-    auto const x = std::min(std::bit_width(lcp_i), (uint64_t)max_lcp_exp);
+    auto const x = std::min<uint64_t>(std::bit_width(lcp_i), (uint64_t)max_lcp_exp);
     if (count[x] < options.limit) {
       ++count[x];
 
