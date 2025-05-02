@@ -17,6 +17,7 @@ template <typename t_char_type = uint8_t>
 class lce_naive_std {
  public:
   typedef t_char_type char_type;
+  static_assert(sizeof(char_type) <= 16);
 
   lce_naive_std() : m_text(nullptr), m_size(0) {
   }
