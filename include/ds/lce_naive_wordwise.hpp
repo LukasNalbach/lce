@@ -17,6 +17,7 @@ template <typename t_char_type = uint8_t>
 class lce_naive_wordwise {
  public:
   typedef t_char_type char_type;
+  static_assert(sizeof(char_type) <= 16);
 
   lce_naive_wordwise() : m_text(nullptr), m_size(0) {
   }
@@ -87,6 +88,16 @@ class lce_naive_wordwise {
   // Return the number of common letters in text[i..] and text[j..].
   // Here l must be smaller than r.
   static size_t lce_lr(char_type const* text, size_t size, size_t l, size_t r) {
+    if constexpr (sizeof(char_type) >= 8) {
+      size_t lce = 0;
+
+      while (r + lce < size && text[l + lce] == text[r + lce]) {
+        ++lce;
+      }
+      
+      return lce;
+    }
+
     assert(l < r);
     static constexpr size_t blk_size = sizeof(uint64_t) / sizeof(char_type);
     const uint64_t max_lce = size - r;

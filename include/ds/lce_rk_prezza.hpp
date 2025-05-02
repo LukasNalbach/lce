@@ -208,11 +208,6 @@ class lce_rk_prezza {
     };
   }
 
-  inline int isSmallerSuffix([[maybe_unused]] const uint64_t i,
-                             [[maybe_unused]] const uint64_t j) {
-    return true;
-  }
-
   inline uint64_t bit_size() {
     return bin_lce.bit_size() + sizeof(this) * 8 + char_to_uint.size() * 8 +
            uint_to_char.size() * 8;

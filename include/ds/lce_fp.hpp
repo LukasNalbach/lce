@@ -22,6 +22,7 @@ template <typename t_char_type = uint8_t, size_t t_naive_scan = 32>
 class lce_fp {
  public:
   typedef t_char_type char_type;
+  static_assert(sizeof(char_type) == 1);
   __extension__ typedef unsigned __int128 uint128_t;
 
   lce_fp() : m_block_fps(nullptr), m_size(0) {
@@ -31,7 +32,6 @@ class lce_fp {
       : m_block_fps(reinterpret_cast<uint64_t*>(text)), m_size(size) {
     assert(size % 8 == 0);
     size_t size_in_blocks{size / 8};
-    assert(sizeof(t_char_type) == 1);
     std::vector<uint64_t> superblock_fps(omp_get_max_threads());
     // Partition text for threads in superblocks.
 

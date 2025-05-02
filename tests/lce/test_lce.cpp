@@ -263,31 +263,21 @@ TEST(LceNaiveWordwiseXor, All) {
 }
 
 TEST(LceClassic, All) {
-  test_empty_constructor<lce::ds::lce_classic<unsigned char>>();
+  test_empty_constructor<lce::ds::lce_classic<uint8_t>>();
 
   test_simple<lce::ds::lce_classic<uint8_t>>();
-  // test_simple<lce::ds::lce_classic<int8_t>>();
   test_simple<lce::ds::lce_classic<uint16_t>>();
-  // test_simple<lce::ds::lce_classic<int16_t>>();
   test_simple<lce::ds::lce_classic<uint32_t>>();
-  // test_simple<lce::ds::lce_classic<int32_t>>();
   test_simple<lce::ds::lce_classic<uint64_t>>();
-  // test_simple<lce::ds::lce_classic<int64_t>>();
   test_simple<lce::ds::lce_classic<__uint128_t>>();
-  // test_simple<lce::ds::lce_classic<__int128_t>>();
 
   test_variants<lce::ds::lce_classic<uint8_t>, true, true, true, false>();
-  // test_variants<lce::ds::lce_classic<int8_t>, true, true, true, false>();
   test_variants<lce::ds::lce_classic<uint16_t>, true, true, true, false>();
-  // test_variants<lce::ds::lce_classic<int16_t>, true, true, true, false>();
   test_variants<lce::ds::lce_classic<uint32_t>, true, true, true, false>();
-  // test_variants<lce::ds::lce_classic<int32_t>, true, true, true, false>();
   test_variants<lce::ds::lce_classic<uint64_t>, true, true, true, false>();
-  // test_variants<lce::ds::lce_classic<int64_t>, true, true, true, false>();
   test_variants<lce::ds::lce_classic<__uint128_t>, true, true, true, false>();
-  // test_variants<lce::ds::lce_classic<__int128_t>, true, true, true,
-  // false>();
 }
+
 TEST(LceClassicSss, All) {
   test_empty_constructor<lce::ds::lce_classic_for_sss<uint32_t, 1024>>();
   test_simple_classic_for_sss<lce::ds::lce_classic_for_sss<uint32_t, 1024>>();
@@ -295,164 +285,48 @@ TEST(LceClassicSss, All) {
 
 TEST(LceSssNaive, All) {
   test_empty_constructor<lce::ds::lce_sss_naive<uint8_t, 16>>();
-
   test_simple<lce::ds::lce_sss_naive<uint8_t, 16, uint32_t, false>>();
-  test_simple<lce::ds::lce_sss_naive<uint8_t, 16, uint32_t, false>>();
-  // test_simple<lce::ds::lce_sss_naive<uint16_t, 16>>();
-  // test_simple<lce::ds::lce_sss_naive<int16_t, 16>>();
-  // test_simple<lce::ds::lce_sss_naive<uint32_t, 16>>();
-  // test_simple<lce::ds::lce_sss_naive<int32_t, 16>>();
-  // test_simple<lce::ds::lce_sss_naive<uint64_t, 16>>();
-  // test_simple<lce::ds::lce_sss_naive<int64_t, 16>>();
-  // test_simple<lce::ds::lce_sss_naive<__uint128_t, 16>>();
-  // test_simple<lce::ds::lce_sss_naive<__int128_t, 16>>();
-
+  test_simple<lce::ds::lce_sss_naive<int8_t, 16, uint32_t, false>>();
   test_variants<lce::ds::lce_sss_naive<uint8_t, 16, uint32_t, false>>();
-  test_variants<lce::ds::lce_sss_naive<uint8_t, 16, uint32_t, false>>();
-  // test_variants<lce::ds::lce_sss_naive<uint16_t, 16>>();
-  // test_variants<lce::ds::lce_sss_naive<int16_t, 16>>();
-  // test_variants<lce::ds::lce_sss_naive<uint32_t, 16>>();
-  // test_variants<lce::ds::lce_sss_naive<int32_t, 16>>();
-  // test_variants<lce::ds::lce_sss_naive<uint64_t, 16>>();
-  // test_variants<lce::ds::lce_sss_naive<int64_t, 16>>();
-  // test_variants<lce::ds::lce_sss_naive<__uint128_t, 16>>();
-  // test_variants<lce::ds::lce_sss_naive<__int128_t, 16>>();
+  test_variants<lce::ds::lce_sss_naive<int8_t, 16, uint32_t, false>>();
 }
 TEST(LceSssNaivePL, All) {
   test_empty_constructor<lce::ds::lce_sss_naive<uint8_t, 16>>();
-
   test_simple<lce::ds::lce_sss_naive<uint8_t, 16, uint32_t, true>>();
-  test_simple<lce::ds::lce_sss_naive<uint8_t, 16, uint32_t, true>>();
-  // test_simple<lce::ds::lce_sss_naive<uint16_t, 16>>();
-  // test_simple<lce::ds::lce_sss_naive<int16_t, 16>>();
-  // test_simple<lce::ds::lce_sss_naive<uint32_t, 16>>();
-  // test_simple<lce::ds::lce_sss_naive<int32_t, 16>>();
-  // test_simple<lce::ds::lce_sss_naive<uint64_t, 16>>();
-  // test_simple<lce::ds::lce_sss_naive<int64_t, 16>>();
-  // test_simple<lce::ds::lce_sss_naive<__uint128_t, 16>>();
-  // test_simple<lce::ds::lce_sss_naive<__int128_t, 16>>();
-
+  test_simple<lce::ds::lce_sss_naive<int8_t, 16, uint32_t, true>>();
   test_variants<lce::ds::lce_sss_naive<uint8_t, 16, uint32_t, true>>();
-  test_variants<lce::ds::lce_sss_naive<uint8_t, 16, uint32_t, true>>();
-  // test_variants<lce::ds::lce_sss_naive<uint16_t, 16>>();
-  // test_variants<lce::ds::lce_sss_naive<int16_t, 16>>();
-  // test_variants<lce::ds::lce_sss_naive<uint32_t, 16>>();
-  // test_variants<lce::ds::lce_sss_naive<int32_t, 16>>();
-  // test_variants<lce::ds::lce_sss_naive<uint64_t, 16>>();
-  // test_variants<lce::ds::lce_sss_naive<int64_t, 16>>();
-  // test_variants<lce::ds::lce_sss_naive<__uint128_t, 16>>();
-  // test_variants<lce::ds::lce_sss_naive<__int128_t, 16>>();
+  test_variants<lce::ds::lce_sss_naive<int8_t, 16, uint32_t, true>>();
 }
 
 TEST(LceSssNoSs, All) {
   test_empty_constructor<lce::ds::lce_sss_noss<uint8_t, 16>>();
-
   test_simple<lce::ds::lce_sss_noss<uint8_t, 16, uint32_t, false>>();
   test_simple<lce::ds::lce_sss_noss<int8_t, 16, uint32_t, false>>();
-  // test_simple<lce::ds::lce_sss_noss<uint16_t, 16>>();
-  // test_simple<lce::ds::lce_sss_noss<int16_t, 16>>();
-  // test_simple<lce::ds::lce_sss_noss<uint32_t, 16>>();
-  // test_simple<lce::ds::lce_sss_noss<int32_t, 16>>();
-  // test_simple<lce::ds::lce_sss_noss<uint64_t, 16>>();
-  // test_simple<lce::ds::lce_sss_noss<int64_t, 16>>();
-  // test_simple<lce::ds::lce_sss_noss<__uint128_t, 16>>();
-  // test_simple<lce::ds::lce_sss_noss<__int128_t, 16>>();
-
-  test_variants<lce::ds::lce_sss_noss<uint8_t, 16, uint32_t, false>, true,
-                true, true, false>();
-  test_variants<lce::ds::lce_sss_noss<int8_t, 16, uint32_t, false>, true, true,
-                true, false>();
-  // test_variants<lce::ds::lce_sss_noss<uint16_t, 16>>();
-  // test_variants<lce::ds::lce_sss_noss<int16_t, 16>>();
-  // test_variants<lce::ds::lce_sss_noss<uint32_t, 16>>();
-  // test_variants<lce::ds::lce_sss_noss<int32_t, 16>>();
-  // test_variants<lce::ds::lce_sss_noss<uint64_t, 16>>();
-  // test_variants<lce::ds::lce_sss_noss<int64_t, 16>>();
-  // test_variants<lce::ds::lce_sss_noss<__uint128_t, 16>>();
-  // test_variants<lce::ds::lce_sss_noss<__int128_t, 16>>();
+  test_variants<lce::ds::lce_sss_noss<uint8_t, 16, uint32_t, false>, true, true, true, false>();
+  test_variants<lce::ds::lce_sss_noss<int8_t, 16, uint32_t, false>, true, true, true, false>();
 }
 TEST(LceSssNoSsPL, All) {
   test_empty_constructor<lce::ds::lce_sss_noss<uint8_t, 16>>();
-
   test_simple<lce::ds::lce_sss_noss<uint8_t, 16, uint32_t, true>>();
   test_simple<lce::ds::lce_sss_noss<int8_t, 16, uint32_t, true>>();
-  // test_simple<lce::ds::lce_sss_noss<uint16_t, 16>>();
-  // test_simple<lce::ds::lce_sss_noss<int16_t, 16>>();
-  // test_simple<lce::ds::lce_sss_noss<uint32_t, 16>>();
-  // test_simple<lce::ds::lce_sss_noss<int32_t, 16>>();
-  // test_simple<lce::ds::lce_sss_noss<uint64_t, 16>>();
-  // test_simple<lce::ds::lce_sss_noss<int64_t, 16>>();
-  // test_simple<lce::ds::lce_sss_noss<__uint128_t, 16>>();
-  // test_simple<lce::ds::lce_sss_noss<__int128_t, 16>>();
-
-  test_variants<lce::ds::lce_sss_noss<uint8_t, 16, uint32_t, true>, true, true,
-                true, false>();
-  test_variants<lce::ds::lce_sss_noss<int8_t, 16, uint32_t, true>, true, true,
-                true, false>();
-  // test_variants<lce::ds::lce_sss_noss<uint16_t, 16>>();
-  // test_variants<lce::ds::lce_sss_noss<int16_t, 16>>();
-  // test_variants<lce::ds::lce_sss_noss<uint32_t, 16>>();
-  // test_variants<lce::ds::lce_sss_noss<int32_t, 16>>();
-  // test_variants<lce::ds::lce_sss_noss<uint64_t, 16>>();
-  // test_variants<lce::ds::lce_sss_noss<int64_t, 16>>();
-  // test_variants<lce::ds::lce_sss_noss<__uint128_t, 16>>();
-  // test_variants<lce::ds::lce_sss_noss<__int128_t, 16>>();
+  test_variants<lce::ds::lce_sss_noss<uint8_t, 16, uint32_t, true>, true, true, true, false>();
+  test_variants<lce::ds::lce_sss_noss<int8_t, 16, uint32_t, true>, true, true, true, false>();
 }
 
 TEST(LceSss, All) {
   test_empty_constructor<lce::ds::lce_sss<uint8_t, 16>>();
-
   test_simple<lce::ds::lce_sss<uint8_t, 16, uint32_t, false>>();
   test_simple<lce::ds::lce_sss<int8_t, 16, uint32_t, false>>();
-  // test_simple<lce::ds::lce_sss<uint16_t, 16>>();
-  // test_simple<lce::ds::lce_sss<int16_t, 16>>();
-  // test_simple<lce::ds::lce_sss<uint32_t, 16>>();
-  // test_simple<lce::ds::lce_sss<int32_t, 16>>();
-  // test_simple<lce::ds::lce_sss<uint64_t, 16>>();
-  // test_simple<lce::ds::lce_sss<int64_t, 16>>();
-  // test_simple<lce::ds::lce_sss<__uint128_t, 16>>();
-  // test_simple<lce::ds::lce_sss<__int128_t, 16>>();
-
-  test_variants<lce::ds::lce_sss<uint8_t, 16, uint32_t, false>, true, true,
-                true, false>();
-  test_variants<lce::ds::lce_sss<int8_t, 16, uint32_t, false>, true, true,
-                true, false>();
-  // test_variants<lce::ds::lce_sss<uint16_t, 16>>();
-  // test_variants<lce::ds::lce_sss<int16_t, 16>>();
-  // test_variants<lce::ds::lce_sss<uint32_t, 16>>();
-  // test_variants<lce::ds::lce_sss<int32_t, 16>>();
-  // test_variants<lce::ds::lce_sss<uint64_t, 16>>();
-  // test_variants<lce::ds::lce_sss<int64_t, 16>>();
-  // test_variants<lce::ds::lce_sss<__uint128_t, 16>>();
-  // test_variants<lce::ds::lce_sss<__int128_t, 16>>();
+  test_variants<lce::ds::lce_sss<uint8_t, 16, uint32_t, false>, true, true, true, false>();
+  test_variants<lce::ds::lce_sss<int8_t, 16, uint32_t, false>, true, true, true, false>();
 }
 
 TEST(LceSssPL, All) {
   test_empty_constructor<lce::ds::lce_sss<uint8_t, 16, uint32_t, true>>();
-
   test_simple<lce::ds::lce_sss<uint8_t, 16, uint32_t, true>>();
   test_simple<lce::ds::lce_sss<int8_t, 16, uint32_t, true>>();
-  // test_simple<lce::ds::lce_sss<uint16_t, 16>>();
-  // test_simple<lce::ds::lce_sss<int16_t, 16>>();
-  // test_simple<lce::ds::lce_sss<uint32_t, 16>>();
-  // test_simple<lce::ds::lce_sss<int32_t, 16>>();
-  // test_simple<lce::ds::lce_sss<uint64_t, 16>>();
-  // test_simple<lce::ds::lce_sss<int64_t, 16>>();
-  // test_simple<lce::ds::lce_sss<__uint128_t, 16>>();
-  // test_simple<lce::ds::lce_sss<__int128_t, 16>>();
-
-  test_variants<lce::ds::lce_sss<uint8_t, 16, uint32_t, true>, true, true,
-                true, false>();
-  test_variants<lce::ds::lce_sss<int8_t, 16, uint32_t, true>, true, true, true,
-                false>();
-  // test_variants<lce::ds::lce_sss<uint16_t, 16>>();
-  // test_variants<lce::ds::lce_sss<int16_t, 16>>();
-  // test_variants<lce::ds::lce_sss<uint32_t, 16>>();
-  // test_variants<lce::ds::lce_sss<int32_t, 16>>();
-  // test_variants<lce::ds::lce_sss<uint64_t, 16>>();
-  // test_variants<lce::ds::lce_sss<int64_t, 16>>();
-  // test_variants<lce::ds::lce_sss<__uint128_t, 16>>();
-  // test_variants<lce::ds::lce_sss<__int128_t, 16>>();
+  test_variants<lce::ds::lce_sss<uint8_t, 16, uint32_t, true>, true, true, true, false>();
+  test_variants<lce::ds::lce_sss<int8_t, 16, uint32_t, true>, true, true, true, false>();
 }
 
 TEST(LceMemcmp, SS) {
@@ -461,36 +335,16 @@ TEST(LceMemcmp, SS) {
 }
 
 TEST(LceFP, All) {
-  test_empty_constructor<lce::ds::lce_fp<unsigned char>>();
-  test_retransform<lce::ds::lce_fp<unsigned char>>();
-
+  test_empty_constructor<lce::ds::lce_fp<uint8_t>>();
+  test_retransform<lce::ds::lce_fp<uint8_t>>();
+  test_retransform<lce::ds::lce_fp<int8_t>>();
   test_simple<lce::ds::lce_fp<uint8_t>>();
   test_simple<lce::ds::lce_fp<int8_t>>();
-  // test_simple<lce::ds::lce_fp<uint16_t>>();
-  // test_simple<lce::ds::lce_fp<int16_t>>();
-  // test_simple<lce::ds::lce_fp<uint32_t>>();
-  // test_simple<lce::ds::lce_fp<int32_t>>();
-  // test_simple<lce::ds::lce_fp<uint64_t>>();
-  // test_simple<lce::ds::lce_fp<int64_t>>();
-  // test_simple<lce::ds::lce_fp<__uint128_t>>();
-  // test_simple<lce::ds::lce_fp<__int128_t>>();
-
   test_variants<lce::ds::lce_fp<uint8_t>>();
   test_variants<lce::ds::lce_fp<int8_t>>();
-  // test_variants<lce::ds::lce_fp<uint16_t>>();
-  // test_variants<lce::ds::lce_fp<int16_t>>();
-  // test_variants<lce::ds::lce_fp<uint32_t>>();
-  // test_variants<lce::ds::lce_fp<int32_t>>();
-  // test_variants<lce::ds::lce_fp<uint64_t>>();
-  // test_variants<lce::ds::lce_fp<int64_t>>();
-  // test_variants<lce::ds::lce_fp<__uint128_t>>();
-  // test_variants<lce::ds::lce_fp<__int128_t>>();
 }
 
 TEST(LceRkPrezza, All) {
   test_empty_constructor<rklce::lce_rk_prezza>();
-  // test_retransform<rklce::lce_rk_prezza>();
-
   test_simple<rklce::lce_rk_prezza>();
-  // test_variants<rklce::lce_rk_prezza>();
 }

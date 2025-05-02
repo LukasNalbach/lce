@@ -17,6 +17,7 @@ namespace lce::ds {
 class lce_memcmp {
  public:
   typedef uint8_t char_type;
+  static_assert(sizeof(char_type) <= 16);
 
   lce_memcmp() : m_text(nullptr), m_size(0) {
   }
