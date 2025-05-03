@@ -78,9 +78,9 @@ class lce_classic_for_sss {
     // build lcp
     m_lcp.resize(sa.size());
     m_lcp[0] = 0;
-    size_t current_lcp = 0;
+    uint16_t p = std::min<uint16_t>(omp_get_num_threads(), reduced_fps_size);
 
-#pragma omp parallel
+#pragma omp parallel num_threads(p)
     {
       const int t = omp_get_thread_num();
       const int nt = omp_get_num_threads();
@@ -106,6 +106,7 @@ class lce_classic_for_sss {
                    text, text_size, sss[i], sss[preceding_suffix_pos]) ==
                current_lcp);
 
+        if (i == end - 1) break;
         uint64_t diff = sss[i + 1] - sss[i];
         if (current_lcp < 2 * t_tau + diff) {
           current_lcp = 0;
