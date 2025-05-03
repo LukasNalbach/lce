@@ -78,9 +78,9 @@ class lce_classic {
     // build lcp
     m_lcp.resize(sa.size());
     m_lcp[0] = 0;
-    size_t current_lcp = 0;
-
-#pragma omp parallel
+    uint16_t p = std::min<uint16_t>(omp_get_num_threads(), reduced_fps_size);
+    
+#pragma omp parallel num_threads(p)
     {
       const int t = omp_get_thread_num();
       const int nt = omp_get_num_threads();

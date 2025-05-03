@@ -36,7 +36,9 @@ class pred_index {
 
     // build an index for high bits
     m_hi_idx.resize((uint64_t(m_max) >> m_lo_bits) + 2);
-#pragma omp parallel
+    uint16_t p = std::min<uint16_t>(omp_get_num_threads(), m_size);
+    
+#pragma omp parallel num_threads(p)
     {
       const int t = omp_get_thread_num();
       const int nt = omp_get_num_threads();
