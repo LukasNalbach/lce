@@ -9,9 +9,11 @@
 #pragma once
 #include <assert.h>
 
+#include <array>
 #include <bit>
 #include <iterator>
 #include <random>
+#include <vector>
 
 #include "rolling_hash/mersenne_modular_arithmetic.hpp"
 #include "rolling_hash/modular_arithmetic.hpp"
@@ -50,8 +52,30 @@ class rk_prime {
 
   // Roll the window by specifying the character that is rolled out of the
   // window and the character that is rolled in the window.
+  inline uint128_t roll_in(uint128_t fp, unsigned char in) const {
+    return roll(fp, 0, in);
+  }
+
+
+  // Roll the window by specifying the character that is rolled out of the
+  // window and the character that is rolled in the window.
   inline uint128_t roll_out(unsigned char out) {
     return roll(out, 0);
+  }
+
+
+  // Roll the window by specifying the character that is rolled out of the
+  // window and the character that is rolled in the window.
+  inline uint128_t roll_out(uint128_t fp, unsigned char out) const {
+    return roll(fp, out, 0);
+  }
+
+  // Roll the window by specifying the character that is rolled out of the
+  // window and the character that is rolled in the window.
+  inline uint128_t roll(uint128_t fp, unsigned char out, unsigned char in) const {
+    fp *= m_base;
+    fp = mersenne::mod<uint128_t, m_prime>(fp + m_char_influence[out][in]);
+    return fp;
   }
 
   // Roll the window by specifying the character that is rolled out of the
@@ -77,6 +101,10 @@ class rk_prime {
     return m_fp;
   }
 
+  void reset() {
+    m_fp = 0;
+  }
+
   // Return the base of rolling hash function.
   inline uint128_t get_base() const {
     return m_base;
@@ -88,7 +116,8 @@ class rk_prime {
   uint128_t m_fp;
 
   uint128_t m_base;
-  uint128_t m_char_influence[256][256];
+  std::vector<std::array<uint128_t, 256>> m_char_influence =
+      std::vector<std::array<uint128_t, 256>>(256);
 
   // Return a random number that will be used as the base.
   inline static uint64_t random64(uint64_t min, uint64_t max) {

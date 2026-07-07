@@ -33,6 +33,9 @@ class sss {
     assert(size > 5 * t_tau);
     std::vector<std::vector<t_index>> sss_part(omp_get_max_threads());
     std::vector<std::vector<uint128_t>> fps_part(omp_get_max_threads());
+
+    const rk_prime<> rk(t_tau, 296819);
+    const rk_prime<> rk3(3 * t_tau, 296819);
 #pragma omp parallel
     {
       const size_t sss_end = size - 2 * t_tau + 1;
@@ -45,7 +48,7 @@ class sss {
       const size_t end = (t < nt - 1) ? (t + 1) * slice_size : sss_end;
 
       std::tie(sss_part[t], fps_part[t]) =
-          fill_synchronizing_set(text, begin, end);
+          fill_synchronizing_set(text, begin, end, rk, rk3);
     }
 
     // Merge SSS parts
@@ -59,6 +62,7 @@ class sss {
     // If the text contains long runs, the sss inflates. We the then use a
     // algorithm which detects runs.
     if (m_runs_detected) {
+      const rk_prime<> rk_small(t_tau / 4, 296819);
 #pragma omp parallel
       {
         const size_t sss_end = size - 2 * t_tau + 1;
@@ -71,7 +75,7 @@ class sss {
         const size_t end = (t < nt - 1) ? (t + 1) * slice_size : sss_end;
         sss_part[t] = std::vector<t_index>{};
         std::tie(sss_part[t], fps_part[t]) =
-            fill_synchronizing_set_runs(text, size, begin, end);
+            fill_synchronizing_set_runs(text, size, begin, end, rk, rk3, rk_small);
       }
       write_pos = {0};
       for (auto& part : sss_part) {
@@ -118,35 +122,37 @@ class sss {
   template <typename t_char_type>
   std::pair<std::vector<t_index>, std::vector<uint128_t>>
   fill_synchronizing_set(t_char_type const* text, const size_t from,
-                         const size_t to) const {
+                         const size_t to, const rk_prime<>& rk,
+                         const rk_prime<>& rk3) const {
     // calculate SSS
     std::vector<t_index> sss;
     std::vector<uint128_t> fps;
 
-    rk_prime rk(t_tau, 296819);
-    rk_prime rk3(3 * t_tau, 296819);
-
+    uint128_t fp = 0;
+    uint128_t fp3 = 0;
     for (size_t i = 0; i < t_tau; ++i) {
-      rk.roll_in(text[from + i]);
+      fp = rk.roll_in(fp, text[from + i]);
     }
     for (size_t i = 0; i < 3 * t_tau; ++i) {
-      rk3.roll_in(text[from + i]);
+      fp3 = rk3.roll_in(fp3, text[from + i]);
     }
 
     ring_buffer<uint128_t> fingerprints(4 * t_tau);
     fingerprints.resize(from);
-    fingerprints.push_back(rk.get_fp());
+    fingerprints.push_back(fp);
 
     ring_buffer<uint128_t> fingerprints3(4 * t_tau);
     fingerprints3.resize(from);
-    fingerprints3.push_back(rk3.get_fp());
+    fingerprints3.push_back(fp3);
 
     // Loop:
     t_index first_min = 0;
     for (size_t i = from; i < to; ++i) {
       for (size_t j = fingerprints.size(); j <= i + 3 * t_tau; ++j) {
-        fingerprints.push_back(rk.roll(text[j - 1], text[j + t_tau - 1]));
-        fingerprints3.push_back(rk3.roll(text[j - 1], text[j + 3 * t_tau - 1]));
+        fp = rk.roll(fp, text[j - 1], text[j + t_tau - 1]);
+        fingerprints.push_back(fp);
+        fp3 = rk3.roll(fp3, text[j - 1], text[j + 3 * t_tau - 1]);
+        fingerprints3.push_back(fp3);
       }
 
       if (first_min == 0 || first_min < i) {
@@ -173,10 +179,12 @@ class sss {
   template <typename t_char_type>
   std::pair<std::vector<t_index>, std::vector<uint128_t>>
   fill_synchronizing_set_runs(const t_char_type* text, size_t size,
-                              const size_t from, const size_t to) {
+                              const size_t from, const size_t to,
+                              const rk_prime<>& rk, const rk_prime<>& rk3,
+                              const rk_prime<>& rk_small) {
     // calculate Q
     std::vector<std::pair<t_index, t_index>> qset =
-        calculate_q(text, size, from, to);
+        calculate_q(text, size, from, to, rk_small);
     qset.push_back(std::make_pair(std::numeric_limits<t_index>::max(),
                                   std::numeric_limits<t_index>::max()));
     auto it_q = qset.begin();
@@ -185,30 +193,32 @@ class sss {
     std::vector<t_index> sss;
     std::vector<uint128_t> fps;
 
-    rk_prime rk(t_tau, 296819);
-    rk_prime rk3(3 * t_tau, 296819);
+    uint128_t fp = 0;
+    uint128_t fp3 = 0;
     for (size_t i = 0; i < t_tau; ++i) {
-      rk.roll_in(text[from + i]);
+      fp = rk.roll_in(fp, text[from + i]);
     }
     for (size_t i = 0; i < 3 * t_tau; ++i) {
-      rk3.roll_in(text[from + i]);
+      fp3 = rk3.roll_in(fp3, text[from + i]);
     }
 
     ring_buffer<uint128_t> fingerprints(4 * t_tau);
     fingerprints.resize(from);
-    fingerprints.push_back(rk.get_fp());
+    fingerprints.push_back(fp);
 
     ring_buffer<uint128_t> fingerprints3(4 * t_tau);
     fingerprints3.resize(from);
-    fingerprints3.push_back(rk3.get_fp());
+    fingerprints3.push_back(fp3);
 
     t_index MIN_UNKNOWN = std::numeric_limits<t_index>::max();
     t_index first_min = MIN_UNKNOWN;
     // Loop:
     for (size_t i = from; i < to; ++i) {
       for (size_t j = fingerprints.size(); j <= i + t_tau; ++j) {
-        fingerprints.push_back(rk.roll(text[j - 1], text[j + t_tau - 1]));
-        fingerprints3.push_back(rk3.roll(text[j - 1], text[j + 3 * t_tau - 1]));
+        fp = rk.roll(fp, text[j - 1], text[j + t_tau - 1]);
+        fingerprints.push_back(fp);
+        fp3 = rk3.roll(fp3, text[j - 1], text[j + 3 * t_tau - 1]);
+        fingerprints3.push_back(fp3);
       }
       while (it_q->second < i) {
         std::advance(it_q, 1);
@@ -284,22 +294,24 @@ class sss {
   std::vector<std::pair<t_index, t_index>> calculate_q(t_char_type* const text,
                                                        size_t size,
                                                        const size_t from,
-                                                       const size_t to) {
+                                                       const size_t to,
+                                                       const rk_prime<>& rk) {
     std::vector<std::pair<t_index, t_index>> qset{};  // inclusive intervals
     constexpr size_t small_tau = t_tau / 4;
 
-    rk_prime rk(small_tau, 296819);
+    uint128_t fp = 0;
     for (size_t i = 0; i < small_tau; ++i) {
-      rk.roll_in(text[from + i]);
+      fp = rk.roll_in(fp, text[from + i]);
     }
 
     ring_buffer<uint128_t> fingerprints(4 * t_tau);
     fingerprints.resize(from);
-    fingerprints.push_back(rk.get_fp());
+    fingerprints.push_back(fp);
 
     for (size_t i = from; i < to + t_tau; ++i) {  //++i correct?
       for (size_t j = fingerprints.size(); j < i + t_tau; ++j) {
-        fingerprints.push_back(rk.roll(text[j - 1], text[j + small_tau - 1]));
+        fp = rk.roll(fp, text[j - 1], text[j + small_tau - 1]);
+        fingerprints.push_back(fp);
       }
       // find first minimum
       size_t first_min = i;
