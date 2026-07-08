@@ -127,7 +127,7 @@ class lce_naive_std {
                           size_t j, size_t up_to) {
     if (i == j) [[unlikely]] {
       assert(i < size);
-      size - i;
+      return size - i;
     }
 
     size_t l = std::min(i, j);

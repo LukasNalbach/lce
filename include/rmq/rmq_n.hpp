@@ -11,6 +11,7 @@
 #include <assert.h>
 #include <omp.h>
 
+#include <cstdint>
 #include <vector>
 
 #include "rmq_nlgn.hpp"
@@ -18,7 +19,7 @@
 namespace lce::rmq {
 
 template <typename t_key_type, typename index_type = uint32_t,
-          u_int64_t t_block_size = 64>
+          uint64_t t_block_size = 64>
 class rmq_n {
  public:
   using key_type = t_key_type;
