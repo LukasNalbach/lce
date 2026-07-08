@@ -37,6 +37,9 @@ class lce_classic_for_sss {
                       t_index_type const* reduced_fps, size_t reduced_fps_size,
                       std::vector<t_index_type> const& sss)
       : m_size(reduced_fps_size) {
+    if (reduced_fps_size == 0) {
+      return;
+    }
     std::vector<t_index_type> sa(reduced_fps_size);
     // sort sa
 #ifdef LCE_BENCHMARK_INTERNAL

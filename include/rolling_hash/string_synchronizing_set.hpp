@@ -30,7 +30,10 @@ class sss {
   template <typename t_char_type>
   sss(t_char_type const* text, size_t size, bool calculate_fps = false)
       : m_fps_calculated(calculate_fps) {
-    assert(size > 5 * t_tau);
+    if (size <= 5 * t_tau) {
+      m_runs_detected = false;
+      return;
+    }
     std::vector<std::vector<t_index>> sss_part(omp_get_max_threads());
     std::vector<std::vector<uint128_t>> fps_part(omp_get_max_threads());
 
@@ -308,7 +311,8 @@ class sss {
     fingerprints.resize(from);
     fingerprints.push_back(fp);
 
-    for (size_t i = from; i < to + t_tau; ++i) {  //++i correct?
+    const size_t q_to = std::min(to + t_tau + small_tau, size - t_tau + 1);
+    for (size_t i = from; i < q_to; ++i) {
       for (size_t j = fingerprints.size(); j < i + t_tau; ++j) {
         fp = rk.roll(fp, text[j - 1], text[j + small_tau - 1]);
         fingerprints.push_back(fp);
@@ -370,10 +374,12 @@ class sss {
             size_t const sss_pos1 = run_start - 1;
             size_t const sss_pos2 = run_end - (2 * t_tau) + 2;
             int64_t const run_info = int64_t{1} * size - sss_pos2 + sss_pos1;
-            m_run_info[sss_pos1] =
+            int64_t const run_info_signed =
                 text[run_end + 1] > text[run_end - period + 1]
                     ? run_info
                     : run_info * (-1);
+#pragma omp critical
+            m_run_info[sss_pos1] = run_info_signed;
           }
         } else {
           i = next_min - 1;

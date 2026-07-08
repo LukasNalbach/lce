@@ -31,7 +31,13 @@ class pred_index {
   }
 
   inline pred_index(T const* data, size_t size)
-      : m_data(data), m_size(size), m_min(data[0]), m_max(data[size - 1]) {
+      : m_data(data), m_size(size),
+        m_min(size == 0 ? T{} : data[0]),
+        m_max(size == 0 ? T{} : data[size - 1]) {
+    if (size == 0) {
+      return;
+    }
+
     assert(std::is_sorted(m_data, m_data + size));
 
     // build an index for high bits
@@ -80,9 +86,10 @@ class pred_index {
  public:
   // finds the greatest element less than OR equal to x
   inline result predecessor(const T x) const {
-    if ((x < m_min)) [[unlikely]]
+    if (m_size == 0 || x < m_min) [[unlikely]]
       return result{false, 0};
-    if ((x >= m_max)) return result{true, m_size - 1};
+    if (x >= m_max) [[unlikely]]
+      return result{true, m_size - 1};
 
     const uint64_t key = hi(x);
     const size_t p = m_hi_idx[key];
@@ -95,10 +102,10 @@ class pred_index {
 
   // finds the smallest element greater than OR equal to x
   inline result successor(const T x) const {
-    if ((x <= m_min)) [[unlikely]]
-      return result{true, 0};
-    if ((x > m_max)) [[unlikely]]
+    if (m_size == 0 || x > m_max) [[unlikely]]
       return result{false, 0};
+    if (x <= m_min) [[unlikely]]
+      return result{true, 0};
 
     const uint64_t key = hi(x);
     const size_t p = m_hi_idx[key];

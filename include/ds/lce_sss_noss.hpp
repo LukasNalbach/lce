@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <bit>
 #include <chrono>
 #include <cmath>
 #include <memory>

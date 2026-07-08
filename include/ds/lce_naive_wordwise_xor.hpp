@@ -9,6 +9,7 @@
 #pragma once
 #include <assert.h>
 
+#include <bit>
 #include <cstdint>
 
 namespace lce::ds {

@@ -41,8 +41,11 @@ std::vector<typename sss_type::index_type> reduce_fps_3tau_lexicographic(
   using index_type = sss_type::index_type;
   static constexpr uint64_t tau = sss_type::tau;
 
-  __extension__ typedef unsigned __int128 uint128_t;
   std::vector<index_type> const& sss = sync_set.get_sss();
+
+  if (sss.empty()) {
+    return {};
+  }
 
   // sort sss-pos by 3tau-infix
   std::vector<index_type> sss_sorted = sss;
@@ -55,17 +58,13 @@ std::vector<typename sss_type::index_type> reduce_fps_3tau_lexicographic(
         assert(lhs != rhs);
         size_t lce = lce_naive_wordwise_xor<uint8_t>::lce_up_to(text, text_size,
                                                             lhs, rhs, 3 * tau);
-
         if (std::max(lhs, rhs) + lce == text_size) {
           return lhs > rhs;
         }
-        if (text[lhs + lce] != text[rhs + lce]) {
+        if (lce < 3 * tau) {
           return text[lhs + lce] < text[rhs + lce];
         }
-        if (sync_set.get_run_info(lhs) != sync_set.get_run_info(rhs)) {
-          return sync_set.get_run_info(lhs) < sync_set.get_run_info(rhs);
-        }
-        return false;
+        return sync_set.get_run_info(lhs) < sync_set.get_run_info(rhs);
       });
 
   for (size_t idx = 1; idx < sss_sorted.size(); ++idx) {
@@ -167,32 +166,30 @@ template <typename sss_type>
 bool leq_three_tau(uint8_t const* text, size_t text_size, size_t text_pos_i,
                    size_t text_pos_j, sss_type const& sync_set) {
   constexpr size_t tau = sync_set.tau;
-  size_t const max_length = std::min(
-      {text_size - text_pos_i, text_size - text_pos_j, 3 * sync_set.tau});
   size_t text_lce = lce_naive_wordwise_xor<uint8_t>::lce_up_to(
       text, text_size, text_pos_i, text_pos_j, 3 * tau);
-  return (text_lce < max_length &&
-          text[text_pos_i + text_lce] < text[text_pos_j + text_lce]) ||
-         (text_lce == max_length && sync_set.get_run_info(text_pos_i) <=
-                                        sync_set.get_run_info(text_pos_j));
+  if (std::max(text_pos_i, text_pos_j) + text_lce == text_size) [[unlikely]] {
+    return text_pos_i > text_pos_j;
+  }
+  if (text_lce < 3 * tau) {
+    return text[text_pos_i + text_lce] < text[text_pos_j + text_lce];
+  }
+  return sync_set.get_run_info(text_pos_i) <= sync_set.get_run_info(text_pos_j);
 }
 
 template <typename sss_type>
 bool eq_three_tau(uint8_t const* text, size_t text_size, size_t text_pos_i,
                   size_t text_pos_j, sss_type const& sync_set) {
   assert(text_pos_i != text_pos_j);
+  constexpr size_t tau = sync_set.tau;
   size_t lce = lce_naive_wordwise_xor<uint8_t>::lce_up_to(
-      text, text_size, text_pos_i, text_pos_j, 3 * sync_set.tau);
-
-  if (std::max(text_pos_i, text_pos_j) + lce == text_size) {
+      text, text_size, text_pos_i, text_pos_j, 3 * tau);
+  if (std::max(text_pos_i, text_pos_j) + lce == text_size) [[unlikely]] {
     return false;
   }
-  if (text[text_pos_i + lce] != text[text_pos_j + lce]) {
+  if (lce < 3 * tau) {
     return false;
   }
-  if (sync_set.get_run_info(text_pos_i) != sync_set.get_run_info(text_pos_j)) {
-    return false;
-  }
-  return true;
+  return sync_set.get_run_info(text_pos_i) == sync_set.get_run_info(text_pos_j);
 }
 }  // namespace lce::ds

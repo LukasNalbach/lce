@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <bit>
 #include <chrono>
 #include <cmath>
 #include <memory>
@@ -205,39 +206,22 @@ class lce_sss_naive {
   size_t lce_up_to(size_t i, size_t j, size_t up_to) {
     if (i == j) [[unlikely]] {
       assert(i < m_size);
-      m_size - i;
+      return m_size - i;
     }
 
     size_t l = std::min(i, j);
     size_t r = std::max(i, j);
 
-    // Naive part until synchronizing position
     size_t lce_max{std::min(m_size - r, up_to)};
-    size_t lce_local_max{std::min(3 * t_tau, lce_max)};
+    size_t lce_local_max{std::min<size_t>(3 * t_tau, lce_max)};
     size_t lce_local = lce::ds::lce_naive_wordwise_xor<t_char_type>::lce_lr(
         m_text, r + lce_local_max, l, r);
 
-    return lce_local;
+    if (lce_local < lce_local_max || lce_local == lce_max) {
+      return lce_local;
+    }
 
-    // From synchronizing position
-    std::vector<t_index_type> const& sss = m_sync_set.get_sss();
-    std::vector<uint128_t> const& fps = m_sync_set.get_fps();
-
-    size_t l_ = m_pred.successor(l).pos;
-    size_t r_ = m_pred.successor(r).pos;
-
-    size_t block_lce_max = sss.size() - r_;
-    size_t block_lce = lce::ds::lce_naive_std<uint128_t>::lce_lr(
-        fps.data(), fps.size(), l_, r_);
-
-    size_t l_mm = sss[l_ + block_lce - 1];
-    size_t r_mm = sss[r_ + block_lce - 1];
-
-    size_t lce_rest = lce::ds::lce_naive_wordwise_xor<t_char_type>::lce_lr(
-        m_text, m_size, l_mm, r_mm);
-
-    size_t lce = (l_mm - l) + lce_rest;
-    return lce;
+    return std::min<size_t>(lce_lr(l, r), up_to);
   }
 
   char_type operator[](size_t i) { return m_text[i]; }

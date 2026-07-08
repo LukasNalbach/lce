@@ -285,7 +285,8 @@ class lce_fp {
     uint64_t comp_block_j =
         (block_j << offset_lce2) + ((block_j2 >> 1) >> (63 - offset_lce2));
 
-    while (lce < max_lce) {
+    const uint64_t max_block = max_lce / 8;
+    while (lce < max_block) {
       if (comp_block_i != comp_block_j) {
         break;
       }
@@ -313,7 +314,7 @@ class lce_fp {
   size_t lce_up_to(size_t i, size_t j, size_t up_to) const {
     if (i == j) [[unlikely]] {
       assert(i < m_size);
-      m_size - i;
+      return m_size - i;
     }
 
     size_t l = std::min(i, j);
@@ -324,7 +325,6 @@ class lce_fp {
     if (lce < t_naive_scan) {
       return lce;
     }
-    // Exponential search
     uint64_t dist = t_naive_scan * 2;
     int exp = std::countr_zero(dist);
 
@@ -337,8 +337,6 @@ class lce_fp {
       dist *= 2;
     }
 
-    // Binary search. We start it at i2 and j2, because we know that up until
-    // i2 and j2 everything matched.
     --exp;
     dist /= 2;
     uint64_t add = dist;
@@ -346,14 +344,11 @@ class lce_fp {
     while (dist > t_naive_scan) {
       --exp;
       dist /= 2;
-      if (fp_exp(l + add, exp) == fp_exp(r + add, exp)) {
+      if (add + dist <= max_lce && fp_exp(l + add, exp) == fp_exp(r + add, exp)) {
         add += dist;
       }
     }
-    max_lce -= add;
-    lce = add + lce_scan_to_end(l + add, r + add, max_lce);
-
-    return lce;
+    return add + lce_scan_to_end(l + add, r + add, max_lce - add);
   }
 
  private:
