@@ -10,9 +10,6 @@
 [submodule "extlib/rk-lce"]
 	path = external/rk-lce
 	url = https://github.com/nicolaprezza/rk-lce.git
-[submodule "extlib/parallel-hashmap"]
-	path = external/parallel-hashmap
-	url = https://github.com/greg7mdp/parallel-hashmap.git
 [submodule "extlib/PGM-index"]
 	path = external/PGM-index
 	url = https://github.com/gvinciguerra/PGM-index.git
@@ -25,10 +22,6 @@
 [submodule "extlib/libsais"]
 	path = external/libsais
 	url = https://github.com/IlyaGrebnov/libsais.git
-[submodule "extlib/gsaca-double-sort"]
-	path = external/gsaca-double-sort
-	url = https://github.com/jonas-ellert/gsaca-double-sort.git
-	branch = gsaca-for-lce
 [submodule "extlib/malloc_count"]
 	path = external/malloc_count
 	url = https://github.com/ByteHamster-etc/malloc_count.git

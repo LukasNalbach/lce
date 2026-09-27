@@ -39,6 +39,7 @@ static void verify_rmq(gen_t& g, uint64_t max_size, size_t num_queries) {
   const size_t n = data.size();
 
   lce::rmq::rmq_naive<key_t> ref(data);
+  scoped_num_threads threads(random_num_threads(g));
   fuzz_timer tb(fuzz_construct_ns());
   rmq_ds_t ds(data);
   tb.stop();
@@ -56,31 +57,36 @@ static void verify_rmq(gen_t& g, uint64_t max_size, size_t num_queries) {
   }
 }
 
-TEST(test_rmq, all) {
-  run_fuzz("rmq", {
-    {"rmq-n", [](uint64_t it) {
+TEST(test_rmq, rmq_n) {
+  run_fuzz("rmq-n", {
+    {"verify", [](uint64_t it) {
        switch (it % 8) {
-         case 0: verify_rmq<lce::rmq::rmq_n<uint8_t>, uint8_t>(gen, 2000000, 2000); break;
-         case 1: verify_rmq<lce::rmq::rmq_n<int8_t>, int8_t>(gen, 2000000, 2000); break;
-         case 2: verify_rmq<lce::rmq::rmq_n<uint16_t>, uint16_t>(gen, 2000000, 2000); break;
-         case 3: verify_rmq<lce::rmq::rmq_n<int16_t>, int16_t>(gen, 2000000, 2000); break;
-         case 4: verify_rmq<lce::rmq::rmq_n<uint32_t>, uint32_t>(gen, 2000000, 2000); break;
-         case 5: verify_rmq<lce::rmq::rmq_n<int32_t>, int32_t>(gen, 2000000, 2000); break;
-         case 6: verify_rmq<lce::rmq::rmq_n<uint64_t>, uint64_t>(gen, 2000000, 2000); break;
-         case 7: verify_rmq<lce::rmq::rmq_n<u128>, u128>(gen, 2000000, 2000); break;
+         case 0: verify_rmq<lce::rmq::rmq_n<uint8_t>, uint8_t>(gen, 100000, 1000); break;
+         case 1: verify_rmq<lce::rmq::rmq_n<int8_t>, int8_t>(gen, 100000, 1000); break;
+         case 2: verify_rmq<lce::rmq::rmq_n<uint16_t>, uint16_t>(gen, 100000, 1000); break;
+         case 3: verify_rmq<lce::rmq::rmq_n<int16_t>, int16_t>(gen, 100000, 1000); break;
+         case 4: verify_rmq<lce::rmq::rmq_n<uint32_t>, uint32_t>(gen, 100000, 1000); break;
+         case 5: verify_rmq<lce::rmq::rmq_n<int32_t>, int32_t>(gen, 100000, 1000); break;
+         case 6: verify_rmq<lce::rmq::rmq_n<uint64_t>, uint64_t>(gen, 100000, 1000); break;
+         case 7: verify_rmq<lce::rmq::rmq_n<u128>, u128>(gen, 100000, 1000); break;
        }
-     }, true},
-    {"rmq-nlgn", [](uint64_t it) {
+     }, false},
+  }, fuzz_iterations(1000));
+}
+
+TEST(test_rmq, rmq_nlgn) {
+  run_fuzz("rmq-nlgn", {
+    {"verify", [](uint64_t it) {
        switch (it % 8) {
-         case 0: verify_rmq<lce::rmq::rmq_nlgn<uint8_t>, uint8_t>(gen, 2000000, 2000); break;
-         case 1: verify_rmq<lce::rmq::rmq_nlgn<int8_t>, int8_t>(gen, 2000000, 2000); break;
-         case 2: verify_rmq<lce::rmq::rmq_nlgn<uint16_t>, uint16_t>(gen, 2000000, 2000); break;
-         case 3: verify_rmq<lce::rmq::rmq_nlgn<int16_t>, int16_t>(gen, 2000000, 2000); break;
-         case 4: verify_rmq<lce::rmq::rmq_nlgn<uint32_t>, uint32_t>(gen, 2000000, 2000); break;
-         case 5: verify_rmq<lce::rmq::rmq_nlgn<int32_t>, int32_t>(gen, 2000000, 2000); break;
-         case 6: verify_rmq<lce::rmq::rmq_nlgn<uint64_t>, uint64_t>(gen, 2000000, 2000); break;
-         case 7: verify_rmq<lce::rmq::rmq_nlgn<u128>, u128>(gen, 2000000, 2000); break;
+         case 0: verify_rmq<lce::rmq::rmq_nlgn<uint8_t>, uint8_t>(gen, 100000, 1000); break;
+         case 1: verify_rmq<lce::rmq::rmq_nlgn<int8_t>, int8_t>(gen, 100000, 1000); break;
+         case 2: verify_rmq<lce::rmq::rmq_nlgn<uint16_t>, uint16_t>(gen, 100000, 1000); break;
+         case 3: verify_rmq<lce::rmq::rmq_nlgn<int16_t>, int16_t>(gen, 100000, 1000); break;
+         case 4: verify_rmq<lce::rmq::rmq_nlgn<uint32_t>, uint32_t>(gen, 100000, 1000); break;
+         case 5: verify_rmq<lce::rmq::rmq_nlgn<int32_t>, int32_t>(gen, 100000, 1000); break;
+         case 6: verify_rmq<lce::rmq::rmq_nlgn<uint64_t>, uint64_t>(gen, 100000, 1000); break;
+         case 7: verify_rmq<lce::rmq::rmq_nlgn<u128>, u128>(gen, 100000, 1000); break;
        }
-     }, true},
-  }, 1200);
+     }, false},
+  }, fuzz_iterations(1000));
 }

@@ -30,7 +30,7 @@
 
 namespace lce::ds {
 
-template <typename t_char_type = uint8_t, uint64_t t_tau = 1024,
+template <typename t_char_type = uint8_t,
           typename t_index_type = uint32_t, bool t_prefer_long = false>
 class lce_sss_naive {
  public:
@@ -38,10 +38,10 @@ class lce_sss_naive {
   static_assert(sizeof(char_type) == 1);
   __extension__ typedef unsigned __int128 uint128_t;
 
-  lce_sss_naive() : m_text(nullptr), m_size(0) {}
+  lce_sss_naive() : m_text(nullptr), m_size(0), m_tau(0) {}
 
-  lce_sss_naive(char_type const* text, size_t size)
-      : m_text(text), m_size(size) {
+  lce_sss_naive(char_type const* text, size_t size, uint64_t tau)
+      : m_text(text), m_size(size), m_tau(tau) {
 
 #ifdef LCE_BENCHMARK_INTERNAL
     lce::util::timer t;
@@ -51,7 +51,7 @@ class lce_sss_naive {
 #endif
 #endif
 
-    m_sync_set = rolling_hash::sss<t_index_type, t_tau>(text, size, true);
+    m_sync_set = rolling_hash::sss<t_index_type>(text, size, m_tau, true);
     // check_string_synchronizing_set(text, m_sync_set);
 
 #ifdef LCE_BENCHMARK_INTERNAL
@@ -66,8 +66,8 @@ class lce_sss_naive {
 #endif
 #endif
 
-    m_pred = lce::pred::pred_index<t_index_type, std::bit_width(t_tau) - 1,
-                                   t_index_type>(m_sync_set.get_sss());
+    m_pred = lce::pred::pred_index<t_index_type, t_index_type, lce::util::bit_aligned_view>(
+        m_sync_set.get_sss(), uint8_t(std::bit_width(m_tau) - 1));
 
 #ifdef LCE_BENCHMARK_INTERNAL
     fmt::print(" pred_time={}", t.get_and_reset());
@@ -79,8 +79,8 @@ class lce_sss_naive {
   }
 
   template <typename C>
-  lce_sss_naive(C const& container)
-      : lce_sss_naive(container.data(), container.size()) {}
+  lce_sss_naive(C const& container, uint64_t tau)
+      : lce_sss_naive(container.data(), container.size(), tau) {}
 
   // Return the number of common letters in text[i..] and text[j..].
   size_t lce(size_t i, size_t j) const {
@@ -105,13 +105,13 @@ class lce_sss_naive {
   // Return the number of common letters in text[i..] and text[j..].
   // Here l must be smaller than r.
   inline uint64_t lce_lr(size_t l, size_t r) const {
-    std::vector<t_index_type> const& sss = m_sync_set.get_sss();
+    auto const& sss = m_sync_set.get_sss();
     std::vector<uint128_t> const& fps = m_sync_set.get_fps();
     size_t l_, r_;
     if constexpr (t_prefer_long) {
       // Only scan until synchronizing position
       size_t lce_max{m_size - r};
-      size_t lce_local_max{std::min(3 * t_tau, lce_max)};
+      size_t lce_local_max{std::min<size_t>(3 * m_tau, lce_max)};
 
       pred::result l_res = m_pred.successor(l);
       pred::result r_res = m_pred.successor(r);
@@ -129,10 +129,14 @@ class lce_sss_naive {
       if (lce_local < lce_local_max || lce_local == lce_max) {
         return lce_local;
       }
+
+      if (!l_res.exists || !r_res.exists) {
+        return lce::ds::lce_naive_wordwise_xor<t_char_type>::lce_lr(m_text, m_size, l, r);
+      }
     } else {
       // Naive part until synchronizing position
       size_t lce_max{m_size - r};
-      size_t lce_local_max{std::min(3 * t_tau, lce_max)};
+      size_t lce_local_max{std::min<size_t>(3 * m_tau, lce_max)};
       size_t lce_local = lce::ds::lce_naive_wordwise_xor<t_char_type>::lce_lr(
           m_text, r + lce_local_max, l, r);
 
@@ -140,14 +144,21 @@ class lce_sss_naive {
       if (lce_local < lce_local_max || lce_local == lce_max) {
         return lce_local;
       }
-      l_ = m_pred.successor(l).pos;
-      r_ = m_pred.successor(r).pos;
+      pred::result l_res = m_pred.successor(l);
+      pred::result r_res = m_pred.successor(r);
+
+      if (!l_res.exists || !r_res.exists) {
+        return lce::ds::lce_naive_wordwise_xor<t_char_type>::lce_lr(m_text, m_size, l, r);
+      }
+
+      l_ = l_res.pos;
+      r_ = r_res.pos;
     }
 
     // Case 1: Positions l' and r' don't sync, (because they are at the end of
     // runs).
     if (sss[l_] - l != sss[r_] - r) {
-      return std::min(sss[l_] - l, sss[r_] - r) + 2 * t_tau - 1;
+      return std::min<size_t>(sss[l_] - l, sss[r_] - r) + 2 * m_tau - 1;
     }
 
     size_t block_lce = lce::ds::lce_naive_std<uint128_t>::lce_lr(
@@ -160,7 +171,7 @@ class lce_sss_naive {
     // Case 2: Mismatch at first 3*tau symbols from l'' and r''.
     {
       size_t lce_max{m_size - sss[r__]};
-      size_t lce_local_max{std::min(3 * t_tau, lce_max)};
+      size_t lce_local_max{std::min<size_t>(3 * m_tau, lce_max)};
       size_t lce_local = lce::ds::lce_naive_wordwise_xor<t_char_type>::lce_lr(
           m_text, sss[r__] + lce_local_max, sss[l__], sss[r__]);
       if (lce_local < lce_local_max || lce_local == lce_max) {
@@ -171,7 +182,7 @@ class lce_sss_naive {
     // Case 3: Mismatch at run end.
     assert(r__ + 1 < sss.size() - 1);
     size_t final_lce =
-        std::min(sss[l__ + 1] - l, sss[r__ + 1] - r) + 2 * t_tau - 1;
+        std::min<size_t>(sss[l__ + 1] - l, sss[r__ + 1] - r) + 2 * m_tau - 1;
     assert(final_lce == lce::ds::lce_naive_wordwise_xor<t_char_type>::lce_lr(
                             m_text, m_size, l, r));
     return final_lce;
@@ -179,7 +190,7 @@ class lce_sss_naive {
 
   // Return {b, lce}, where lce is the number of common letters in text[i..]
   // and text[j..] and b tells whether the lce ends with a mismatch.
-  std::pair<bool, size_t> lce_mismatch(size_t i, size_t j) {
+  std::pair<bool, size_t> lce_mismatch(size_t i, size_t j) const {
     if (i == j) [[unlikely]] {
       assert(i < m_size);
       return {false, m_size - i};
@@ -194,7 +205,7 @@ class lce_sss_naive {
 
   // Return whether text[i..] is lexicographic smaller than text[j..]. Here i
   // and j must be different.
-  bool is_leq_suffix(size_t i, size_t j) {
+  bool is_leq_suffix(size_t i, size_t j) const {
     assert(i != j);
     size_t lce_val = lce_uneq(i, j);
     return (
@@ -203,7 +214,7 @@ class lce_sss_naive {
   }
 
   // Return the lce of text[i..i+lce) and text[j..j+lce]
-  size_t lce_up_to(size_t i, size_t j, size_t up_to) {
+  size_t lce_up_to(size_t i, size_t j, size_t up_to) const {
     if (i == j) [[unlikely]] {
       assert(i < m_size);
       return m_size - i;
@@ -213,7 +224,7 @@ class lce_sss_naive {
     size_t r = std::max(i, j);
 
     size_t lce_max{std::min(m_size - r, up_to)};
-    size_t lce_local_max{std::min<size_t>(3 * t_tau, lce_max)};
+    size_t lce_local_max{std::min<size_t>(3 * m_tau, lce_max)};
     size_t lce_local = lce::ds::lce_naive_wordwise_xor<t_char_type>::lce_lr(
         m_text, r + lce_local_max, l, r);
 
@@ -224,17 +235,17 @@ class lce_sss_naive {
     return std::min<size_t>(lce_lr(l, r), up_to);
   }
 
-  char_type operator[](size_t i) { return m_text[i]; }
+  char_type operator[](size_t i) const { return m_text[i]; }
 
-  size_t size() { return m_size; }
+  size_t size() const { return m_size; }
 
- private:
  private:
   char_type const* m_text;
   size_t m_size;
+  uint64_t m_tau;
 
-  lce::pred::pred_index<t_index_type, std::bit_width(t_tau) - 1, t_index_type>
+  lce::pred::pred_index<t_index_type, t_index_type, lce::util::bit_aligned_view>
       m_pred;
-  rolling_hash::sss<t_index_type, t_tau> m_sync_set;
+  rolling_hash::sss<t_index_type> m_sync_set;
 };
 }  // namespace lce::ds

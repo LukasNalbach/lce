@@ -9,7 +9,7 @@
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 
-#include <gsaca-double-sort/uint_types.hpp>
+#include "util/memory.hpp"
 #include <tlx/cmdline_parser.hpp>
 
 #include "rolling_hash/string_synchronizing_set.hpp"
@@ -17,14 +17,12 @@
 
 namespace fs = std::filesystem;
 
-namespace std {
-template <>
-struct hash<gsaca_lyndon::uint40_t> {
-  auto operator()(const gsaca_lyndon::uint40_t& xyz) const -> size_t {
-    return hash<uint64_t>{}(xyz.u64());
-  }
-};
-}  // namespace std
+template <typename sss_t>
+static void write_sss(const fs::path& path, const sss_t& sss) {
+  std::vector<lce::util::uint40_t> positions(sss.size());
+  for (size_t i = 0; i < positions.size(); ++i) positions[i] = sss[i];
+  lce::util::write_vector(path, positions);
+}
 
 int main(int argc, char** argv) {
   std::vector<std::string> algorithms{"all", "sss256", "sss512", "sss1024",
@@ -73,7 +71,7 @@ int main(int argc, char** argv) {
 
   text = lce::util::load_vector<uint8_t>(text_path,
     std::numeric_limits<size_t>::max(), 4096 * 4);
-  using gsaca_lyndon::uint40_t;
+  using lce::util::uint40_t;
 
   if(output_path == "") {
     output_path = text_path;
@@ -85,23 +83,23 @@ int main(int argc, char** argv) {
   
   if (algorithm == "sss256" || algorithm == "all") {
     output_path.replace_extension("sss256");
-    lce::rolling_hash::sss<uint40_t, 256> sss(text);
-    lce::util::write_vector(output_path, sss.get_sss());
+    lce::rolling_hash::sss<uint40_t> sss(text, uint64_t(256));
+    write_sss(output_path, sss);
   }
   if (algorithm == "sss512" || algorithm == "all") {
     output_path.replace_extension("sss512");
-    lce::rolling_hash::sss<uint40_t, 512> sss(text);
-    lce::util::write_vector(output_path, sss.get_sss());
+    lce::rolling_hash::sss<uint40_t> sss(text, uint64_t(512));
+    write_sss(output_path, sss);
   }
   if (algorithm == "sss1024" || algorithm == "all") {
     output_path.replace_extension(".sss1024");
-    lce::rolling_hash::sss<uint40_t, 1024> sss(text);
-    lce::util::write_vector(output_path, sss.get_sss());
+    lce::rolling_hash::sss<uint40_t> sss(text, uint64_t(1024));
+    write_sss(output_path, sss);
   }
   if (algorithm == "sss2048" || algorithm == "all") {
     output_path.replace_extension(".sss2048");
-    lce::rolling_hash::sss<uint40_t, 2048> sss(text);
-    lce::util::write_vector(output_path, sss.get_sss());
+    lce::rolling_hash::sss<uint40_t> sss(text, uint64_t(2048));
+    write_sss(output_path, sss);
   }
   return 0;
 }

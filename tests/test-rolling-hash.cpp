@@ -93,15 +93,64 @@ static void verify_rolling_hash(std::mt19937_64& g, uint64_t max_size) {
   }
 }
 
-TEST(test_rolling_hash, all) {
+static void verify_rolling_hash_mersenne61(std::mt19937_64& g, uint64_t max_size) {
+  std::vector<uint8_t> text = random_repetitive_input<std::vector<uint8_t>>(g, 4, max_size);
+  const size_t n = text.size();
+  const size_t tau = std::uniform_int_distribution<size_t>(1, std::min<size_t>(n - 1, 1024))(g);
+  const uint64_t max_base = std::uniform_int_distribution<int>(0, 1)(g) == 0 ? (uint64_t{1} << 32) - 1 : (uint64_t{1} << 61) - 2;
+  const uint64_t base = std::uniform_int_distribution<uint64_t>(257, max_base)(g);
+
+  fuzz_timer tb(fuzz_construct_ns());
+  lce::rolling_hash::rk_mersenne61 roller(tau, base);
+  tb.stop();
+  fuzz_timer tq(fuzz_query_ns());
+
+  auto fresh = [&](size_t start) {
+    uint64_t fp = 0;
+    for (size_t k = start; k < start + tau; ++k) fp = roller.roll_in(fp, text[k]);
+    return fp;
+  };
+
+  auto reference = [&](size_t start) {
+    u128 fp = 0;
+    for (size_t k = start; k < start + tau; ++k) fp = (fp * base + text[k]) % P61;
+    return uint64_t(fp);
+  };
+
+  const size_t num_windows = n - tau + 1;
+  const double check_prob = std::min(1.0, 50.0 / (double)num_windows);
+  std::uniform_real_distribution<double> coin(0.0, 1.0);
+
+  uint64_t fp = fresh(0);
+  EXPECT_EQ(fp, reference(0)) << "n=" << n << " tau=" << tau;
+  for (size_t i = tau; i < n; ++i) {
+    fp = roller.roll(fp, text[i - tau], text[i]);
+    if (coin(g) < check_prob) {
+      EXPECT_EQ(fp, reference(i - tau + 1)) << "window [" << (i - tau + 1) << "," << (i + 1) << ") n=" << n << " tau=" << tau;
+    }
+  }
+}
+
+TEST(test_rolling_hash, modular_arithmetic) {
+  run_fuzz("modular-arithmetic", {
+    {"verify", [](uint64_t) { verify_modular_arithmetic(gen, 4000); }, true},
+  }, fuzz_iterations(200000));
+}
+
+TEST(test_rolling_hash, rolling_hash) {
   run_fuzz("rolling-hash", {
-    {"modular-arithmetic", [](uint64_t) { verify_modular_arithmetic(gen, 4000); }, true},
-    {"rolling-hash", [](uint64_t it) {
+    {"verify", [](uint64_t it) {
        switch (it % 3) {
          case 0: verify_rolling_hash<61>(gen, 400000); break;
          case 1: verify_rolling_hash<89>(gen, 400000); break;
          case 2: verify_rolling_hash<107>(gen, 400000); break;
        }
      }, true},
-  }, 320000);
+  }, fuzz_iterations(100000));
+}
+
+TEST(test_rolling_hash, rolling_hash_mersenne61) {
+  run_fuzz("rolling-hash-mersenne61", {
+    {"verify", [](uint64_t) { verify_rolling_hash_mersenne61(gen, 400000); }, true},
+  }, fuzz_iterations(200000));
 }
