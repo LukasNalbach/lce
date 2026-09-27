@@ -19,14 +19,14 @@
 namespace lce::rmq {
 
 template <typename t_key_type, typename index_type = uint32_t,
-          uint64_t t_block_size = 64>
+          uint64_t t_block_size = 64, typename t_array = const t_key_type*>
 class rmq_n {
  public:
   using key_type = t_key_type;
   rmq_n() {
   }
 
-  rmq_n(key_type const* data, size_t size) : m_data(data), m_size(size) {
+  rmq_n(t_array data, size_t size) : m_data(data), m_size(size) {
     const uint64_t num_sampled_elements = (m_size - 1) / t_block_size + 1;
     m_sampled_indexes.resize(num_sampled_elements);
     m_sampled_minimas.resize(num_sampled_elements);
@@ -40,7 +40,7 @@ class rmq_n {
         min_index = data[min_index] <= data[i] ? min_index : i;
       }
       m_sampled_indexes[block] = min_index;
-      m_sampled_minimas[block] = m_data[min_index];
+      m_sampled_minimas[block] = at(min_index);
     }
 
     // Build an RMQ data structure for these block minimas.
@@ -48,7 +48,7 @@ class rmq_n {
   }
 
   template <typename C>
-  rmq_n(C const& container) : rmq_n(container.data(), container.size()) {
+  rmq_n(C const& container) : rmq_n(array_of(container), container.size()) {
   }
 
   // Return the index of the smallest element in m_data[left]..m_data[right]
@@ -64,26 +64,16 @@ class rmq_n {
   size_t rmq_lr(size_t const left, size_t const right) const {
     assert(left <= right);
     if (right - left <= 3 * t_block_size) {
-      size_t min = left;
-      for (size_t i{left + 1}; i <= right; ++i) {
-        min = m_data[min] <= m_data[i] ? min : i;
-      }
-      return min;
+      return scan_min(left, right + 1);
     }
     // Min in left block
     size_t const check_left_until = (1 + left / t_block_size) * t_block_size;
     assert(check_left_until < m_size);  // Because we scanned 3*t_block_size
-    size_t min_beg = left;
-    for (size_t i{left + 1}; i < check_left_until; ++i) {
-      min_beg = m_data[min_beg] <= m_data[i] ? min_beg : i;
-    }
+    size_t const min_beg = scan_min(left, check_left_until);
 
     // Min in right block
     size_t const check_right_from = (right / t_block_size) * t_block_size;
-    size_t min_end = check_right_from;
-    for (size_t i{check_right_from + 1}; i <= right; ++i) {
-      min_end = m_data[min_end] <= m_data[i] ? min_end : i;
-    }
+    size_t const min_end = scan_min(check_right_from, right + 1);
 
     // Now look for min in middle part.
     size_t const l_block = (left / t_block_size) + 1;
@@ -94,8 +84,8 @@ class rmq_n {
         m_sampled_indexes[m_sampled_rmq.rmq_lr(l_block, r_block)];
     
     size_t min = min_beg;
-    min = m_data[min] <= m_data[min_mid] ? min : min_mid;
-    min = m_data[min] <= m_data[min_end] ? min : min_end;
+    min = at(min) <= at(min_mid) ? min : min_mid;
+    min = at(min) <= at(min_end) ? min : min_end;
     return min; 
   }
 
@@ -110,7 +100,29 @@ class rmq_n {
   }
 
  private:
-  key_type const* m_data = nullptr;
+  template <typename C>
+  static t_array array_of(const C& container)
+  {
+    if constexpr (requires { container.view(); }) return container.view();
+    else return container.data();
+  }
+
+  inline uint64_t at(uint64_t i) const { return uint64_t(m_data[i]); }
+
+  inline size_t scan_min(size_t beg, size_t end) const {
+    size_t min = beg;
+    uint64_t min_val = at(beg);
+    for (size_t i{beg + 1}; i < end; ++i) {
+      const uint64_t val = at(i);
+      if (val < min_val) {
+        min = i;
+        min_val = val;
+      }
+    }
+    return min;
+  }
+
+  t_array m_data {};
   size_t m_size;
 
   std::vector<index_type> m_sampled_indexes;

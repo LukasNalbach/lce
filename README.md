@@ -30,6 +30,7 @@ The benchmark tools are written to `build/bench/` and the test executables to `b
 - test-rmq
 - test-rolling-hash
 - test-string-synchronizing-set
+- test-text
 
 ## Supported Compilers and Systems
 
@@ -83,7 +84,9 @@ ninja -C build
 | --- | --- | --- |
 | `LCE_MARCH_NATIVE` | `ON` | Tune the build for the host CPU (`-march=native`); turn **OFF** for portable binaries and on Windows |
 | `LCE_BUILD_BENCHMARKS` | `ON` (forced `OFF` on Windows) | Build the benchmark/generator CLI tools |
+| `LCE_BUILD_TESTS` | `ON` | Build the test executables |
 | `LCE_USE_MALLOC_COUNT` | `ON` (stubbed on Windows) | Track memory usage via malloc_count |
+| `LCE_ENABLE_LTO` | `ON` | Enable link-time optimization (LTO/IPO) for the lce executables |
 | `LCE_USE_SDSL` | `OFF` | Build the LCE data structures that depend on SDSL |
 | `LCE_BUILD_LA_VECTOR` | `OFF` | Build the predecessor data structure that depends on SDSL |
 | `LCE_WINDOWS_TBB_ROOT` | *(empty)* | Windows only: root of an extracted oneTBB release |
@@ -91,14 +94,18 @@ ninja -C build
 ## Usage in C++
 ### Cmake
 ```cmake
+set(LCE_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
+set(LCE_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(LCE_USE_SDSL OFF CACHE BOOL "" FORCE)
+set(LCE_BUILD_LA_VECTOR OFF CACHE BOOL "" FORCE)
 add_subdirectory(lce/)
-set(LCE_USE_SDSL OFF)
-set(LCE_BUILD_LA_VECTOR OFF)
+target_link_libraries(<your_target> PRIVATE lce)
 ```
 
 ### C++
 ```c++
 #include <iostream>
+#include <string>
 #include <ds/lce_sss.hpp>
 
 int main() {
@@ -106,7 +113,7 @@ int main() {
     std::string text = "This is a test string";
 
     // build the LCE data structure (set tau = 512)
-    lce::ds::lce_sss<char, 512> ds(text);
+    lce::ds::lce_sss<char> ds(text, 512);
 
     // perform some LCE queries
     std::cout << ds.lce(3, 6) << std::endl;

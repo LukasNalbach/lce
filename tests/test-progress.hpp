@@ -14,6 +14,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <functional>
+#include <random>
 #include <string>
 #include <vector>
 #ifdef _WIN32
@@ -31,6 +32,26 @@ inline uint64_t fuzz_iterations(uint64_t default_iterations = 1000) {
   }
   return default_iterations;
 }
+
+template <typename gen_t>
+inline uint16_t random_num_threads(gen_t& gen) {
+  return std::uniform_int_distribution<uint16_t>(1, omp_get_max_threads())(gen);
+}
+
+class scoped_num_threads {
+ public:
+  explicit scoped_num_threads(int num_threads) : m_saved(omp_get_max_threads()) {
+    omp_set_num_threads(num_threads);
+  }
+
+  ~scoped_num_threads() { omp_set_num_threads(m_saved); }
+
+  scoped_num_threads(const scoped_num_threads&) = delete;
+  scoped_num_threads& operator=(const scoped_num_threads&) = delete;
+
+ private:
+  int m_saved;
+};
 
 inline std::atomic<uint64_t>& fuzz_construct_ns() {
   static std::atomic<uint64_t> value{0};

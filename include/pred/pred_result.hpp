@@ -29,7 +29,7 @@ struct result {
   }
 };
 
-bool operator==(const result& lhs, const result& rhs) {
+inline bool operator==(const result& lhs, const result& rhs) {
   return lhs.exists == rhs.exists && lhs.pos == rhs.pos;
 }
 }  // namespace lce::pred

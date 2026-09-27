@@ -31,11 +31,12 @@ thread_local std::mt19937_64 gen(std::random_device{}());
 
 template <typename text_t, typename sss_t>
 static bool check_string_synchronizing_set(text_t const& text, sss_t const& sss_ds) {
-  std::vector<typename sss_t::index_type> const& sss = sss_ds.get_sss();
+  std::vector<typename sss_t::index_type> sss(sss_ds.size());
+  for (size_t i = 0; i < sss.size(); i++) sss[i] = sss_ds[i];
   std::vector<uint128_t> const& fps = sss_ds.get_fps();
 
-  lce::pred::pred_index<typename sss_t::index_type, 7, typename sss_t::index_type> pred(sss);
-  const size_t tau = sss_t::tau;
+  lce::pred::pred_index<typename sss_t::index_type, typename sss_t::index_type> pred(sss, uint8_t(7));
+  const size_t tau = sss_ds.tau();
 
   if (!std::is_sorted(sss.begin(), sss.end())) {
     fmt::print("\nStrings synchronizing set is not sorted.\n");
@@ -104,16 +105,22 @@ static bool check_string_synchronizing_set(text_t const& text, sss_t const& sss_
   return true;
 }
 
-template <uint64_t tau>
-static void verify_sss(std::mt19937_64& g, uint64_t max_size) {
+template <typename index_t>
+static void verify_sss(std::mt19937_64& g, uint64_t tau, uint64_t max_size) {
   int sigma = std::uniform_int_distribution<int>(2, 6)(g);
-  std::string text = random_repetitive_input<std::string>(g, 5 * tau + 200, max_size, (char)1, (char)sigma);
+  std::string text = random_repetitive_input<std::string>(g, 1, max_size, (char)1, (char)sigma);
   size_t n = text.size();
 
+  scoped_num_threads threads(random_num_threads(g));
   fuzz_timer tb(fuzz_construct_ns());
-  lce::rolling_hash::sss<uint32_t, tau> sss_ds(text.data(), n, true);
+  lce::rolling_hash::sss<index_t> sss_ds(text.data(), n, tau, true);
   tb.stop();
   fuzz_timer tq(fuzz_query_ns());
+
+  if (n <= 5 * tau) {
+    EXPECT_TRUE(sss_ds.get_sss().empty()) << "tau=" << tau << " n=" << n;
+    return;
+  }
 
   if (sss_ds.get_sss().empty()) {
     ADD_FAILURE() << "empty string synchronizing set, tau=" << tau << " n=" << n;
@@ -122,16 +129,16 @@ static void verify_sss(std::mt19937_64& g, uint64_t max_size) {
   EXPECT_TRUE(check_string_synchronizing_set(text, sss_ds)) << "tau=" << tau << " n=" << n;
 }
 
-TEST(test_string_synchronizing_set, all) {
+TEST(test_string_synchronizing_set, sss) {
   run_fuzz("string-synchronizing-set", {
     {"verify", [](uint64_t it) {
        switch (it % 5) {
-         case 0: verify_sss<2>(gen, 200000); break;
-         case 1: verify_sss<4>(gen, 200000); break;
-         case 2: verify_sss<8>(gen, 200000); break;
-         case 3: verify_sss<16>(gen, 200000); break;
-         case 4: verify_sss<32>(gen, 200000); break;
+         case 0: verify_sss<uint32_t>(gen, 2, 200000); break;
+         case 1: verify_sss<uint32_t>(gen, 4, 200000); break;
+         case 2: verify_sss<uint32_t>(gen, 8, 200000); break;
+         case 3: verify_sss<uint32_t>(gen, 16, 200000); break;
+         case 4: verify_sss<uint32_t>(gen, 32, 200000); break;
        }
      }, false},
-  }, 5000);
+  }, fuzz_iterations(1600));
 }

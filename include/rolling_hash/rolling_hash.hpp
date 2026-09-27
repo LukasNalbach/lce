@@ -110,6 +110,10 @@ class rk_prime {
     return m_base;
   }
 
+  static constexpr size_t byte_size() {
+    return sizeof(rk_prime) + sizeof(uint128_t) * 256 * 256;
+  }
+
  private:
   static constexpr uint128_t m_prime = (uint128_t{1} << t_prime_exp) - 1;
   uint128_t m_tau;
@@ -149,5 +153,44 @@ class rk_prime {
       }
     }
   }
+};
+class rk_mersenne61 {
+ public:
+  static constexpr uint64_t prime = (uint64_t{1} << 61) - 1;
+
+  rk_mersenne61(uint64_t tau, uint64_t base) : m_base(base % prime), m_small_base(m_base < (uint64_t{1} << 32)) {
+    uint64_t pow = 1;
+    for (uint64_t i = 0; i < tau; ++i) pow = reduce(uint128_t{pow} * m_base);
+    for (uint64_t c = 0; c < 256; ++c) {
+      const uint64_t influence = reduce(uint128_t{c} * pow);
+      m_out[c] = influence == 0 ? 0 : prime - influence;
+    }
+  }
+
+  inline uint64_t roll_in(uint64_t fp, uint8_t in) const {
+    if (m_small_base) [[likely]] return reduce_small(uint128_t{fp} * m_base + in);
+    return reduce(uint128_t{fp} * m_base + in);
+  }
+
+  inline uint64_t roll(uint64_t fp, uint8_t out, uint8_t in) const {
+    if (m_small_base) [[likely]] return reduce_small(uint128_t{fp} * m_base + m_out[out] + in);
+    return reduce(uint128_t{fp} * m_base + m_out[out] + in);
+  }
+
+ private:
+  static inline uint64_t reduce(uint128_t x) {
+    uint64_t r = uint64_t(x & prime) + uint64_t(x >> 61);
+    r = (r & prime) + (r >> 61);
+    return r >= prime ? r - prime : r;
+  }
+
+  static inline uint64_t reduce_small(uint128_t x) {
+    const uint64_t r = uint64_t(x & prime) + uint64_t(x >> 61);
+    return r >= prime ? r - prime : r;
+  }
+
+  uint64_t m_base;
+  bool m_small_base;
+  std::array<uint64_t, 256> m_out{};
 };
 }  // namespace lce::rolling_hash

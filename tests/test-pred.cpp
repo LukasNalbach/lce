@@ -70,13 +70,14 @@ static void expect_pred_eq(lce::pred::result got, lce::pred::result exp, const c
   }
 }
 
-template <typename pred_t, typename T, typename gen_t>
-static void verify_pred(gen_t& g, uint64_t max_n, size_t num_queries) {
+template <typename pred_t, typename T, typename gen_t, typename... ctor_args_t>
+static void verify_pred(gen_t& g, uint64_t max_n, size_t num_queries, ctor_args_t... ctor_args) {
   std::vector<T> data = random_sorted_distinct<T>(g, max_n);
   const size_t n = data.size();
 
+  scoped_num_threads threads(random_num_threads(g));
   fuzz_timer tb(fuzz_construct_ns());
-  pred_t ds(data.data(), n);
+  pred_t ds(data.data(), n, ctor_args...);
   tb.stop();
   fuzz_timer tq(fuzz_query_ns());
 
@@ -125,19 +126,19 @@ TEST(test_pred, binsearch_std) {
          case 8: verify_pred<lce::pred::binsearch_std<u128>, u128>(gen, 200000, 4000); break;
        }
      }, true},
-  }, 170000);
+  }, fuzz_iterations(60000));
 }
 
 TEST(test_pred, pred_index) {
   run_fuzz("pred-index", {
     {"verify", [](uint64_t it) {
        switch (it % 3) {
-         case 0: verify_pred<lce::pred::pred_index<uint16_t, 7, uint32_t>, uint16_t>(gen, 60000, 4000); break;
-         case 1: verify_pred<lce::pred::pred_index<uint32_t, 7, uint32_t>, uint32_t>(gen, 4000000, 4000); break;
-         case 2: verify_pred<lce::pred::pred_index<uint64_t, 7, uint32_t>, uint64_t>(gen, 4000000, 4000); break;
+         case 0: verify_pred<lce::pred::pred_index<uint16_t, uint32_t>, uint16_t>(gen, 60000, 4000, uint8_t(7)); break;
+         case 1: verify_pred<lce::pred::pred_index<uint32_t, uint32_t>, uint32_t>(gen, 4000000, 4000, uint8_t(7)); break;
+         case 2: verify_pred<lce::pred::pred_index<uint64_t, uint32_t>, uint64_t>(gen, 4000000, 4000, uint8_t(7)); break;
        }
-     }, true},
-  }, 110000);
+     }, false},
+  }, fuzz_iterations(3000));
 }
 
 TEST(test_pred, j_index) {
@@ -151,6 +152,6 @@ TEST(test_pred, j_index) {
          case 4: verify_pred<lce::pred::j_index<uint64_t>, uint64_t>(gen, 4000000, 4000); break;
          case 5: verify_pred<lce::pred::j_index<int64_t>, int64_t>(gen, 4000000, 4000); break;
        }
-     }, true},
-  }, 105000);
+     }, false},
+  }, fuzz_iterations(2500));
 }

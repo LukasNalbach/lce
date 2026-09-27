@@ -8,7 +8,7 @@
 
 #include <fmt/core.h>
 #include <fmt/ranges.h>
-#ifdef ALX_BENCHMARK_SPACE
+#ifdef LCE_BENCHMARK_SPACE
 #include <malloc_count/malloc_count.h>
 #endif
 
@@ -18,7 +18,7 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
-#include <gsaca-double-sort/uint_types.hpp>
+#include "util/memory.hpp"
 #include <iostream>
 #include <iterator>
 #include <random>
@@ -85,8 +85,8 @@ class benchmark {
 
   void load_data() {
     lce::util::timer t;
-    std::vector<gsaca_lyndon::uint40_t> data_5byte =
-        lce::util::load_vector<gsaca_lyndon::uint40_t>(data_path);
+    std::vector<lce::util::uint40_t> data_5byte =
+        lce::util::load_vector<lce::util::uint40_t>(data_path);
     data = std::vector<uint64_t>(data_5byte.begin(), data_5byte.end());
     assert(data.size() != 0);
     fmt::print(" data={}", data_path.filename().string());
@@ -107,17 +107,17 @@ class benchmark {
     fmt::print(" q_gen_time={}", t.get());
   }
 
-  template <typename pred_ds_type>
-  pred_ds_type benchmark_construction() {
-#ifdef ALX_BENCHMARK_SPACE
+  template <typename pred_ds_type, typename... ctor_args_t>
+  pred_ds_type benchmark_construction(ctor_args_t... ctor_args) {
+#ifdef LCE_BENCHMARK_SPACE
     malloc_count_reset_peak();
     size_t mem_before = malloc_count_current();
 #endif
     lce::util::timer t;
-    pred_ds_type pred_ds(data);
+    pred_ds_type pred_ds(data, ctor_args...);
     fmt::print(" threads={}", omp_get_max_threads());
     fmt::print(" c_time={}", t.get());
-#ifdef ALX_BENCHMARK_SPACE
+#ifdef LCE_BENCHMARK_SPACE
     fmt::print(" c_mem={}", malloc_count_current() - mem_before);
     fmt::print(" c_mempeak={}", malloc_count_peak() - mem_before);
 #endif
@@ -148,8 +148,8 @@ class benchmark {
   }
 
  public:
-  template <typename pred_ds_type>
-  void run(std::string const& algo_name) {
+  template <typename pred_ds_type, typename... ctor_args_t>
+  void run(std::string const& algo_name, ctor_args_t... ctor_args) {
     if (algo_name != algorithm && algorithm != "all") {
       return;
     }
@@ -157,7 +157,7 @@ class benchmark {
     // Construction
     fmt::print("RESULT algo={}", algo_name);
     load_data();
-    pred_ds_type pred_ds = benchmark_construction<pred_ds_type>();
+    pred_ds_type pred_ds = benchmark_construction<pred_ds_type>(ctor_args...);
 
     // Queries
     load_queries();
@@ -197,13 +197,13 @@ int main(int argc, char** argv) {
   b.run<lce::pred::j_index<uint64_t>>("j_index");
   b.run<lce::pred::rank_index<uint64_t>>("rank_index");
 
-  b.run<lce::pred::pred_index<uint64_t, 6, uint32_t>>("pred_index6");
-  b.run<lce::pred::pred_index<uint64_t, 7, uint32_t>>("pred_index7");
-  b.run<lce::pred::pred_index<uint64_t, 8, uint32_t>>("pred_index8");
-  b.run<lce::pred::pred_index<uint64_t, 9, uint32_t>>("pred_index9");
-  b.run<lce::pred::pred_index<uint64_t, 10, uint32_t>>("pred_index10");
-  b.run<lce::pred::pred_index<uint64_t, 11, uint32_t>>("pred_index11");
-  b.run<lce::pred::pred_index<uint64_t, 12, uint32_t>>("pred_index12");
+  b.run<lce::pred::pred_index<uint64_t, uint32_t>>("pred_index6", uint8_t(6));
+  b.run<lce::pred::pred_index<uint64_t, uint32_t>>("pred_index7", uint8_t(7));
+  b.run<lce::pred::pred_index<uint64_t, uint32_t>>("pred_index8", uint8_t(8));
+  b.run<lce::pred::pred_index<uint64_t, uint32_t>>("pred_index9", uint8_t(9));
+  b.run<lce::pred::pred_index<uint64_t, uint32_t>>("pred_index10", uint8_t(10));
+  b.run<lce::pred::pred_index<uint64_t, uint32_t>>("pred_index11", uint8_t(11));
+  b.run<lce::pred::pred_index<uint64_t, uint32_t>>("pred_index12", uint8_t(12));
 
   b.run<lce::pred::pgm_index<uint64_t, 8>>("pgm_index8");
   b.run<lce::pred::pgm_index<uint64_t, 16>>("pgm_index16");

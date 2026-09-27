@@ -10,10 +10,17 @@
 #include <assert.h>
 
 #include <cstdint>
-#include <gsaca-double-sort-par.hpp>
+#include <ips4o.hpp>
+#include <libsais.h>
+#include <libsais64.h>
+
+#include <algorithm>
+#include <limits>
+#include <stdexcept>
 
 #include "ds/lce_naive_wordwise_xor.hpp"
 #include "rmq/rmq_n.hpp"
+#include "util/memory.hpp"
 
 #ifdef LCE_BENCHMARK_INTERNAL
 #include <fmt/core.h>
@@ -39,98 +46,11 @@ class lce_classic {
   }
 
   lce_classic(char_type const* text, size_t size) : m_text(text), m_size(size) {
-    std::vector<t_index_type> sa(size);
-    // sort sa
-#ifdef LCE_BENCHMARK_INTERNAL
-    lce::util::timer t;
-#ifdef LCE_BENCHMARK_SPACE
-    size_t mem_before = malloc_count_current();
-    malloc_count_reset_peak();
-#endif
-#endif
-    gsaca_for_lce(text, sa.data(), size);
-#ifdef LCE_BENCHMARK_INTERNAL
-    fmt::print(" sa_time={}", t.get_and_reset());
-#ifdef LCE_BENCHMARK_SPACE
-    fmt::print(" sa_mem={}", malloc_count_current() - mem_before);
-    fmt::print(" sa_mem_peak={}", malloc_count_peak() - mem_before);
-    mem_before = malloc_count_current();
-    malloc_count_reset_peak();
-#endif
-#endif
-
-    // build isa
-    m_isa.resize(size);
-#pragma omp parallel for
-    for (size_t i = 0; i < sa.size(); ++i) {
-      m_isa[sa[i]] = i;
+    if (size <= uint64_t(std::numeric_limits<int32_t>::max())) {
+      build<int32_t>(text, size);
+    } else {
+      build<int64_t>(text, size);
     }
-
-#ifdef LCE_BENCHMARK_INTERNAL
-    fmt::print(" isa_time={}", t.get_and_reset());
-#ifdef LCE_BENCHMARK_SPACE
-    fmt::print(" isa_mem={}", malloc_count_current() - mem_before);
-    fmt::print(" isa_mem_peak={}", malloc_count_peak() - mem_before);
-    mem_before = malloc_count_current();
-    malloc_count_reset_peak();
-#endif
-#endif
-
-    // build lcp
-    m_lcp.resize(sa.size());
-    m_lcp[0] = 0;
-    uint16_t p = std::min<uint16_t>(omp_get_num_threads(), size);
-    
-#pragma omp parallel num_threads(p)
-    {
-      const int t = omp_get_thread_num();
-      const int nt = omp_get_num_threads();
-      const size_t slice_size = size / nt;
-
-      const size_t begin = t * slice_size;
-      const size_t end = (t < nt - 1) ? (t + 1) * slice_size : size;
-
-      size_t current_lcp = 0;
-      for (size_t i{begin}; i < end; ++i) {
-        size_t suffix_array_pos = m_isa[i];
-        if (suffix_array_pos == 0) {
-          continue;
-        }
-        assert(suffix_array_pos != 0);
-
-        size_t preceding_suffix_pos = sa[suffix_array_pos - 1];
-        current_lcp += lce_naive_wordwise_xor<char_type>::lce_uneq(
-            text, size, i + current_lcp, preceding_suffix_pos + current_lcp);
-        m_lcp[suffix_array_pos] = current_lcp;
-        assert(lce_naive_wordwise_xor<char_type>::lce_uneq(
-                   text, size, i, preceding_suffix_pos) == current_lcp);
-
-        if (current_lcp != 0) {
-          --current_lcp;
-        }
-      }
-    }
-
-#ifdef LCE_BENCHMARK_INTERNAL
-    fmt::print(" lcp_time={}", t.get_and_reset());
-#ifdef LCE_BENCHMARK_SPACE
-    fmt::print(" lcp_mem={}", malloc_count_current() - mem_before);
-    fmt::print(" lcp_mem_peak={}", malloc_count_peak() - mem_before);
-    mem_before = malloc_count_current();
-    malloc_count_reset_peak();
-#endif
-#endif
-
-    // built rmq
-    m_rmq = lce::rmq::rmq_n<t_index_type>(m_lcp);
-
-#ifdef LCE_BENCHMARK_INTERNAL
-    fmt::print(" rmq_time={}", t.get_and_reset());
-#ifdef LCE_BENCHMARK_SPACE
-    fmt::print(" rmq_mem={}", malloc_count_current() - mem_before);
-    fmt::print(" rmq_mem_peak={}", malloc_count_peak() - mem_before);
-#endif
-#endif
   }
 
   template <typename C>
@@ -185,6 +105,147 @@ class lce_classic {
   }
 
  private:
+  template <typename sa_t>
+  void build(char_type const* text, size_t size) {
+    std::vector<sa_t> sa;
+    lce::util::no_init_resize(sa, size);
+    // sort sa
+#ifdef LCE_BENCHMARK_INTERNAL
+    lce::util::timer t;
+#ifdef LCE_BENCHMARK_SPACE
+    size_t mem_before = malloc_count_current();
+    malloc_count_reset_peak();
+#endif
+#endif
+    build_sa(text, size, sa);
+#ifdef LCE_BENCHMARK_INTERNAL
+    fmt::print(" sa_time={}", t.get_and_reset());
+#ifdef LCE_BENCHMARK_SPACE
+    fmt::print(" sa_mem={}", malloc_count_current() - mem_before);
+    fmt::print(" sa_mem_peak={}", malloc_count_peak() - mem_before);
+    mem_before = malloc_count_current();
+    malloc_count_reset_peak();
+#endif
+#endif
+
+    // build isa
+    lce::util::no_init_resize(m_isa, size);
+    lce::util::advise_huge_pages(m_isa.data(), m_isa.size() * sizeof(t_index_type));
+#pragma omp parallel for
+    for (size_t i = 0; i < sa.size(); ++i) {
+      m_isa[sa[i]] = i;
+    }
+
+#ifdef LCE_BENCHMARK_INTERNAL
+    fmt::print(" isa_time={}", t.get_and_reset());
+#ifdef LCE_BENCHMARK_SPACE
+    fmt::print(" isa_mem={}", malloc_count_current() - mem_before);
+    fmt::print(" isa_mem_peak={}", malloc_count_peak() - mem_before);
+    mem_before = malloc_count_current();
+    malloc_count_reset_peak();
+#endif
+#endif
+
+    // build lcp
+    lce::util::no_init_resize(m_lcp, sa.size());
+    m_lcp[0] = 0;
+
+#pragma omp parallel
+    {
+      const int t = omp_get_thread_num();
+      const int nt = omp_get_num_threads();
+      const size_t slice_size = size / nt;
+
+      const size_t begin = t * slice_size;
+      const size_t end = (t < nt - 1) ? (t + 1) * slice_size : size;
+
+      size_t current_lcp = 0;
+      for (size_t i{begin}; i < end; ++i) {
+        size_t suffix_array_pos = m_isa[i];
+        if (suffix_array_pos == 0) {
+          continue;
+        }
+        assert(suffix_array_pos != 0);
+
+        size_t preceding_suffix_pos = sa[suffix_array_pos - 1];
+        current_lcp += lce_naive_wordwise_xor<char_type>::lce_uneq(
+            text, size, i + current_lcp, preceding_suffix_pos + current_lcp);
+        m_lcp[suffix_array_pos] = current_lcp;
+        assert(lce_naive_wordwise_xor<char_type>::lce_uneq(
+                   text, size, i, preceding_suffix_pos) == current_lcp);
+
+        if (current_lcp != 0) {
+          --current_lcp;
+        }
+      }
+    }
+
+#ifdef LCE_BENCHMARK_INTERNAL
+    fmt::print(" lcp_time={}", t.get_and_reset());
+#ifdef LCE_BENCHMARK_SPACE
+    fmt::print(" lcp_mem={}", malloc_count_current() - mem_before);
+    fmt::print(" lcp_mem_peak={}", malloc_count_peak() - mem_before);
+    mem_before = malloc_count_current();
+    malloc_count_reset_peak();
+#endif
+#endif
+
+    // built rmq
+    m_rmq = lce::rmq::rmq_n<t_index_type>(m_lcp);
+
+#ifdef LCE_BENCHMARK_INTERNAL
+    fmt::print(" rmq_time={}", t.get_and_reset());
+#ifdef LCE_BENCHMARK_SPACE
+    fmt::print(" rmq_mem={}", malloc_count_current() - mem_before);
+    fmt::print(" rmq_mem_peak={}", malloc_count_peak() - mem_before);
+#endif
+#endif
+  }
+
+  template <typename sa_t>
+  static void build_sa(char_type const* text, size_t size, std::vector<sa_t>& sa) {
+    const int64_t threads = omp_get_max_threads();
+
+    if constexpr (sizeof(char_type) == 1) {
+      uint8_t const* bytes = reinterpret_cast<uint8_t const*>(text);
+
+      if constexpr (std::is_same_v<sa_t, int32_t>) {
+        if (libsais_omp(bytes, sa.data(), int32_t(size), 0, nullptr, int32_t(threads)) != 0) {
+          throw std::runtime_error("libsais_omp failed");
+        }
+      } else {
+        if (libsais64_omp(bytes, sa.data(), int64_t(size), 0, nullptr, threads) != 0) {
+          throw std::runtime_error("libsais64_omp failed");
+        }
+      }
+    } else {
+      std::vector<char_type> alphabet(text, text + size);
+      ips4o::parallel::sort(alphabet.begin(), alphabet.end());
+      alphabet.erase(std::unique(alphabet.begin(), alphabet.end()), alphabet.end());
+
+      std::vector<sa_t> ranks;
+      lce::util::no_init_resize(ranks, size);
+
+#pragma omp parallel for
+      for (size_t i = 0; i < size; ++i) {
+        ranks[i] = sa_t(std::lower_bound(alphabet.begin(), alphabet.end(), text[i])
+            - alphabet.begin());
+      }
+
+      if constexpr (std::is_same_v<sa_t, int32_t>) {
+        if (libsais_int_omp(ranks.data(), sa.data(), int32_t(size),
+                            int32_t(alphabet.size()), 0, int32_t(threads)) != 0) {
+          throw std::runtime_error("libsais_int_omp failed");
+        }
+      } else {
+        if (libsais64_long_omp(ranks.data(), sa.data(), int64_t(size),
+                               int64_t(alphabet.size()), 0, threads) != 0) {
+          throw std::runtime_error("libsais64_long_omp failed");
+        }
+      }
+    }
+  }
+
   std::vector<t_index_type> m_isa;
   std::vector<t_index_type> m_lcp;
 

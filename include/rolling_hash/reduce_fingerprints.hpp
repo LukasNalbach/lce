@@ -8,13 +8,22 @@
 
 #pragma once
 
-#include <chrono>
-#include <cmath>
-#include <memory>
+#include <omp.h>
+
+#include <algorithm>
+#include <cstdint>
+#include <limits>
+#include <numeric>
+#include <utility>
 #include <vector>
 
-#include "ds/lce_naive_wordwise_xor.hpp"
 #include "rolling_hash/string_synchronizing_set.hpp"
+
+#include <ips4o.hpp>
+#include "util/hash.hpp"
+#include "util/memory.hpp"
+
+#include <libsais40_types.hpp>
 
 #ifdef LCE_BENCHMARK_INTERNAL
 #include <fmt/core.h>
@@ -28,168 +37,226 @@
 
 namespace lce::ds {
 
-template <typename sss_type>
-bool leq_three_tau(uint8_t const* text, size_t text_size, size_t text_pos_i,
-                   size_t text_pos_j, sss_type const& sync_set);
-template <typename sss_type>
-bool eq_three_tau(uint8_t const* text, size_t text_size, size_t text_pos_i,
-                  size_t text_pos_j, sss_type const& sync_set);
+template <typename t_rank, typename t_key_index, typename t_text, typename sss_type>
+std::vector<t_rank> reduce_fps_3tau_lexicographic_impl(t_text const& text,
+                                                       sss_type const& sync_set) {
+  using index_type = typename sss_type::index_type;
+  const uint64_t n = text.size();
+  const uint64_t len = 3 * sync_set.tau();
+  auto const& sss = sync_set.get_sss();
+  const uint64_t s = sss.size();
 
-template <typename sss_type>
-std::vector<typename sss_type::index_type> reduce_fps_3tau_lexicographic(
-    uint8_t const* text, size_t text_size, sss_type const& sync_set) {
-  using index_type = sss_type::index_type;
-  static constexpr uint64_t tau = sss_type::tau;
-
-  std::vector<index_type> const& sss = sync_set.get_sss();
-
-  if (sss.empty()) {
+  if (s == 0) {
     return {};
   }
 
-  // sort sss-pos by 3tau-infix
-  std::vector<index_type> sss_sorted = sss;
-  ips4o::parallel::sort(
-      sss_sorted.begin(), sss_sorted.end(),
-      [&text, &text_size, &sync_set](index_type lhs, index_type rhs) {
-        if (lhs == rhs) {
-          return false;
-        }
-        assert(lhs != rhs);
-        size_t lce = lce_naive_wordwise_xor<uint8_t>::lce_up_to(text, text_size,
-                                                            lhs, rhs, 3 * tau);
-        if (std::max(lhs, rhs) + lce == text_size) {
-          return lhs > rhs;
-        }
-        if (lce < 3 * tau) {
-          return text[lhs + lce] < text[rhs + lce];
-        }
-        return sync_set.get_run_info(lhs) < sync_set.get_run_info(rhs);
-      });
-
-  for (size_t idx = 1; idx < sss_sorted.size(); ++idx) {
-    size_t i = sss_sorted[idx - 1];
-    size_t j = sss_sorted[idx];
-    assert(leq_three_tau(text, text_size, i, j, sync_set));
-  }
-
-  // Build tuples
-  struct index_rank {
-    index_type index;
-    index_type rank;
+  auto less = [&](uint64_t i, uint64_t j) {
+    const uint64_t lhs = sss[i];
+    const uint64_t rhs = sss[j];
+    if (lhs == rhs) return false;
+    const uint64_t lce = text.lce(lhs, rhs, len);
+    if (std::max(lhs, rhs) + lce == n) return lhs > rhs;
+    if (lce < len) return text[lhs + lce] < text[rhs + lce];
+    return sync_set.get_run_info(lhs) < sync_set.get_run_info(rhs);
   };
 
-  int nt = omp_get_max_threads();
-  std::vector<index_rank> rank_tuples(sss_sorted.size());
-  // Max rank in block
-  std::vector<index_type> max_ranks(nt);
-  // The two vectors act as BV; vector<bool> fails in parallel.
-  std::vector<uint8_t> all_ranks_equal(nt);  // Are all ranks in block equal?
-  // Is first rank in block == last rank in prev block?
-  std::vector<uint8_t> rank_extends_prev_block(nt);
+  auto equal = [&](uint64_t i, uint64_t j) {
+    const uint64_t lhs = sss[i];
+    const uint64_t rhs = sss[j];
+    return text.equal(lhs, rhs, len) && sync_set.get_run_info(lhs) == sync_set.get_run_info(rhs);
+  };
 
-#pragma omp parallel
-  {
-    const int t = omp_get_thread_num();
-    const int nt = omp_get_num_threads();
-    const size_t slice_size = rank_tuples.size() / nt;
-    const index_type begin = t * slice_size;
-    const index_type end =
-        (t < nt - 1) ? (t + 1) * slice_size : rank_tuples.size();
+  uint64_t m = s;
+  while (m > 0 && sss[m - 1] + len >= n) --m;
 
-    index_type cur_rank{1 + begin};
-    rank_tuples[begin] = {sss_sorted[begin], cur_rank};
-    for (size_t i{begin + 1}; i < end; ++i) {
-      if (!eq_three_tau(text, text_size, sss_sorted[i - 1], sss_sorted[i],
-                        sync_set)) {
-        ++cur_rank;
+  struct __attribute__((packed)) key_t {
+    uint64_t hash;
+    t_key_index index;
+  };
+
+  std::vector<key_t> keys;
+  lce::util::no_init_resize(keys, m);
+
+#pragma omp parallel for schedule(static)
+  for (uint64_t i = 0; i < m; ++i) {
+    const uint64_t pos = sss[i];
+    const uint64_t run = uint64_t(sync_set.get_run_info(pos));
+    keys[i] = key_t{lce::util::hash_mix(text.hash(pos, len), run), t_key_index(i)};
+  }
+
+  ips4o::parallel::sort(keys.begin(), keys.end(), [](const key_t& lhs, const key_t& rhs) {
+    const uint64_t l = lhs.hash;
+    const uint64_t r = rhs.hash;
+    return l < r || (l == r && uint64_t(lhs.index) < uint64_t(rhs.index));
+  });
+
+  const uint64_t p = std::max<uint64_t>(1, std::min<uint64_t>(omp_get_max_threads(), m));
+  constexpr uint64_t none = std::numeric_limits<uint64_t>::max();
+  std::vector<uint64_t> chunk(p + 1);
+  for (uint64_t c = 0; c <= p; ++c) chunk[c] = m * c / p;
+  std::vector<uint64_t> last_start(p, none);
+  std::vector<uint64_t> prev_hash(p, 0);
+  std::vector<uint8_t> first_is_start(p, 1);
+
+#pragma omp parallel for num_threads(p) schedule(static, 1)
+  for (uint64_t c = 0; c < p; ++c) {
+    const uint64_t beg = chunk[c];
+    const uint64_t end = chunk[c + 1];
+    if (beg == end) continue;
+    if (beg > 0) {
+      prev_hash[c] = keys[beg - 1].hash;
+      first_is_start[c] = keys[beg].hash != prev_hash[c];
+    }
+    for (uint64_t j = end; j-- > beg;) {
+      if (j == 0 || keys[j].hash != keys[j - 1].hash) {
+        last_start[c] = j;
+        break;
       }
-      rank_tuples[i] = {sss_sorted[i], cur_rank};
-    }
-    max_ranks[t] = cur_rank;
-
-#pragma omp barrier
-    assert(rank_tuples[begin].rank == begin + 1);
-    all_ranks_equal[t] = (max_ranks[t] == begin + 1);
-    rank_extends_prev_block[t] =
-        (begin == 0) ? false
-                     : eq_three_tau(text, text_size, sss_sorted[begin - 1],
-                                    sss_sorted[begin], sync_set);
-#pragma omp barrier
-    // Now adjust ranks between blocks
-    if (t != 0) {
-      if (rank_extends_prev_block[t]) {
-        size_t target_t = t - 1;
-        while (all_ranks_equal[target_t] && rank_extends_prev_block[target_t]) {
-          --target_t;
-        }
-        index_type target_rank = max_ranks[target_t];
-
-        const uint32_t rank_to_decrease = rank_tuples[begin].rank;
-        for (size_t i = begin;
-             i < end && rank_tuples[i].rank == rank_to_decrease; ++i) {
-          rank_tuples[i].rank = target_rank;
-        }
-      }
     }
   }
 
-  // Check rank_tuples
-  {
-    assert(rank_tuples.size() == sss_sorted.size());
-    for (size_t i = 0; i < rank_tuples.size(); ++i) {
-      assert(rank_tuples[i].index == sss_sorted[i]);
-    }
-    for (size_t i = 1; i < rank_tuples.size(); ++i) {
-      bool neq_neighbors = (rank_tuples[i - 1].rank) < (rank_tuples[i].rank);
-      assert(neq_neighbors == !eq_three_tau(text, text_size,
-                                            rank_tuples[i - 1].index,
-                                            rank_tuples[i].index, sync_set));
+  std::vector<uint64_t> carry(p, 0);
+  for (uint64_t c = 1; c < p; ++c) {
+    if (first_is_start[c]) carry[c] = chunk[c];
+    else carry[c] = last_start[c - 1] != none ? last_start[c - 1] : carry[c - 1];
+  }
+
+#pragma omp parallel for num_threads(p) schedule(static, 1)
+  for (uint64_t c = 0; c < p; ++c) {
+    uint64_t cur = carry[c];
+    uint64_t prev = prev_hash[c];
+    for (uint64_t j = chunk[c]; j < chunk[c + 1]; ++j) {
+      const uint64_t h = keys[j].hash;
+      if (j == 0 || h != prev) cur = j;
+      prev = h;
+      keys[j].hash = cur;
     }
   }
 
-  // Sort tuples by pos
-  ips4o::parallel::sort(
-      rank_tuples.begin(), rank_tuples.end(),
-      [](auto lhs, auto rhs) { return lhs.index < rhs.index; });
+  std::vector<std::vector<uint64_t>> impure_parts(p);
 
-  // Overwrite
-  std::vector<index_type> fps_reduced(sss.size());
-  for (size_t i = 0; i < rank_tuples.size(); ++i) {
-    fps_reduced[i] = rank_tuples[i].rank;
+#pragma omp parallel for num_threads(p) schedule(dynamic, 4096)
+  for (uint64_t j = 0; j < m; ++j) {
+    const uint64_t start = keys[j].hash;
+    if (start != j && !equal(uint64_t(keys[start].index), uint64_t(keys[j].index))) {
+      impure_parts[omp_get_thread_num()].push_back(start);
+    }
   }
-  // fps.push_back(0) // If using SAIS
+
+  std::vector<uint64_t> impure;
+  for (auto& part : impure_parts) impure.insert(impure.end(), part.begin(), part.end());
+  impure_parts = decltype(impure_parts)();
+  std::sort(impure.begin(), impure.end());
+  impure.erase(std::unique(impure.begin(), impure.end()), impure.end());
+
+  constexpr uint64_t skipped = none;
+  std::vector<std::pair<uint64_t, uint64_t>> impure_ranges;
+  impure_ranges.reserve(impure.size());
+  for (uint64_t start : impure) {
+    uint64_t end = start + 1;
+    while (end < m && keys[end].hash == start) ++end;
+    for (uint64_t j = start; j < end; ++j) keys[j].hash = skipped;
+    impure_ranges.emplace_back(start, end);
+  }
+
+  std::vector<uint64_t> num_starts(p + 1, 0);
+
+#pragma omp parallel for num_threads(p) schedule(static, 1)
+  for (uint64_t c = 0; c < p; ++c) {
+    uint64_t count = 0;
+    for (uint64_t j = chunk[c]; j < chunk[c + 1]; ++j) count += keys[j].hash == j;
+    num_starts[c + 1] = count;
+  }
+
+  for (uint64_t c = 0; c < p; ++c) num_starts[c + 1] += num_starts[c];
+
+  std::vector<t_rank> fps_reduced;
+  lce::util::no_init_resize(fps_reduced, s);
+  std::vector<uint64_t> rep_index;
+  lce::util::no_init_resize(rep_index, num_starts[p]);
+
+#pragma omp parallel for num_threads(p) schedule(static, 1)
+  for (uint64_t c = 0; c < p; ++c) {
+    uint64_t id = num_starts[c];
+    for (uint64_t j = chunk[c]; j < chunk[c + 1]; ++j) {
+      if (keys[j].hash != j) continue;
+      const uint64_t i = uint64_t(keys[j].index);
+      rep_index[id] = i;
+      fps_reduced[i] = t_rank(int64_t(id));
+      ++id;
+    }
+  }
+
+#pragma omp parallel for num_threads(p) schedule(static)
+  for (uint64_t j = 0; j < m; ++j) {
+    const uint64_t start = keys[j].hash;
+    if (start == skipped || start == j) continue;
+    fps_reduced[uint64_t(keys[j].index)] = fps_reduced[uint64_t(keys[start].index)];
+  }
+
+  std::vector<uint64_t> members;
+  for (auto [start, end] : impure_ranges) {
+    members.clear();
+    for (uint64_t j = start; j < end; ++j) members.push_back(uint64_t(keys[j].index));
+    std::sort(members.begin(), members.end(), less);
+
+    for (uint64_t k = 0; k < members.size(); ++k) {
+      if (k == 0 || !equal(members[k - 1], members[k])) rep_index.push_back(members[k]);
+      fps_reduced[members[k]] = t_rank(int64_t(rep_index.size() - 1));
+    }
+  }
+
+  keys = decltype(keys)();
+
+  for (uint64_t i = m; i < s; ++i) {
+    rep_index.push_back(i);
+    fps_reduced[i] = t_rank(int64_t(rep_index.size() - 1));
+  }
+
+  const uint64_t u = rep_index.size();
+
+  struct __attribute__((packed)) rep_t {
+    index_type pos;
+    t_key_index id;
+  };
+
+  std::vector<rep_t> reps;
+  lce::util::no_init_resize(reps, u);
+
+#pragma omp parallel for num_threads(p) schedule(static)
+  for (uint64_t k = 0; k < u; ++k) reps[k] = rep_t{index_type(sss[rep_index[k]]), t_key_index(k)};
+
+  rep_index = decltype(rep_index)();
+
+  ips4o::parallel::sort(reps.begin(), reps.end(), [&](const rep_t& a, const rep_t& b) {
+    const uint64_t lhs = a.pos;
+    const uint64_t rhs = b.pos;
+    const uint64_t lce = text.lce(lhs, rhs, len);
+    if (std::max(lhs, rhs) + lce == n) return lhs > rhs;
+    if (lce < len) return text[lhs + lce] < text[rhs + lce];
+    return sync_set.get_run_info(lhs) < sync_set.get_run_info(rhs);
+  });
+
+  std::vector<t_key_index> rank;
+  lce::util::no_init_resize(rank, u);
+
+#pragma omp parallel for num_threads(p) schedule(static)
+  for (uint64_t k = 0; k < u; ++k) rank[uint64_t(reps[k].id)] = t_key_index(k + 1);
+
+  reps = decltype(reps)();
+
+#pragma omp parallel for num_threads(p) schedule(static)
+  for (uint64_t i = 0; i < s; ++i) fps_reduced[i] = t_rank(int64_t(uint64_t(rank[int64_t(fps_reduced[i])])));
+
   return fps_reduced;
 }
 
-template <typename sss_type>
-bool leq_three_tau(uint8_t const* text, size_t text_size, size_t text_pos_i,
-                   size_t text_pos_j, sss_type const& sync_set) {
-  constexpr size_t tau = sync_set.tau;
-  size_t text_lce = lce_naive_wordwise_xor<uint8_t>::lce_up_to(
-      text, text_size, text_pos_i, text_pos_j, 3 * tau);
-  if (std::max(text_pos_i, text_pos_j) + text_lce == text_size) [[unlikely]] {
-    return text_pos_i > text_pos_j;
+template <typename t_rank, typename t_text, typename sss_type>
+std::vector<t_rank> reduce_fps_3tau_lexicographic(t_text const& text, sss_type const& sync_set) {
+  if (sync_set.get_sss().size() <= uint64_t(std::numeric_limits<uint32_t>::max())) {
+    return reduce_fps_3tau_lexicographic_impl<t_rank, uint32_t>(text, sync_set);
   }
-  if (text_lce < 3 * tau) {
-    return text[text_pos_i + text_lce] < text[text_pos_j + text_lce];
-  }
-  return sync_set.get_run_info(text_pos_i) <= sync_set.get_run_info(text_pos_j);
-}
 
-template <typename sss_type>
-bool eq_three_tau(uint8_t const* text, size_t text_size, size_t text_pos_i,
-                  size_t text_pos_j, sss_type const& sync_set) {
-  assert(text_pos_i != text_pos_j);
-  constexpr size_t tau = sync_set.tau;
-  size_t lce = lce_naive_wordwise_xor<uint8_t>::lce_up_to(
-      text, text_size, text_pos_i, text_pos_j, 3 * tau);
-  if (std::max(text_pos_i, text_pos_j) + lce == text_size) [[unlikely]] {
-    return false;
-  }
-  if (lce < 3 * tau) {
-    return false;
-  }
-  return sync_set.get_run_info(text_pos_i) == sync_set.get_run_info(text_pos_j);
+  return reduce_fps_3tau_lexicographic_impl<t_rank, typename sss_type::index_type>(text, sync_set);
 }
 }  // namespace lce::ds
