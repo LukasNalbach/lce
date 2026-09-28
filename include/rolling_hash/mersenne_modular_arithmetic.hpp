@@ -16,7 +16,6 @@
 #include <iterator>
 #include <random>
 
-// Return whether num is a mersenne prime.
 namespace lce::mersenne {
 template <typename T>
 constexpr size_t popcount(T num) {
@@ -48,6 +47,7 @@ constexpr size_t bit_width(T num) {
   return width;
 }
 
+// Return whether num is a mersenne prime.
 template <typename T>
 constexpr bool is_mersenne_prime(T num) {
   std::array<size_t, 12> mersenne_exponents{2,  3,  5,  7,  13,  17,
@@ -58,7 +58,7 @@ constexpr bool is_mersenne_prime(T num) {
                     exp) != mersenne_exponents.end());
 }
 
-// For num < (2*(m_prime-1)) return num % prime.
+// For num <= 2*(prime-1) return num % prime.
 template <typename T, T t_mersenne_prime>
 inline T small_num_mod(T num) {
   static_assert(is_mersenne_prime(t_mersenne_prime));
@@ -79,7 +79,7 @@ inline T mod(T num) {
   return (num >= t_mersenne_prime) ? (num - t_mersenne_prime) : num;
 }
 
-// For num < (2*(m_prime-1)) return num % prime.
+// For num <= 2*(prime-1) return num % prime.
 template <typename T, T t_mersenne_prime>
 inline T small_num_mod_alt(T num) {
   static_assert(is_mersenne_prime(t_mersenne_prime));

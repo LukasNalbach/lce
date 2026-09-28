@@ -139,7 +139,7 @@ static void test_lce() {
   check_lce(p, t);
 }
 
-static std::vector<uint8_t> random_split_text(uint64_t max_size) {
+static std::vector<uint8_t> random_maybe_skewed_text(uint64_t max_size) {
   return std::uniform_int_distribution<int>(0, 1)(gen) == 0 ? random_text(max_size) : random_skewed_text(max_size);
 }
 
@@ -149,7 +149,7 @@ static text_t build_split(const std::vector<uint8_t>& t, uint16_t threads) {
   const uint64_t n = t.size();
   if (std::uniform_int_distribution<int>(0, 3)(gen) == 0) return text_t(data, n, threads);
   typename text_t::histogram_t histogram{};
-  lce::text::packed_text::add_counts(histogram, data, n, threads);
+  lce::text::packed_text::add_char_counts(histogram, data, n, threads);
   text_t text(histogram, n);
   const uint64_t block = text_t::chunk_symbols * random_log_uniform_size(1, n / text_t::chunk_symbols + 1, gen);
   std::vector<uint64_t> starts;
@@ -175,14 +175,14 @@ static void with_random_split(const std::vector<uint8_t>& t, uint16_t threads, f
 }
 
 static void test_split_access() {
-  std::vector<uint8_t> t = random_split_text(200000);
+  std::vector<uint8_t> t = random_maybe_skewed_text(200000);
   const uint64_t n = t.size();
 
   with_random_split(t, random_num_threads(gen), [&](const auto& s) {
     std::vector<bool> used(256, false);
     for (uint8_t c : t) used[c] = true;
     EXPECT_EQ(s.sigma(), uint64_t(std::count(used.begin(), used.end(), true)));
-    const auto histogram = lce::text::packed_text::count_symbols(reinterpret_cast<const char*>(t.data()), n, 1);
+    const auto histogram = lce::text::packed_text::count_chars(reinterpret_cast<const char*>(t.data()), n, 1);
     EXPECT_EQ(std::decay_t<decltype(s)>::size_in_bytes_for(histogram, n), s.size_in_bytes());
 
     for (uint64_t i = 0; i < n; ++i) {
@@ -217,7 +217,7 @@ static void test_split_access() {
 }
 
 static void test_split_lce() {
-  std::vector<uint8_t> t = random_split_text(50000);
+  std::vector<uint8_t> t = random_maybe_skewed_text(50000);
   const uint64_t n = t.size();
 
   with_random_split(t, random_num_threads(gen), [&](const auto& s) {
@@ -272,7 +272,7 @@ static void test_lce_sss_packed() {
 
 static void test_lce_sss_split() {
   const uint64_t tau = uint64_t{1} << std::uniform_int_distribution<uint64_t>(2, 6)(gen);
-  std::vector<uint8_t> t = random_split_text(150000);
+  std::vector<uint8_t> t = random_maybe_skewed_text(150000);
   with_random_split(t, random_num_threads(gen), [&](const auto& s) { check_lce_sss(s, t, tau); });
 }
 

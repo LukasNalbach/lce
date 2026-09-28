@@ -26,6 +26,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <atomic>
 #include <bit>
 #include <cstdint>
@@ -63,7 +64,7 @@ public:
         lce::util::advise_huge_pages(m_data.data(), m_data.size() * 8);
     }
 
-    void reserve(uint64_t capacity, uint64_t max_value)
+    void reset(uint64_t capacity, uint64_t max_value)
     {
         m_width = std::max<uint8_t>(1, std::bit_width(max_value));
         m_mask = (uint64_t(1) << m_width) - 1;

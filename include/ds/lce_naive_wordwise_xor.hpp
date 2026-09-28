@@ -9,8 +9,11 @@
 #pragma once
 #include <assert.h>
 
+#include <algorithm>
 #include <bit>
+#include <cstddef>
 #include <cstdint>
+#include <utility>
 
 namespace lce::ds {
 
@@ -61,7 +64,7 @@ class lce_naive_wordwise_xor {
     return is_leq_suffix(m_text, m_size, i, j);
   }
 
-  // Return the lce of text[i..i+lce) and text[j..j+lce]
+  // Return the lce of text[i..i+up_to) and text[j..j+up_to).
   size_t lce_up_to(size_t i, size_t j, size_t up_to) const {
     return lce_up_to(m_text, m_size, i, j, up_to);
   }
@@ -103,11 +106,11 @@ class lce_naive_wordwise_xor {
     static constexpr size_t blk_size = sizeof(uint64_t) / sizeof(char_type);
     const uint64_t max_lce = size - r;
     const uint64_t max_blks = max_lce / blk_size;
-    uint64_t const* const blk_i = reinterpret_cast<uint64_t const*>(text + l);
-    uint64_t const* const blk_j = reinterpret_cast<uint64_t const*>(text + r);
+    uint64_t const* const blk_l = reinterpret_cast<uint64_t const*>(text + l);
+    uint64_t const* const blk_r = reinterpret_cast<uint64_t const*>(text + r);
     size_t lce_val = 0;
 
-    while (lce_val < max_blks && blk_i[lce_val] == blk_j[lce_val]) {
+    while (lce_val < max_blks && blk_l[lce_val] == blk_r[lce_val]) {
       lce_val++;
     }
 
@@ -121,7 +124,7 @@ class lce_naive_wordwise_xor {
       return lce_val;
     }
 
-    return lce_val * blk_size + std::countr_zero(blk_i[lce_val] ^ blk_j[lce_val]) / (8 * sizeof(char_type));
+    return lce_val * blk_size + std::countr_zero(blk_l[lce_val] ^ blk_r[lce_val]) / (8 * sizeof(char_type));
   }
 
   // Return {b, lce}, where lce is the number of common letters in text[i..]
@@ -150,12 +153,12 @@ class lce_naive_wordwise_xor {
             ((j + lce_val != size) && text[i + lce_val] < text[j + lce_val]));
   }
 
-  // Return the lce of text[i..i+lce) and text[j..j+lce]
+  // Return the lce of text[i..i+up_to) and text[j..j+up_to).
   static size_t lce_up_to(char_type const* text, size_t size, size_t i,
                           size_t j, size_t up_to) {
     if (i == j) [[unlikely]] {
       assert(i < size);
-      return size - i;
+      return std::min(size - i, up_to);
     }
 
     size_t l = std::min(i, j);

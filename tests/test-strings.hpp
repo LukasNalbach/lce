@@ -14,6 +14,7 @@
 #include <limits>
 #include <random>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 template <typename gen_t>
@@ -54,19 +55,19 @@ inline sym_t draw_symbol(sym_t min_sym, sym_t max_sym, gen_t& gen) {
 }
 
 enum repetitiveness_kind_t : uint8_t {
-  _repetitive_periodic = 0,
-  _repetitive_versioned = 1,
-  _repetitive_indel = 2,
-  _repetitive_blockmove = 3,
-  _repetitive_markov = 4,
-  _repetitive_lz = 5,
-  _repetitive_fibonacci = 6,
-  _repetitive_runs = 7,
-  _repetitive_num_kinds = 8
+  repetitive_periodic = 0,
+  repetitive_versioned = 1,
+  repetitive_indel = 2,
+  repetitive_blockmove = 3,
+  repetitive_markov = 4,
+  repetitive_lz = 5,
+  repetitive_fibonacci = 6,
+  repetitive_runs = 7,
+  repetitive_num_kinds = 8
 };
 
 struct repetitive_params_t {
-  repetitiveness_kind_t kind = _repetitive_versioned;
+  repetitiveness_kind_t kind = repetitive_versioned;
   uint64_t size = 1 << 20;
   uint64_t base_length = 4096;
   uint64_t block_length = 256;
@@ -75,7 +76,7 @@ struct repetitive_params_t {
 
 template <typename gen_t>
 inline repetitive_params_t random_repetitive_params(uint64_t size, gen_t& gen) {
-  std::uniform_int_distribution<uint32_t> kinds(0, _repetitive_num_kinds - 1);
+  std::uniform_int_distribution<uint32_t> kinds(0, repetitive_num_kinds - 1);
   std::uniform_real_distribution<double> chance(0.0, 1.0);
   repetitive_params_t params;
 
@@ -150,13 +151,13 @@ inline inp_t generate_repetitive_input(
   input.reserve(params.size);
   auto draw = [&]() { return draw_symbol<sym_t>(min_sym, max_sym, gen); };
 
-  if (params.kind == _repetitive_runs) {
+  if (params.kind == repetitive_runs) {
     append_runs_input(input, params.size, gen, min_sym, max_sym);
     input.resize(params.size);
     return input;
   }
 
-  if (params.kind == _repetitive_fibonacci) {
+  if (params.kind == repetitive_fibonacci) {
     inp_t previous, current;
     previous.push_back(min_sym);
     current.push_back(max_sym == min_sym ? min_sym : sym_t(min_sym + 1));
@@ -172,7 +173,7 @@ inline inp_t generate_repetitive_input(
     return current;
   }
 
-  if (params.kind == _repetitive_markov) {
+  if (params.kind == repetitive_markov) {
     uint64_t least = std::max<uint64_t>(1, params.base_length / 4);
 
     while (input.size() < params.size) {
@@ -192,7 +193,7 @@ inline inp_t generate_repetitive_input(
     return input;
   }
 
-  if (params.kind == _repetitive_lz) {
+  if (params.kind == repetitive_lz) {
     input.push_back(draw());
     std::uniform_int_distribution<uint64_t> length(1, params.base_length);
 
@@ -217,17 +218,17 @@ inline inp_t generate_repetitive_input(
 
   while (input.size() < params.size) {
     switch (params.kind) {
-      case _repetitive_periodic:
+      case repetitive_periodic:
         input.insert(input.end(), base.begin(),
                      base.begin() + std::min<uint64_t>(base.size(), params.size - input.size()));
         break;
 
-      case _repetitive_versioned:
+      case repetitive_versioned:
         for (uint64_t i = 0; i < base.size() && input.size() < params.size; i++)
           input.push_back(chance(gen) < params.mutation_rate ? draw() : base[i]);
         break;
 
-      case _repetitive_indel:
+      case repetitive_indel:
         for (uint64_t i = 0; i < base.size() && input.size() < params.size; i++) {
           double roll = chance(gen);
           if (roll < params.mutation_rate / 2) continue;

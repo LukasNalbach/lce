@@ -1,5 +1,5 @@
 /*******************************************************************************
- * lce/ds/benchmark.cpp
+ * bench/bench-lce.cpp
  *
  * Copyright (C) 2023 Alexander Herlez <alexander.herlez@tu-dortmund.de>
  *
@@ -131,7 +131,7 @@ class benchmark {
       fs::path q_path = queries_path;
       q_path.append(fmt::format("lce_{}", i));
       if (!fs::is_regular_file(q_path)) {
-        fmt::print("Query file {} does not exist.\n", queries_path.string());
+        fmt::print("Query file {} does not exist.\n", q_path.string());
         return false;
       }
     }
@@ -185,7 +185,7 @@ class benchmark {
     cur_query_path.append(fmt::format("lce_{}", lce_cur));
     queries = lce::util::load_vector<size_t>(cur_query_path);
 
-    // Now clone queries until there are num_unique_queries many
+    // Now clone queries until there are num_queries many
     if (queries.size() != 0) {
       size_t num_unique_queries = queries.size();
       assert(num_unique_queries % 2 == 0);
@@ -277,7 +277,7 @@ int main(int argc, char** argv) {
   cp.set_description(
       "This program measures construction time and LCE query time for "
       "several "
-      "LCE data structures. Generate LCE queries with gen_queries");
+      "LCE data structures. Generate LCE queries with gen-queries");
   cp.set_author(
       "Alexander Herlez <alexander.herlez@tu-dortmund.de>\n"
       "        Florian Kurpicz  <florian.kurpicz@tu-dortmund.de>\n"
@@ -292,10 +292,10 @@ int main(int argc, char** argv) {
                "Number of LCE queries that are executed (default=1,000,000).");
   cp.add_bytes(
       "from", b.lce_from,
-      "Use only lce queries which return at least 2^{from}  (default=0).");
+      "Use only lce queries whose result has bit width >= from, i.e. is >= 2^{from-1} (default=0).");
   cp.add_bytes(
       "to", b.lce_to,
-      "Use only lce queries which return up to 2^{to}-1 with (default=21)");
+      "Use only lce queries whose result has bit width < to, i.e. is < 2^{to-1} (default=20).");
 
   cp.add_string(
       'a', "algorithm", b.algorithm,

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * tests/lce/test_lce.cpp
+ * tests/test-lce.cpp
  *
  * Copyright (C) 2022 Alexander Herlez <alexander.herlez@tu-dortmund.de>
  *
@@ -41,10 +41,15 @@ static void run_lce_checks(ds_t& ds, const lce::ds::lce_naive<ref_char_t>& ref, 
 
   for (size_t q = 0; q < num_queries; ++q) {
     size_t i = pos_distrib(g);
-    size_t j = pos_distrib(g);
+    size_t j = q % 16 == 0 ? i : pos_distrib(g);
 
     if constexpr (requires { ds.lce(i, j); }) {
       EXPECT_EQ(ds.lce(i, j), ref.lce(i, j)) << "lce(" << i << "," << j << ") n=" << n;
+    }
+    if constexpr (requires { ds.lce_up_to(i, j, size_t{0}); }) {
+      size_t up_to = std::uniform_int_distribution<size_t>(0, n)(g);
+      EXPECT_EQ(ds.lce_up_to(i, j, up_to), std::min(ref.lce(i, j), up_to))
+          << "lce_up_to(" << i << "," << j << "," << up_to << ") n=" << n;
     }
 
     if (i != j) {
@@ -61,11 +66,6 @@ static void run_lce_checks(ds_t& ds, const lce::ds::lce_naive<ref_char_t>& ref, 
         EXPECT_EQ(ds.is_leq_suffix(i, j), ref.is_leq_suffix(i, j))
             << "is_leq_suffix(" << i << "," << j << ") n=" << n;
       }
-      if constexpr (requires { ds.lce_up_to(i, j, size_t{0}); }) {
-        size_t up_to = std::uniform_int_distribution<size_t>(0, n)(g);
-        EXPECT_EQ(ds.lce_up_to(i, j, up_to), ref.lce_up_to(i, j, up_to))
-            << "lce_up_to(" << i << "," << j << "," << up_to << ") n=" << n;
-      }
     }
   }
 }
@@ -75,6 +75,11 @@ static void verify_naive_variants(gen_t& g, uint64_t max_size, size_t num_querie
   std::vector<char_t> text = random_repetitive_input<std::vector<char_t>>(g, 1, max_size);
   size_t n = text.size();
   lce::ds::lce_naive<char_t> ref(text.data(), n);
+  {
+    lce::ds::lce_naive<char_t> ds(text.data(), n);
+    fuzz_timer tq(fuzz_query_ns());
+    run_lce_checks(ds, ref, n, num_queries, g);
+  }
   {
     fuzz_timer tb(fuzz_construct_ns());
     lce::ds::lce_naive_std<char_t> ds(text.data(), n);

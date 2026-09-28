@@ -1,5 +1,5 @@
 /*******************************************************************************
- * tests/rmq/test_rmq.cpp
+ * tests/test-rmq.cpp
  *
  * Copyright (C) 2022 Alexander Herlez <alexander.herlez@tu-dortmund.de>
  *

@@ -10,9 +10,13 @@
 #include <assert.h>
 #include <omp.h>
 
+#include <algorithm>
 #include <array>
 #include <bit>
+#include <cstddef>
 #include <cstdint>
+#include <utility>
+#include <vector>
 
 #include "rolling_hash/modular_arithmetic.hpp"
 
@@ -310,11 +314,11 @@ class lce_fp {
                ((std::countl_zero(comp_block_i ^ comp_block_j)) / 8), max_stub);
   }
 
-  // Return the lce of text[i..i+lce) and text[j..j+lce]
+  // Return the lce of text[i..i+up_to) and text[j..j+up_to).
   size_t lce_up_to(size_t i, size_t j, size_t up_to) const {
     if (i == j) [[unlikely]] {
       assert(i < m_size);
-      return m_size - i;
+      return std::min(m_size - i, up_to);
     }
 
     size_t l = std::min(i, j);

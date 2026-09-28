@@ -1,5 +1,5 @@
 /*******************************************************************************
- * lce/pred/binsearch_std.hpp
+ * lce/pred/pred_result.hpp
  * Copyright (C) 2019 Patrick Dinklage <patrick.dinklage@tu-dortmund.de>
  * Copyright (C) 2022 Alexander Herlez <alexander.herlez@tu-dortmund.de>
  *

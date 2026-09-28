@@ -11,6 +11,8 @@
 #include <assert.h>
 #include <omp.h>
 
+#include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <vector>
 
@@ -29,7 +31,7 @@ class rmq_n {
   rmq_n(t_array data, size_t size) : m_data(data), m_size(size) {
     const uint64_t num_sampled_elements = (m_size - 1) / t_block_size + 1;
     m_sampled_indexes.resize(num_sampled_elements);
-    m_sampled_minimas.resize(num_sampled_elements);
+    m_sampled_minima.resize(num_sampled_elements);
 
 // Get the minimal elements from the blocks.
 #pragma omp parallel for
@@ -40,11 +42,11 @@ class rmq_n {
         min_index = data[min_index] <= data[i] ? min_index : i;
       }
       m_sampled_indexes[block] = min_index;
-      m_sampled_minimas[block] = at(min_index);
+      m_sampled_minima[block] = at(min_index);
     }
 
-    // Build an RMQ data structure for these block minimas.
-    m_sampled_rmq = rmq_nlgn<key_type>(m_sampled_minimas);
+    // Build an RMQ data structure for these block minima.
+    m_sampled_rmq = rmq_nlgn<key_type>(m_sampled_minima);
   }
 
   template <typename C>
@@ -126,7 +128,7 @@ class rmq_n {
   size_t m_size;
 
   std::vector<index_type> m_sampled_indexes;
-  std::vector<key_type> m_sampled_minimas;
+  std::vector<key_type> m_sampled_minima;
   rmq_nlgn<key_type, index_type> m_sampled_rmq;
 };
 }  // namespace lce::rmq

@@ -10,9 +10,12 @@
 #pragma once
 #include <fmt/core.h>
 
+#include <algorithm>
+#include <cstddef>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <limits>
 #include <vector>
 
 namespace lce::util {
@@ -23,7 +26,7 @@ std::vector<t_char_type> load_vector(
     fs::path file_path, size_t prefix_size = std::numeric_limits<size_t>::max(),
     size_t excess = 0, size_t block_size = 1) {
   if (!fs::is_regular_file(file_path)) {
-    fmt::print("Text file {} does not exist.\n", file_path.string());
+    fmt::print("File {} does not exist.\n", file_path.string());
     return std::vector<t_char_type>();
   }
 

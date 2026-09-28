@@ -1,5 +1,5 @@
 /*******************************************************************************
- * src/pred/benchmark.cpp
+ * bench/bench-pred.cpp
  *
  * Copyright (C) 2022 Alexander Herlez <alexander.herlez@tu-dortmund.de>
  *
@@ -22,6 +22,7 @@
 #include <iostream>
 #include <iterator>
 #include <random>
+#include <string>
 #include <tlx/cmdline_parser.hpp>
 #include <vector>
 
@@ -46,18 +47,26 @@
 namespace fs = std::filesystem;
 
 std::vector<std::string> algorithms{
-  "all", "binsearch_std", "binsearch_cache", "rank_index", "pred_index", "j_index", "pgm",
+  "all", "binsearch_std", "binsearch_cache", "rank_index", "j_index",
+  "pred_index6", "pred_index7", "pred_index8", "pred_index9",
+  "pred_index10", "pred_index11", "pred_index12",
+  "pgm_index8", "pgm_index16", "pgm_index32", "pgm_index64", "pgm_index128",
+#ifdef LCE_USE_SDSL
   "sd_array1", "sd_array2", "sd_array4", "sd_array8", "sd_array16",
-  "sd_array32", "sd_array64", "sd_array128", "sd_array256", "sd_array512", 
+  "sd_array32", "sd_array64", "sd_array128", "sd_array256", "sd_array512",
+#endif
+#ifdef LCE_BUILD_LA_VECTOR
   "la_vector1", "la_vector2", "la_vector4", "la_vector8", "la_vector16",
-  "la_vector32", "la_vector64", "la_vector128", "la_vector256", "la_vector512"};
+  "la_vector32", "la_vector64", "la_vector128", "la_vector256", "la_vector512",
+#endif
+};
 
 class benchmark {
  public:
-  typedef uint64_t t_data_type;
+  typedef uint64_t data_type;
 
   fs::path data_path;
-  std::vector<t_data_type> data;
+  std::vector<data_type> data;
 
   std::vector<size_t> queries;
   size_t num_queries = 1'000'000;
@@ -69,7 +78,7 @@ class benchmark {
   bool check_parameters() {
     // Check data path
     if (!fs::is_regular_file(data_path) || fs::file_size(data_path) == 0) {
-      fmt::print("Text file {} is empty or does not exist.\n",
+      fmt::print("Data file {} is empty or does not exist.\n",
                  data_path.string());
       return false;
     }

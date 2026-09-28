@@ -9,7 +9,11 @@
 #pragma once
 #include <assert.h>
 
+#include <algorithm>
+#include <cstddef>
 #include <cstdint>
+#include <iterator>
+#include <utility>
 
 namespace lce::ds {
 
@@ -60,7 +64,7 @@ class lce_naive_std {
     return is_leq_suffix(m_text, m_size, i, j);
   }
 
-  // Return the lce of text[i..i+lce) and text[j..j+lce]
+  // Return the lce of text[i..i+up_to) and text[j..j+up_to).
   size_t lce_up_to(size_t i, size_t j, size_t up_to) const {
     return lce_up_to(m_text, m_size, i, j, up_to);
   }
@@ -122,12 +126,12 @@ class lce_naive_std {
             ((j + lce_val != size) && text[i + lce_val] < text[j + lce_val]));
   }
 
-  // Return the lce of text[i..i+lce) and text[j..j+lce]
+  // Return the lce of text[i..i+up_to) and text[j..j+up_to).
   static size_t lce_up_to(char_type const* text, size_t size, size_t i,
                           size_t j, size_t up_to) {
     if (i == j) [[unlikely]] {
       assert(i < size);
-      return size - i;
+      return std::min(size - i, up_to);
     }
 
     size_t l = std::min(i, j);

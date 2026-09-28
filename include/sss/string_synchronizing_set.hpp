@@ -1,5 +1,5 @@
 /*******************************************************************************
- * lce/rolling_hash/string_synchronizing_set.hpp
+ * lce/sss/string_synchronizing_set.hpp
  *
  * Copyright (C) 2022 Alexander Herlez <alexander.herlez@tu-dortmund.de>
  *
@@ -23,37 +23,37 @@
 #include <immintrin.h>
 #endif
 
-#include "rolling_hash.hpp"
+#include "rolling_hash/rolling_hash.hpp"
 #include "text/direct_text.hpp"
 #include "util/bit_aligned_vector.hpp"
 #include "util/memory.hpp"
 
-namespace lce::rolling_hash {
+namespace lce::sss {
 
 template <typename t_index = uint32_t>
-class sss {
+class string_synchronizing_set {
  public:
   typedef t_index index_type;
   __extension__ typedef unsigned __int128 uint128_t;
 
-  sss() : m_tau(0), m_fps_calculated(false), m_runs_detected(false) {
+  string_synchronizing_set() : m_tau(0), m_fps_calculated(false), m_runs_detected(false) {
   }
 
   template <typename t_char_type>
     requires(sizeof(t_char_type) == 1)
-  sss(t_char_type const* text, size_t size, uint64_t tau, bool calculate_fps = false)
-      : sss(lce::text::direct_text<t_char_type>(const_cast<t_char_type*>(text), size), tau,
-            calculate_fps) {
+  string_synchronizing_set(t_char_type const* text, size_t size, uint64_t tau, bool calculate_fps = false)
+      : string_synchronizing_set(
+            lce::text::direct_text<t_char_type>(const_cast<t_char_type*>(text), size), tau, calculate_fps) {
   }
 
   template <typename t_container>
     requires(!lce::text::text_access<t_container> && !std::is_pointer_v<t_container>)
-  sss(t_container const& container, uint64_t tau, bool calculate_fps = false)
-      : sss(container.data(), container.size(), tau, calculate_fps) {
+  string_synchronizing_set(t_container const& container, uint64_t tau, bool calculate_fps = false)
+      : string_synchronizing_set(container.data(), container.size(), tau, calculate_fps) {
   }
 
   template <lce::text::text_access t_text>
-  sss(t_text const& text, uint64_t tau, bool calculate_fps = false)
+  string_synchronizing_set(t_text const& text, uint64_t tau, bool calculate_fps = false)
       : m_tau(tau), m_fps_calculated(calculate_fps), m_runs_detected(false) {
     if (text.size() > 5 * tau) {
       build(text);
@@ -84,7 +84,7 @@ class sss {
     return m_runs.size();
   }
 
-  size_t has_runs() const {
+  bool has_runs() const {
     return m_runs_detected;
   }
 
@@ -138,9 +138,9 @@ class sss {
     const uint64_t tau = m_tau;
     const uint64_t n = text.size();
     const uint64_t sss_end = n - 2 * tau + 1;
-    const rk_mersenne61 rk(tau, 296819);
-    const std::optional<rk_prime<>> rk3 = m_fps_calculated
-        ? std::optional<rk_prime<>>(std::in_place, 3 * tau, 296819) : std::nullopt;
+    const rolling_hash::rk_mersenne61 rk(tau, 296819);
+    const std::optional<rolling_hash::rk_prime<>> rk3 = m_fps_calculated
+        ? std::optional<rolling_hash::rk_prime<>>(std::in_place, 3 * tau, 296819) : std::nullopt;
 
     const uint64_t num_parts = std::clamp<uint64_t>(sss_end / (8 * tau), 1,
                                                     uint64_t(omp_get_max_threads()) * parts_per_thread);
@@ -290,8 +290,8 @@ class sss {
   }
 
   template <typename t_text>
-  void scan(t_text const& text, const uint64_t from, const uint64_t to, part_t& part,
-            shared_t& shared, rk_mersenne61 const& rk, rk_prime<> const* rk3) const {
+  void scan(t_text const& text, const uint64_t from, const uint64_t to, part_t& part, shared_t& shared,
+            rolling_hash::rk_mersenne61 const& rk, rolling_hash::rk_prime<> const* rk3) const {
     const uint64_t tau = m_tau;
     const uint64_t n = text.size();
     const uint64_t small_tau = tau / 4;
@@ -301,7 +301,7 @@ class sss {
     const uint64_t horizon = std::min<uint64_t>(n, to + 2 * tau);
     const uint64_t cap = std::bit_ceil(tau + 2);
     const uint64_t mask = cap - 1;
-    const bool fps = rk3 != nullptr;
+    const bool calculate_fps = rk3 != nullptr;
     const uint64_t fp3_end = n + 1 > 3 * tau ? n + 1 - 3 * tau : 0;
     const uint128_t tail_fp = (uint128_t{1} << 107) - 2 - n;
     constexpr uint64_t none = std::numeric_limits<uint64_t>::max();
@@ -420,7 +420,7 @@ class sss {
     uint64_t fp = fill_window(from);
     uint64_t last_q = fill_flags(from);
     uint64_t first_min = rescan(from, from + tau - 1, last_q);
-    uint128_t fp3 = fps && from < fp3_end ? fp3_at(from) : uint128_t{0};
+    uint128_t fp3 = calculate_fps && from < fp3_end ? fp3_at(from) : uint128_t{0};
     if (last_q != none) {
       forked = true;
       for (uint64_t j = from; j < from + tau; ++j) push_plain(j);
@@ -435,7 +435,7 @@ class sss {
       const uint64_t k = i + tau;
       fp = rk.roll(fp, out.next(), in.next());
       phi[k & mask] = fp;
-      if (fps && i > from && i < fp3_end) fp3 = rk3->roll(fp3, out3.next(), in3.next());
+      if (calculate_fps && i > from && i < fp3_end) fp3 = rk3->roll(fp3, out3.next(), in3.next());
       if (next_block <= k + grid - 1) {
         next_block = detect(next_block, k + grid - 1);
         q_size = q.size();
@@ -462,7 +462,7 @@ class sss {
       }
       if (member) {
         part.sss.push_back(t_index(i));
-        if (fps) part.fps.push_back(i < fp3_end ? fp3 : tail_fp + i);
+        if (calculate_fps) part.fps.push_back(i < fp3_end ? fp3 : tail_fp + i);
       }
 
       if (tracking) {
@@ -474,7 +474,7 @@ class sss {
           plain_local += plain;
           if (plain && !member) {
             part.plain_only.push_back(t_index(i));
-            if (fps) part.plain_only_fps.push_back(i < fp3_end ? fp3 : tail_fp + i);
+            if (calculate_fps) part.plain_only_fps.push_back(i < fp3_end ? fp3 : tail_fp + i);
           } else if (member && !plain) {
             part.q_only.push_back(t_index(i));
           }
@@ -503,7 +503,7 @@ class sss {
         first_min = rescan(target, target + tau - 1, last_q);
         out = text.cursor_at(target + tau - 1);
         in = text.cursor_at(target + 2 * tau - 1);
-        if (fps && target < fp3_end) {
+        if (calculate_fps && target < fp3_end) {
           fp3 = fp3_at(target - 1);
           out3 = text.cursor_at(target - 1);
           in3 = text.cursor_at(target + 3 * tau - 1);
@@ -524,4 +524,4 @@ class sss {
   std::vector<uint64_t> m_run_buckets;
   uint64_t m_run_shift = 0;
 };
-}  // namespace lce::rolling_hash
+}  // namespace lce::sss

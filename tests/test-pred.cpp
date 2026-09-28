@@ -1,5 +1,5 @@
 /*******************************************************************************
- * tests/pred/test_pred.cpp
+ * tests/test-pred.cpp
  *
  * Copyright (C) 2022 Alexander Herlez <alexander.herlez@tu-dortmund.de>
  *

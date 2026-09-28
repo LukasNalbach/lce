@@ -18,6 +18,7 @@
 
 #include <stdexcept>
 #include <type_traits>
+#include <utility>
 
 #include "rmq/rmq_n.hpp"
 #include "util/bit_aligned_vector.hpp"
@@ -43,11 +44,11 @@ class lce_classic_for_sss {
   }
 
   template <typename t_text, typename t_sss, typename t_rank>
-  lce_classic_for_sss(t_text const& text, std::vector<t_rank>& reduced_fps,
+  lce_classic_for_sss(t_text const& text, std::vector<t_rank>& reduced_text,
                       t_sss const& sss, uint64_t tau)
-      : m_size(reduced_fps.size()), m_tau(tau) {
-    const size_t reduced_fps_size = reduced_fps.size();
-    if (reduced_fps_size == 0) {
+      : m_size(reduced_text.size()), m_tau(tau) {
+    const size_t reduced_size = reduced_text.size();
+    if (reduced_size == 0) {
       return;
     }
     // sort sa
@@ -60,8 +61,8 @@ class lce_classic_for_sss {
 #endif
     int64_t max_rank = 0;
 #pragma omp parallel for reduction(max : max_rank)
-    for (size_t i = 0; i < reduced_fps_size; ++i) {
-      max_rank = std::max<int64_t>(max_rank, int64_t(reduced_fps[i]));
+    for (size_t i = 0; i < reduced_size; ++i) {
+      max_rank = std::max<int64_t>(max_rank, int64_t(reduced_text[i]));
     }
 
     auto build = [&](auto& sa) {
@@ -76,7 +77,7 @@ class lce_classic_for_sss {
 #endif
 
       // build isa
-      m_isa = lce::util::bit_aligned_vector(reduced_fps_size, reduced_fps_size);
+      m_isa = lce::util::bit_aligned_vector(reduced_size, reduced_size);
 #pragma omp parallel for
       for (size_t i = 0; i < sa.size(); ++i) {
         m_isa.set_parallel(uint64_t(int64_t(sa[i])), i);
@@ -95,16 +96,16 @@ class lce_classic_for_sss {
       // build lcp
       m_lcp = lce::util::bit_aligned_vector(sa.size(), text.size());
       m_lcp.set(0, 0);
-      uint64_t p = std::min<uint64_t>(omp_get_max_threads(), reduced_fps_size);
+      uint64_t p = std::min<uint64_t>(omp_get_max_threads(), reduced_size);
 
 #pragma omp parallel num_threads(p)
       {
         const int t = omp_get_thread_num();
         const int nt = omp_get_num_threads();
-        const size_t slice_size = reduced_fps_size / nt;
+        const size_t slice_size = reduced_size / nt;
 
         const size_t begin = t * slice_size;
-        const size_t end = (t < nt - 1) ? (t + 1) * slice_size : reduced_fps_size;
+        const size_t end = (t < nt - 1) ? (t + 1) * slice_size : reduced_size;
 
         size_t current_lcp = 0;
         for (size_t i{begin}; i < end; ++i) {
@@ -179,22 +180,22 @@ class lce_classic_for_sss {
 
     if constexpr (std::is_same_v<t_rank, int32_t>) {
       std::vector<int32_t> sa;
-      lce::util::no_init_resize(sa, reduced_fps_size);
-      if (libsais_int_omp(reduced_fps.data(), sa.data(), int32_t(reduced_fps_size), int32_t(max_rank + 1), 0,
+      lce::util::no_init_resize(sa, reduced_size);
+      if (libsais_int_omp(reduced_text.data(), sa.data(), int32_t(reduced_size), int32_t(max_rank + 1), 0,
                           lce::util::sais_threads()) != 0) {
         throw std::runtime_error("libsais_int_omp failed");
       }
-      reduced_fps = std::vector<int32_t>();
+      reduced_text = std::vector<int32_t>();
       build(sa);
-    } else if (reduced_fps_size < max_int32 && uint64_t(max_rank) < max_int32) {
+    } else if (reduced_size < max_int32 && uint64_t(max_rank) < max_int32) {
       std::vector<int32_t> text32;
-      lce::util::no_init_resize(text32, reduced_fps_size);
+      lce::util::no_init_resize(text32, reduced_size);
 #pragma omp parallel for
-      for (size_t i = 0; i < reduced_fps_size; ++i) text32[i] = int32_t(int64_t(reduced_fps[i]));
-      reduced_fps = std::vector<t_rank>();
+      for (size_t i = 0; i < reduced_size; ++i) text32[i] = int32_t(int64_t(reduced_text[i]));
+      reduced_text = std::vector<t_rank>();
       std::vector<int32_t> sa;
-      lce::util::no_init_resize(sa, reduced_fps_size);
-      if (libsais_int_omp(text32.data(), sa.data(), int32_t(reduced_fps_size), int32_t(max_rank + 1), 0,
+      lce::util::no_init_resize(sa, reduced_size);
+      if (libsais_int_omp(text32.data(), sa.data(), int32_t(reduced_size), int32_t(max_rank + 1), 0,
                           lce::util::sais_threads()) != 0) {
         throw std::runtime_error("libsais_int_omp failed");
       }
@@ -202,12 +203,12 @@ class lce_classic_for_sss {
       build(sa);
     } else {
       std::vector<sa_int40_t> sa;
-      lce::util::no_init_resize(sa, reduced_fps_size);
-      if (libsais40_impl::libsais40_long_omp(reduced_fps.data(), sa.data(), int64_t(reduced_fps_size),
+      lce::util::no_init_resize(sa, reduced_size);
+      if (libsais40_impl::libsais40_long_omp(reduced_text.data(), sa.data(), int64_t(reduced_size),
                                              max_rank + 1, 0, lce::util::sais_threads()) != 0) {
         throw std::runtime_error("libsais40_long_omp failed");
       }
-      reduced_fps = std::vector<t_rank>();
+      reduced_text = std::vector<t_rank>();
       build(sa);
     }
   }
