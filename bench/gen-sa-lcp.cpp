@@ -24,8 +24,10 @@
  * SOFTWARE.
  */
 
+#include <algorithm>
 #include <iostream>
 #include <climits>
+#include <cstdint>
 #include <fstream>
 #include <vector>
 #include <filesystem>

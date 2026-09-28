@@ -15,8 +15,8 @@
 #include "ds/lce_classic_for_sss.hpp"
 #include "text/direct_text.hpp"
 #include "pred/pred_index.hpp"
-#include "rolling_hash/reduce_fingerprints.hpp"
-#include "rolling_hash/string_synchronizing_set.hpp"
+#include "sss/rank_3tau_substrings.hpp"
+#include "sss/string_synchronizing_set.hpp"
 
 #ifdef LCE_BENCHMARK_INTERNAL
 #include <fmt/core.h>
@@ -53,7 +53,7 @@ class lce_sss {
 #endif
 #endif
 
-    m_sync_set = rolling_hash::sss<t_index_type>(m_text, m_tau, false);
+    m_sync_set = lce::sss::string_synchronizing_set<t_index_type>(m_text, m_tau, false);
     // check_string_synchronizing_set(text, m_sync_set);
 
 #ifdef LCE_BENCHMARK_INTERNAL
@@ -83,7 +83,7 @@ class lce_sss {
 
     auto const& sss = m_sync_set.get_sss();
 
-    auto build_fp_lce = [&](auto reduced_fps) {
+    auto build_sss_lce = [&](auto reduced_text) {
       m_sync_set.free_run_info();
 
 #ifdef LCE_BENCHMARK_INTERNAL
@@ -94,13 +94,13 @@ class lce_sss {
 #endif
 #endif
 
-      m_fp_lce = lce::ds::lce_classic_for_sss<t_index_type>(m_text, reduced_fps, sss, m_tau);
+      m_sss_lce = lce::ds::lce_classic_for_sss<t_index_type>(m_text, reduced_text, sss, m_tau);
     };
 
     if (sss.size() < uint64_t(std::numeric_limits<int32_t>::max())) {
-      build_fp_lce(reduce_fps_3tau_lexicographic<int32_t>(m_text, m_sync_set));
+      build_sss_lce(lce::sss::rank_3tau_substrings<int32_t>(m_text, m_sync_set));
     } else {
-      build_fp_lce(reduce_fps_3tau_lexicographic<sa_int40_t>(m_text, m_sync_set));
+      build_sss_lce(lce::sss::rank_3tau_substrings<sa_int40_t>(m_text, m_sync_set));
     }
   }
 
@@ -188,7 +188,7 @@ class lce_sss {
       return final_lce;
     } else {
       // Case 2: Positions l' and r' are synchronized.
-      size_t final_lce = (sss[l_] - l) + m_fp_lce.lce_lr(l_, r_);
+      size_t final_lce = (sss[l_] - l) + m_sss_lce.lce_lr(l_, r_);
       assert(final_lce == m_text.lce(l, r));
       return final_lce;
     }
@@ -238,7 +238,7 @@ class lce_sss {
 
   lce::pred::pred_index<t_index_type, t_index_type, lce::util::bit_aligned_view>
       m_pred;
-  rolling_hash::sss<t_index_type> m_sync_set;
-  lce::ds::lce_classic_for_sss<t_index_type> m_fp_lce;
+  lce::sss::string_synchronizing_set<t_index_type> m_sync_set;
+  lce::ds::lce_classic_for_sss<t_index_type> m_sss_lce;
 };
 }  // namespace lce::ds

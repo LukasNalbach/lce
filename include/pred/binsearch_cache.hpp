@@ -1,5 +1,5 @@
 /*******************************************************************************
- * lce/pred/binsearch_std.hpp
+ * lce/pred/binsearch_cache.hpp
  *
  * Copyright (C) 2022 Alexander Herlez <alexander.herlez@tu-dortmund.de>
  *
@@ -18,7 +18,7 @@
 
 namespace lce::pred {
 
-template<typename T, size_t m_cache_num = 512ULL / sizeof(T)>
+template<typename T, size_t t_linear_scan = 512ULL / sizeof(T)>
 class binsearch_cache {
 public:
   inline binsearch_cache() : m_data(nullptr), m_size(0), m_min(), m_max() {
@@ -37,11 +37,11 @@ public:
       : binsearch_cache(container.data(), container.size()) {
   }
 
-  // finds the smallest element greater than OR equal to x
+  // finds the greatest element less than OR equal to x
   // seeded using a start interval
   inline result predecessor_seeded(const T x, size_t p, size_t q) const {
     assert(x >= m_min && x < m_max);
-    while(q - p > m_cache_num) {
+    while(q - p > t_linear_scan) {
       assert(x >= m_data[p]);
 
       const size_t m = (p + q) >> 1ULL;
@@ -76,7 +76,7 @@ public:
   // seeded using a start interval
   inline result successor_seeded(const T x, size_t p, size_t q) const {
     assert(x >= m_min && x < m_max);
-    while(q - p > m_cache_num) {
+    while(q - p > t_linear_scan) {
       assert(x > m_data[p]);
       assert(x <= m_data[q]);
 

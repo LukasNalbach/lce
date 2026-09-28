@@ -1,5 +1,5 @@
 /*******************************************************************************
- * tests/rolling_hash/test_rolling_hash.cpp
+ * tests/test-rolling-hash.cpp
  *
  * Copyright (C) 2022 Alexander Herlez <alexander.herlez@tu-dortmund.de>
  *

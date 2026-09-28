@@ -11,7 +11,9 @@
 #include <assert.h>
 #include <omp.h>
 
+#include <algorithm>
 #include <bit>
+#include <cstddef>
 #include <cstdint>
 #include <vector>
 
@@ -26,8 +28,8 @@ class rmq_nlgn {
 
   rmq_nlgn(key_type const* data, size_t size) : m_data(data) {
     assert(size != 0);
-    const uint8_t m_num_levels = std::bit_width(size) - 1;
-    m_power_rmq.resize(m_num_levels);
+    const uint8_t num_levels = std::bit_width(size) - 1;
+    m_power_rmq.resize(num_levels);
 
     // Build first level
     if (!m_power_rmq.empty()) {
@@ -40,7 +42,7 @@ class rmq_nlgn {
     }
 
     // Build the rest
-    for (size_t l = 1; l < m_num_levels; ++l) {
+    for (size_t l = 1; l < num_levels; ++l) {
       m_power_rmq[l].resize(size - ((uint64_t{2} << l) - 1));
       uint32_t const span = (uint64_t{1} << l);
 #pragma omp parallel for

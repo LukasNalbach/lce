@@ -8,9 +8,14 @@
 
 #pragma once
 
+#include <algorithm>
+#include <cstddef>
+#include <cstdint>
 #include <filesystem>
 #include <sdsl/cst_sada.hpp>
 #include <sdsl/cst_sct3.hpp>
+#include <string>
+#include <vector>
 
 namespace lce::ds {
 namespace fs = std::filesystem;

@@ -11,6 +11,8 @@
 #include <assert.h>
 #include <omp.h>
 
+#include <algorithm>
+#include <cstddef>
 #include <vector>
 
 namespace lce::rmq {

@@ -36,6 +36,7 @@
 #include <limits>
 #include <memory>
 #include <numeric>
+#include <utility>
 #include <vector>
 
 #include "util/hash.hpp"
@@ -84,7 +85,7 @@ class packed_text {
   packed_text() = default;
 
   packed_text(const char* data, uint64_t size, int threads = omp_get_max_threads())
-      : packed_text(count_symbols(data, size, threads), size) {
+      : packed_text(count_chars(data, size, threads), size) {
     pack(data, size, 0, threads);
   }
 
@@ -123,15 +124,15 @@ class packed_text {
     m_bytes = m_storage->data();
   }
 
-  static histogram_t count_symbols(const char* data, uint64_t size,
-                                   int threads = omp_get_max_threads()) {
+  static histogram_t count_chars(const char* data, uint64_t size,
+                                 int threads = omp_get_max_threads()) {
     histogram_t histogram{};
-    add_counts(histogram, data, size, threads);
+    add_char_counts(histogram, data, size, threads);
     return histogram;
   }
 
-  static void add_counts(histogram_t& histogram, const char* data, uint64_t size,
-                         int threads = omp_get_max_threads()) {
+  static void add_char_counts(histogram_t& histogram, const char* data, uint64_t size,
+                              int threads = omp_get_max_threads()) {
     std::vector<histogram_t> partial(threads, histogram_t{});
 
 #pragma omp parallel num_threads(threads)

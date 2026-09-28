@@ -11,6 +11,8 @@
 #include <omp.h>
 
 #include <algorithm>
+#include <cassert>
+#include <cstdint>
 #include <sdsl/bit_vectors.hpp>
 
 #include "pred_result.hpp"

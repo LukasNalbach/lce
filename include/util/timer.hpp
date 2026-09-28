@@ -9,6 +9,7 @@
 #pragma once
 
 #include <chrono>
+#include <cstddef>
 
 namespace lce::util {
 class timer {

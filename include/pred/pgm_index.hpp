@@ -10,6 +10,7 @@
 #pragma once
 
 #include <algorithm>
+#include <iterator>
 #include <pgm_index.hpp>
 
 #include "pred_result.hpp"
@@ -17,7 +18,7 @@
 namespace lce::pred {
 
 // a wrapper around the PGM index for successor queries
-template <typename T, size_t m_epsilon>
+template <typename T, size_t t_epsilon>
 class pgm_index {
  public:
   typedef T data_type;
@@ -32,7 +33,7 @@ class pgm_index {
   template <typename I>
   inline pgm_index(I begin, I end)
       : m_data(&(*begin)),
-        m_num(std::distance(begin, end)),
+        m_size(std::distance(begin, end)),
         m_min(*begin),
         m_max(*(end - 1)),
         m_pgm(begin, end) {
@@ -74,10 +75,10 @@ class pgm_index {
 
  private:
   const T* m_data;
-  size_t m_num;
+  size_t m_size;
   T m_min;
   T m_max;
 
-  pgm::PGMIndex<T, m_epsilon> m_pgm;
+  pgm::PGMIndex<T, t_epsilon> m_pgm;
 };
 }  // namespace lce::pred

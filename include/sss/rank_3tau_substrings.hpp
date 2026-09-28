@@ -1,5 +1,5 @@
 /*******************************************************************************
- * lce/rolling_hash/reduce_fingerprints.hpp
+ * lce/sss/rank_3tau_substrings.hpp
  *
  * Copyright (C) 2022 Alexander Herlez <alexander.herlez@tu-dortmund.de>
  *
@@ -17,7 +17,7 @@
 #include <utility>
 #include <vector>
 
-#include "rolling_hash/string_synchronizing_set.hpp"
+#include "sss/string_synchronizing_set.hpp"
 
 #include <ips4o.hpp>
 #include "util/hash.hpp"
@@ -35,11 +35,10 @@
 #endif
 #endif
 
-namespace lce::ds {
+namespace lce::sss {
 
 template <typename t_rank, typename t_key_index, typename t_text, typename sss_type>
-std::vector<t_rank> reduce_fps_3tau_lexicographic_impl(t_text const& text,
-                                                       sss_type const& sync_set) {
+std::vector<t_rank> rank_3tau_substrings_impl(t_text const& text, sss_type const& sync_set) {
   using index_type = typename sss_type::index_type;
   const uint64_t n = text.size();
   const uint64_t len = 3 * sync_set.tau();
@@ -170,8 +169,8 @@ std::vector<t_rank> reduce_fps_3tau_lexicographic_impl(t_text const& text,
 
   for (uint64_t c = 0; c < p; ++c) num_starts[c + 1] += num_starts[c];
 
-  std::vector<t_rank> fps_reduced;
-  lce::util::no_init_resize(fps_reduced, s);
+  std::vector<t_rank> ranks;
+  lce::util::no_init_resize(ranks, s);
   std::vector<uint64_t> rep_index;
   lce::util::no_init_resize(rep_index, num_starts[p]);
 
@@ -182,7 +181,7 @@ std::vector<t_rank> reduce_fps_3tau_lexicographic_impl(t_text const& text,
       if (keys[j].hash != j) continue;
       const uint64_t i = uint64_t(keys[j].index);
       rep_index[id] = i;
-      fps_reduced[i] = t_rank(int64_t(id));
+      ranks[i] = t_rank(int64_t(id));
       ++id;
     }
   }
@@ -191,7 +190,7 @@ std::vector<t_rank> reduce_fps_3tau_lexicographic_impl(t_text const& text,
   for (uint64_t j = 0; j < m; ++j) {
     const uint64_t start = keys[j].hash;
     if (start == skipped || start == j) continue;
-    fps_reduced[uint64_t(keys[j].index)] = fps_reduced[uint64_t(keys[start].index)];
+    ranks[uint64_t(keys[j].index)] = ranks[uint64_t(keys[start].index)];
   }
 
   std::vector<uint64_t> members;
@@ -202,7 +201,7 @@ std::vector<t_rank> reduce_fps_3tau_lexicographic_impl(t_text const& text,
 
     for (uint64_t k = 0; k < members.size(); ++k) {
       if (k == 0 || !equal(members[k - 1], members[k])) rep_index.push_back(members[k]);
-      fps_reduced[members[k]] = t_rank(int64_t(rep_index.size() - 1));
+      ranks[members[k]] = t_rank(int64_t(rep_index.size() - 1));
     }
   }
 
@@ -210,7 +209,7 @@ std::vector<t_rank> reduce_fps_3tau_lexicographic_impl(t_text const& text,
 
   for (uint64_t i = m; i < s; ++i) {
     rep_index.push_back(i);
-    fps_reduced[i] = t_rank(int64_t(rep_index.size() - 1));
+    ranks[i] = t_rank(int64_t(rep_index.size() - 1));
   }
 
   const uint64_t u = rep_index.size();
@@ -237,26 +236,26 @@ std::vector<t_rank> reduce_fps_3tau_lexicographic_impl(t_text const& text,
     return sync_set.get_run_info(lhs) < sync_set.get_run_info(rhs);
   });
 
-  std::vector<t_key_index> rank;
-  lce::util::no_init_resize(rank, u);
+  std::vector<t_key_index> rank_of_id;
+  lce::util::no_init_resize(rank_of_id, u);
 
 #pragma omp parallel for num_threads(p) schedule(static)
-  for (uint64_t k = 0; k < u; ++k) rank[uint64_t(reps[k].id)] = t_key_index(k + 1);
+  for (uint64_t k = 0; k < u; ++k) rank_of_id[uint64_t(reps[k].id)] = t_key_index(k + 1);
 
   reps = decltype(reps)();
 
 #pragma omp parallel for num_threads(p) schedule(static)
-  for (uint64_t i = 0; i < s; ++i) fps_reduced[i] = t_rank(int64_t(uint64_t(rank[int64_t(fps_reduced[i])])));
+  for (uint64_t i = 0; i < s; ++i) ranks[i] = t_rank(int64_t(uint64_t(rank_of_id[int64_t(ranks[i])])));
 
-  return fps_reduced;
+  return ranks;
 }
 
 template <typename t_rank, typename t_text, typename sss_type>
-std::vector<t_rank> reduce_fps_3tau_lexicographic(t_text const& text, sss_type const& sync_set) {
+std::vector<t_rank> rank_3tau_substrings(t_text const& text, sss_type const& sync_set) {
   if (sync_set.get_sss().size() <= uint64_t(std::numeric_limits<uint32_t>::max())) {
-    return reduce_fps_3tau_lexicographic_impl<t_rank, uint32_t>(text, sync_set);
+    return rank_3tau_substrings_impl<t_rank, uint32_t>(text, sync_set);
   }
 
-  return reduce_fps_3tau_lexicographic_impl<t_rank, typename sss_type::index_type>(text, sync_set);
+  return rank_3tau_substrings_impl<t_rank, typename sss_type::index_type>(text, sync_set);
 }
-}  // namespace lce::ds
+}  // namespace lce::sss

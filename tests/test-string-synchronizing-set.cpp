@@ -1,5 +1,5 @@
 /*******************************************************************************
- * tests/rolling_hash/test_string_synchronizing_set.cpp
+ * tests/test-string-synchronizing-set.cpp
  *
  * Copyright (C) 2022 Alexander Herlez <alexander.herlez@tu-dortmund.de>
  *
@@ -20,7 +20,7 @@
 #include <unordered_set>
 
 #include "pred/pred_index.hpp"
-#include "rolling_hash/string_synchronizing_set.hpp"
+#include "sss/string_synchronizing_set.hpp"
 
 #include "test-progress.hpp"
 #include "test-strings.hpp"
@@ -39,20 +39,20 @@ static bool check_string_synchronizing_set(text_t const& text, sss_t const& sss_
   const size_t tau = sss_ds.tau();
 
   if (!std::is_sorted(sss.begin(), sss.end())) {
-    fmt::print("\nStrings synchronizing set is not sorted.\n");
+    fmt::print("\nString synchronizing set is not sorted.\n");
     fmt::print("{}", sss);
     return false;
   }
 
-  const size_t last_posible_sss_pos = text.size() - 2 * tau;
-  if (!sss_ds.has_runs() && sss.back() > last_posible_sss_pos) {
+  const size_t last_possible_sss_pos = text.size() - 2 * tau;
+  if (!sss_ds.has_runs() && sss.back() > last_possible_sss_pos) {
     std::cout << "\nLast string synchronizing set position is too large. " << sss.back() << ">"
-              << last_posible_sss_pos << "\n";
+              << last_possible_sss_pos << "\n";
     return false;
   }
-  if (sss_ds.has_runs() && sss.back() != last_posible_sss_pos + 1) {
-    std::cout << "\nLast string synchronizing is not included in repetitive text. " << sss.back() << ">"
-              << last_posible_sss_pos << "\n";
+  if (sss_ds.has_runs() && sss.back() != last_possible_sss_pos + 1) {
+    std::cout << "\nLast string synchronizing set position is not included in repetitive text. "
+              << sss.back() << ">" << last_possible_sss_pos << "\n";
     return false;
   }
 
@@ -113,7 +113,7 @@ static void verify_sss(std::mt19937_64& g, uint64_t tau, uint64_t max_size) {
 
   scoped_num_threads threads(random_num_threads(g));
   fuzz_timer tb(fuzz_construct_ns());
-  lce::rolling_hash::sss<index_t> sss_ds(text.data(), n, tau, true);
+  lce::sss::string_synchronizing_set<index_t> sss_ds(text.data(), n, tau, true);
   tb.stop();
   fuzz_timer tq(fuzz_query_ns());
 

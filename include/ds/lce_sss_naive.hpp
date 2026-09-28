@@ -14,9 +14,10 @@
 #include <memory>
 #include <vector>
 
+#include "ds/lce_naive_std.hpp"
 #include "ds/lce_naive_wordwise_xor.hpp"
 #include "pred/pred_index.hpp"
-#include "rolling_hash/string_synchronizing_set.hpp"
+#include "sss/string_synchronizing_set.hpp"
 
 #ifdef LCE_BENCHMARK_INTERNAL
 #include <fmt/core.h>
@@ -51,7 +52,7 @@ class lce_sss_naive {
 #endif
 #endif
 
-    m_sync_set = rolling_hash::sss<t_index_type>(text, size, m_tau, true);
+    m_sync_set = lce::sss::string_synchronizing_set<t_index_type>(text, size, m_tau, true);
     // check_string_synchronizing_set(text, m_sync_set);
 
 #ifdef LCE_BENCHMARK_INTERNAL
@@ -213,11 +214,11 @@ class lce_sss_naive {
         ((j + lce_val != m_size) && m_text[i + lce_val] < m_text[j + lce_val]));
   }
 
-  // Return the lce of text[i..i+lce) and text[j..j+lce]
+  // Return the lce of text[i..i+up_to) and text[j..j+up_to).
   size_t lce_up_to(size_t i, size_t j, size_t up_to) const {
     if (i == j) [[unlikely]] {
       assert(i < m_size);
-      return m_size - i;
+      return std::min(m_size - i, up_to);
     }
 
     size_t l = std::min(i, j);
@@ -246,6 +247,6 @@ class lce_sss_naive {
 
   lce::pred::pred_index<t_index_type, t_index_type, lce::util::bit_aligned_view>
       m_pred;
-  rolling_hash::sss<t_index_type> m_sync_set;
+  lce::sss::string_synchronizing_set<t_index_type> m_sync_set;
 };
 }  // namespace lce::ds

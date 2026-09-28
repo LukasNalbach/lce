@@ -9,6 +9,9 @@
 #pragma once
 
 #include <algorithm>
+#include <cassert>
+#include <cstdint>
+#include <iterator>
 
 #include "pred_result.hpp"
 
@@ -29,17 +32,17 @@ class j_index {
   j_index(T const* data, size_t size)
       : m_data(data), m_size(size), m_min(data[0]), m_max(data[m_size - 1]) {
     assert(std::is_sorted(data, data + size));
-    slope = static_cast<double>(m_max) / static_cast<double>(m_size);
+    m_slope = static_cast<double>(m_max) / static_cast<double>(m_size);
 
-#pragma omp parallel for reduction(min : max_l_error) reduction(max : max_r_error)
+#pragma omp parallel for reduction(min : m_max_l_error) reduction(max : m_max_r_error)
     for (size_t i = 0; i < m_size; i++) {
-      int64_t apprx_pos = static_cast<int64_t>(1.0 * m_data[i] / slope);
-      int64_t error = static_cast<int64_t>(i) - apprx_pos;
-      max_l_error = std::min(error, max_l_error);
-      max_r_error = std::max(error, max_r_error);
+      int64_t aprx_pos = static_cast<int64_t>(1.0 * m_data[i] / m_slope);
+      int64_t error = static_cast<int64_t>(i) - aprx_pos;
+      m_max_l_error = std::min(error, m_max_l_error);
+      m_max_r_error = std::max(error, m_max_r_error);
     }
-    --max_l_error;
-    ++max_r_error;
+    --m_max_l_error;
+    ++m_max_r_error;
   }
 
   // finds the greatest element less than OR equal to x
@@ -50,7 +53,7 @@ class j_index {
       return result{true, m_size - 1};
 
     // linear_scan (left, then right)
-    size_t aprx_pos = (1.0 * x) / slope;
+    size_t aprx_pos = (1.0 * x) / m_slope;
     size_t scan_pos = aprx_pos;
 
     // scan left
@@ -71,10 +74,10 @@ class j_index {
     if (x >= m_max) [[unlikely]]
       return result{true, m_size - 1};
 
-    int64_t aprx_pos = (1.0 * x) / slope;
-    int64_t left_border = std::max(aprx_pos + max_l_error, int64_t{0});
+    int64_t aprx_pos = (1.0 * x) / m_slope;
+    int64_t left_border = std::max(aprx_pos + m_max_l_error, int64_t{0});
     int64_t right_border =
-        std::min(aprx_pos + max_r_error + 1, static_cast<int64_t>(m_size));
+        std::min(aprx_pos + m_max_r_error + 1, static_cast<int64_t>(m_size));
     size_t scan_pos =
         std::distance(m_data, std::upper_bound(m_data + left_border,
                                                m_data + right_border, x)) -
@@ -91,7 +94,7 @@ class j_index {
       return result{false, m_size - 1};
 
     size_t aprx_pos =
-        std::min((1.0 * x) / slope, static_cast<double>(m_size - 1));
+        std::min((1.0 * x) / m_slope, static_cast<double>(m_size - 1));
     size_t scan_pos = aprx_pos;
     // scan left
     while (m_data[scan_pos] >= x) {
@@ -104,17 +107,17 @@ class j_index {
     return {true, scan_pos};
   }
 
-  // finds the greatest element less than OR equal to x
+  // finds the smallest element greater than OR equal to x
   inline result successor(const T x) const {
     if (x <= m_min) [[unlikely]]
       return result{true, 0};
     if (x > m_max) [[unlikely]]
       return result{false, m_size - 1};
 
-    int64_t aprx_pos = (1.0 * x) / slope;
-    int64_t left_border = std::max(aprx_pos + max_l_error, int64_t{0});
+    int64_t aprx_pos = (1.0 * x) / m_slope;
+    int64_t left_border = std::max(aprx_pos + m_max_l_error, int64_t{0});
     int64_t right_border =
-        std::min(aprx_pos + max_r_error + 1, static_cast<int64_t>(m_size));
+        std::min(aprx_pos + m_max_r_error + 1, static_cast<int64_t>(m_size));
     size_t scan_pos = std::distance(
         m_data,
         std::lower_bound(m_data + left_border, m_data + right_border, x));
@@ -128,10 +131,9 @@ class j_index {
   T m_min;
   T m_max;
 
-  int64_t max_l_error = 0;
-  int64_t max_r_error = 0;
-  double slope;
-  mutable std::vector<int64_t> err;
+  int64_t m_max_l_error = 0;
+  int64_t m_max_r_error = 0;
+  double m_slope;
 };
 
 }  // namespace lce::pred

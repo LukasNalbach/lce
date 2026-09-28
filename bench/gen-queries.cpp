@@ -1,5 +1,5 @@
 /*******************************************************************************
- * src/lce/gen_queries.cpp
+ * bench/gen-queries.cpp
  *
  * Copyright (C) 2022 Patrick Dinklage <patrick.dinklage@tu-dortmund.de>
  *
@@ -15,9 +15,13 @@
 #include <array>
 #include <bit>
 #include <concepts>
+#include <cstddef>
+#include <cstdint>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
+#include <iterator>
+#include <memory>
 #include <string>
 #include <tlx/cmdline_parser.hpp>
 
@@ -100,7 +104,7 @@ int main(int argc, char** argv) {
     tlx::CmdlineParser cp;
     cp.set_description(
         "This program generates LCE queries for the benchmarks, "
-        "streaming the pre-generated suffix and LCP array for the"
+        "streaming the pre-generated suffix and LCP array for the "
         "input text.");
     cp.set_author(
         "Alexander Herlez <alexander.herlez@tu-dortmund.de>\n"
@@ -120,10 +124,10 @@ int main(int argc, char** argv) {
                 "The number of bytes per suffix and LCP array in their "
                 "corresponding files (default: 5).");
     cp.add_bytes('l', "limit", options.limit,
-                 "the maximum number of queries to generate per CP length"
+                 "the maximum number of queries to generate per output file lce_x "
                  "(default: 100,000)");
     cp.add_flag('p', "progress", options.show_progress,
-                "show progess each time 1% of the input has been scanned");
+                "show progress each time 1% of the input has been scanned");
     cp.add_bytes('b', "bufsize", options.bufsize,
                  "the size of the SA and LCP read buffers in # of entries "
                  "(default: 1Mi)");
@@ -182,8 +186,8 @@ int main(int argc, char** argv) {
   int fd_lcp = open(options.file_lcp.c_str(), O_RDONLY);
   posix_fadvise(fd_lcp, 0, 0, POSIX_FADV_SEQUENTIAL);
 
-  BufferedReader sa(fd_sa, options.bufsize * options.width);
-  BufferedReader lcp(fd_lcp, options.bufsize * options.width);
+  BufferedReader sa(fd_sa, options.bufsize);
+  BufferedReader lcp(fd_lcp, options.bufsize);
 
   // open outputs
   std::array<std::ofstream, max_lcp_exp + 1> out;
@@ -243,7 +247,10 @@ int main(int argc, char** argv) {
   // result
   std::cout << "Done:" << std::endl;
   for (size_t x = 0; x <= max_lcp_exp; x++) {
-    std::cout << "\tQueries for LCP < 2^" << x << ": " << count[x] << std::endl;
+    const uint64_t lo = x == 0 ? 0 : uint64_t{1} << (x - 1);
+    std::cout << "\tQueries for LCP in [" << lo << ", "
+              << (x < max_lcp_exp ? std::to_string(uint64_t{1} << x) : std::string("inf"))
+              << "): " << count[x] << std::endl;
   }
 
   return 0;

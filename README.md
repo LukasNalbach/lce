@@ -22,7 +22,7 @@ The benchmark tools are written to `build/bench/` and the test executables to `b
 - gen-sa-lcp (generates suffix array- and LCP-array files for gen-queries)
 - bench-lce (benchmarks LCE data structures using generated LCE queries)
 - gen-sss (generates a string synchronizing set for predecessor queries)
-- bench-pred (benchmarks successor data structures using a generated SSS)
+- bench-pred (benchmarks predecessor data structures using a generated SSS)
 
 ### Test Executables (`build/tests/`)
 - test-lce

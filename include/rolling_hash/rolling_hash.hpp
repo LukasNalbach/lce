@@ -11,6 +11,7 @@
 
 #include <array>
 #include <bit>
+#include <cstdint>
 #include <iterator>
 #include <random>
 #include <vector>
@@ -44,28 +45,24 @@ class rk_prime {
     fill_influence_table();
   }
 
-  // Roll the window by specifying the character that is rolled out of the
-  // window and the character that is rolled in the window.
+  // Roll the character in into the window without rolling a character out.
   inline uint128_t roll_in(unsigned char in) {
     return roll(0, in);
   }
 
-  // Roll the window by specifying the character that is rolled out of the
-  // window and the character that is rolled in the window.
+  // Like roll_in(in), but for the window with fingerprint fp.
   inline uint128_t roll_in(uint128_t fp, unsigned char in) const {
     return roll(fp, 0, in);
   }
 
 
-  // Roll the window by specifying the character that is rolled out of the
-  // window and the character that is rolled in the window.
+  // Roll the character out out of the window without rolling a character in.
   inline uint128_t roll_out(unsigned char out) {
     return roll(out, 0);
   }
 
 
-  // Roll the window by specifying the character that is rolled out of the
-  // window and the character that is rolled in the window.
+  // Like roll_out(out), but for the window with fingerprint fp.
   inline uint128_t roll_out(uint128_t fp, unsigned char out) const {
     return roll(fp, out, 0);
   }
@@ -158,23 +155,24 @@ class rk_mersenne61 {
  public:
   static constexpr uint64_t prime = (uint64_t{1} << 61) - 1;
 
-  rk_mersenne61(uint64_t tau, uint64_t base) : m_base(base % prime), m_small_base(m_base < (uint64_t{1} << 32)) {
+  rk_mersenne61(uint64_t tau, uint64_t base)
+      : m_base(base % prime), m_base_is_small(m_base < (uint64_t{1} << 32)) {
     uint64_t pow = 1;
     for (uint64_t i = 0; i < tau; ++i) pow = reduce(uint128_t{pow} * m_base);
     for (uint64_t c = 0; c < 256; ++c) {
       const uint64_t influence = reduce(uint128_t{c} * pow);
-      m_out[c] = influence == 0 ? 0 : prime - influence;
+      m_out_influence[c] = influence == 0 ? 0 : prime - influence;
     }
   }
 
   inline uint64_t roll_in(uint64_t fp, uint8_t in) const {
-    if (m_small_base) [[likely]] return reduce_small(uint128_t{fp} * m_base + in);
+    if (m_base_is_small) [[likely]] return reduce_small(uint128_t{fp} * m_base + in);
     return reduce(uint128_t{fp} * m_base + in);
   }
 
   inline uint64_t roll(uint64_t fp, uint8_t out, uint8_t in) const {
-    if (m_small_base) [[likely]] return reduce_small(uint128_t{fp} * m_base + m_out[out] + in);
-    return reduce(uint128_t{fp} * m_base + m_out[out] + in);
+    if (m_base_is_small) [[likely]] return reduce_small(uint128_t{fp} * m_base + m_out_influence[out] + in);
+    return reduce(uint128_t{fp} * m_base + m_out_influence[out] + in);
   }
 
  private:
@@ -190,7 +188,7 @@ class rk_mersenne61 {
   }
 
   uint64_t m_base;
-  bool m_small_base;
-  std::array<uint64_t, 256> m_out{};
+  bool m_base_is_small;
+  std::array<uint64_t, 256> m_out_influence{};
 };
 }  // namespace lce::rolling_hash

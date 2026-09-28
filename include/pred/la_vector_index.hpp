@@ -11,7 +11,10 @@
 #include <omp.h>
 
 #include <algorithm>
+#include <cassert>
+#include <cstdint>
 #include <la_vector.hpp>
+#include <vector>
 
 #include "pred_result.hpp"
 

@@ -34,6 +34,7 @@
 #include <cstring>
 #include <limits>
 #include <type_traits>
+#include <utility>
 
 #include "util/hash.hpp"
 #include "util/memory.hpp"

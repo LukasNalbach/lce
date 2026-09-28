@@ -1,5 +1,5 @@
 /*******************************************************************************
- * src/pred/gen_sss.cpp
+ * bench/gen-sss.cpp
  *
  * Copyright (C) 2022 Alexander Herlez <alexander.herlez@tu-dortmund.de>
  *
@@ -10,9 +10,10 @@
 #include <fmt/ranges.h>
 
 #include "util/memory.hpp"
+#include <string>
 #include <tlx/cmdline_parser.hpp>
 
-#include "rolling_hash/string_synchronizing_set.hpp"
+#include "sss/string_synchronizing_set.hpp"
 #include "util/io.hpp"
 
 namespace fs = std::filesystem;
@@ -42,7 +43,7 @@ int main(int argc, char** argv) {
   cp.add_param_path("text_path", text_path, "The path to the text.");
   cp.add_string(
       'a', "algorithm", algorithm,
-      fmt::format("Name of data structure which is benchmarked. Options: {}",
+      fmt::format("Which string synchronizing set (tau) to generate. Options: {}",
                   algorithms));
   cp.add_path('o', "output_folder", output_path, "The output folder.");
   if (!cp.process(argc, argv)) {
@@ -83,22 +84,22 @@ int main(int argc, char** argv) {
   
   if (algorithm == "sss256" || algorithm == "all") {
     output_path.replace_extension("sss256");
-    lce::rolling_hash::sss<uint40_t> sss(text, uint64_t(256));
+    lce::sss::string_synchronizing_set<uint40_t> sss(text, uint64_t(256));
     write_sss(output_path, sss);
   }
   if (algorithm == "sss512" || algorithm == "all") {
     output_path.replace_extension("sss512");
-    lce::rolling_hash::sss<uint40_t> sss(text, uint64_t(512));
+    lce::sss::string_synchronizing_set<uint40_t> sss(text, uint64_t(512));
     write_sss(output_path, sss);
   }
   if (algorithm == "sss1024" || algorithm == "all") {
     output_path.replace_extension(".sss1024");
-    lce::rolling_hash::sss<uint40_t> sss(text, uint64_t(1024));
+    lce::sss::string_synchronizing_set<uint40_t> sss(text, uint64_t(1024));
     write_sss(output_path, sss);
   }
   if (algorithm == "sss2048" || algorithm == "all") {
     output_path.replace_extension(".sss2048");
-    lce::rolling_hash::sss<uint40_t> sss(text, uint64_t(2048));
+    lce::sss::string_synchronizing_set<uint40_t> sss(text, uint64_t(2048));
     write_sss(output_path, sss);
   }
   return 0;

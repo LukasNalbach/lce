@@ -72,8 +72,8 @@ class split_text {
 
   static constexpr uint64_t payload_penalty = t_payload_penalty;
   static constexpr uint64_t simd_symbols = 64;
-  static constexpr uint64_t chunks_per_block = 4;
-  static constexpr uint64_t block_symbols = chunks_per_block * simd_symbols;
+  static constexpr uint64_t batches_per_block = 4;
+  static constexpr uint64_t block_symbols = batches_per_block * simd_symbols;
   static constexpr uint64_t chunk_symbols = block_symbols;
   static constexpr uint64_t super_symbols = uint64_t{1} << 20;
   static constexpr uint64_t blocks_per_super = super_symbols / block_symbols;
@@ -95,16 +95,16 @@ class split_text {
     cursor() = default;
 
     cursor(const split_text* text, uint64_t i)
-        : m_text(text), m_chunk(i / simd_symbols * simd_symbols), m_at(uint32_t(i - m_chunk)) {
-      m_bit = text->m_payloads ? text->payload_bit(i) : 0;
-      text->template decode_chunk<false>(m_chunk, m_at, simd_symbols, m_bit, m_buffer);
+        : m_text(text), m_batch(i / simd_symbols * simd_symbols), m_at(uint32_t(i - m_batch)) {
+      m_bit = text->m_has_payloads ? text->payload_bit(i) : 0;
+      text->template decode_batch<false>(m_batch, m_at, simd_symbols, m_bit, m_buffer);
     }
 
     uint8_t next() {
       if (m_at == simd_symbols) [[unlikely]] {
-        m_chunk += simd_symbols;
+        m_batch += simd_symbols;
         m_at = 0;
-        m_text->template decode_chunk<false>(m_chunk, 0, simd_symbols, m_bit, m_buffer);
+        m_text->template decode_batch<false>(m_batch, 0, simd_symbols, m_bit, m_buffer);
       }
 
       return m_buffer[m_at++];
@@ -113,7 +113,7 @@ class split_text {
    private:
     alignas(64) uint8_t m_buffer[simd_symbols];
     const split_text* m_text = nullptr;
-    uint64_t m_chunk = 0;
+    uint64_t m_batch = 0;
     uint64_t m_bit = 0;
     uint32_t m_at = 0;
   };
@@ -121,7 +121,7 @@ class split_text {
   split_text() = default;
 
   split_text(const char* data, uint64_t size, int threads = omp_get_max_threads())
-      : split_text(packed_text::count_symbols(data, size, threads), size) {
+      : split_text(packed_text::count_chars(data, size, threads), size) {
     pack(data, size, 0, threads);
     finish(threads);
   }
@@ -153,14 +153,14 @@ class split_text {
     d.char_of.assign(classes << max_payload, 0);
     uint64_t next = 0;
     uint64_t payload_chars = 0;
-    m_direct = 0;
+    m_direct_classes = 0;
 
     for (uint64_t c = 0; c < lengths.size(); ++c) {
       const uint64_t slots = uint64_t{1} << lengths[c];
       d.len[c] = lengths[c];
       d.mask[c] = uint8_t(slots - 1);
-      m_payloads = m_payloads || lengths[c] != 0;
-      if (lengths[c] == 0) m_direct = uint16_t(c + 1);
+      m_has_payloads = m_has_payloads || lengths[c] != 0;
+      if (lengths[c] == 0) m_direct_classes = uint16_t(c + 1);
 
       for (uint64_t p = 0; p < slots && next < sigma; ++p, ++next) {
         const uint8_t symbol = order[next];
@@ -201,26 +201,26 @@ class split_text {
     }
 
     m_field_low = m_field_high - m_field_one;
-    const uint64_t direct = std::min<uint64_t>(m_direct, classes - 1);
+    const uint64_t direct = std::min<uint64_t>(m_direct_classes, classes - 1);
     m_direct_high = ((direct >> (m_width - 1)) & 1) != 0;
     m_direct_low = m_field_one * (direct & ((uint64_t{1} << (m_width - 1)) - 1));
     histogram_t class_histogram{};
     for (uint64_t c = 0; c < classes; ++c) class_histogram[c] = 1;
     m_codes = packed_text(class_histogram, size);
 
-    if (m_payloads) {
+    if (m_has_payloads) {
       d.abs.assign(size / super_symbols + 2, 0);
       d.rel.assign(offset_bytes * (size / block_symbols + 2) + 8, 0);
     }
 
     d.payload.assign(padding_bytes, 0);
-    cache();
+    cache_pointers();
   }
 
   void pack(const char* data, uint64_t length, uint64_t at, int threads = omp_get_max_threads()) {
     const uint8_t* class_of_char = m_data->class_of_char.data();
     m_codes.pack_symbols(length, at, [class_of_char, data](uint64_t i) { return uint64_t(class_of_char[uint8_t(data[i])]); }, threads);
-    if (!m_payloads || length == 0) return;
+    if (!m_has_payloads || length == 0) return;
     const uint8_t* payload_of_char = m_data->payload_of_char.data();
     const uint8_t* len_of_char = m_data->len_of_char.data();
     const uint64_t blocks = (length + block_symbols - 1) / block_symbols;
@@ -275,9 +275,9 @@ class split_text {
   void finish(int threads = omp_get_max_threads()) {
     data_t& d = *m_data;
 
-    if (!m_payloads) {
+    if (!m_has_payloads) {
       d.pieces = decltype(d.pieces)();
-      cache();
+      cache_pointers();
       return;
     }
 
@@ -345,13 +345,13 @@ class split_text {
     }
 
     d.pieces = decltype(d.pieces)();
-    cache();
+    cache_pointers();
   }
 
   uint64_t size() const { return m_size; }
   uint64_t sigma() const { return m_sigma; }
   uint8_t width() const { return m_width; }
-  bool has_payloads() const { return m_payloads; }
+  bool has_payloads() const { return m_has_payloads; }
   uint64_t payload_bits() const { return m_payload_bits; }
   const uint8_t* class_lengths() const { return m_len; }
   const uint8_t* class_of_chars() const { return m_data->class_of_char.data(); }
@@ -376,17 +376,17 @@ class split_text {
     const uint8_t width = choose_code(sorted, size, lengths);
     uint64_t payload_bits = 0;
     uint64_t next = 0;
-    bool payloads = false;
+    bool any_payload = false;
 
     for (uint8_t l : lengths) {
-      payloads = payloads || l != 0;
+      any_payload = any_payload || l != 0;
       for (uint64_t p = 0; p < (uint64_t{1} << l) && next < sorted.size(); ++p, ++next) payload_bits += sorted[next] * l;
     }
 
     uint64_t bytes = sizeof(split_text) + sizeof(packed_text) + (size * width + 63) / 64 * 8 + packed_text::padding_bytes +
                      sizeof(data_t) + 2 * ((uint64_t{1} << width) << max_payload);
 
-    if (!payloads) return bytes + padding_bytes;
+    if (!any_payload) return bytes + padding_bytes;
     return bytes + (payload_bits + 63) / 64 * 8 + padding_bytes + (size / super_symbols + 2) * 8 +
            offset_bytes * (size / block_symbols + 2) + 8;
   }
@@ -410,25 +410,25 @@ class split_text {
 
   void extract(uint64_t i, uint64_t len, uint8_t* __restrict out) const {
     if (len == 0) return;
-    if (m_payloads) prefetch_payload(i);
-    uint64_t bit = m_payloads ? payload_bit(i) : 0;
+    if (m_has_payloads) prefetch_payload(i);
+    uint64_t bit = m_has_payloads ? payload_bit(i) : 0;
     alignas(64) uint8_t buffer[simd_symbols];
-    uint64_t chunk = i / simd_symbols * simd_symbols;
-    uint64_t skip = i - chunk;
+    uint64_t batch = i / simd_symbols * simd_symbols;
+    uint64_t skip = i - batch;
     uint64_t k = 0;
 
     while (k < len) {
       const uint64_t take = std::min(len - k, simd_symbols - skip);
-      decode_chunk<true>(chunk, skip, skip + take, bit, buffer);
+      decode_batch<true>(batch, skip, skip + take, bit, buffer);
       std::memcpy(out + k, buffer + skip, take);
       k += take;
-      chunk += simd_symbols;
+      batch += simd_symbols;
       skip = 0;
     }
   }
 
   uint64_t lce(uint64_t i, uint64_t j, uint64_t max = std::numeric_limits<uint64_t>::max()) const {
-    if (!m_payloads) return m_codes.lce(i, j, max);
+    if (!m_has_payloads) return m_codes.lce(i, j, max);
     if (i == j) [[unlikely]] return std::min(max, m_size - i);
     const uint64_t limit = std::min(max, m_size - std::max(i, j));
     if (limit == 0) [[unlikely]] return 0;
@@ -467,7 +467,7 @@ class split_text {
   }
 
   uint64_t lce_left(uint64_t i, uint64_t j, uint64_t max = std::numeric_limits<uint64_t>::max()) const {
-    if (!m_payloads) return m_codes.lce_left(i, j, max);
+    if (!m_has_payloads) return m_codes.lce_left(i, j, max);
     if (i == j) [[unlikely]] return std::min(max, i + 1);
     const uint64_t limit = std::min(max, std::min(i, j) + 1);
     if (limit == 0) [[unlikely]] return 0;
@@ -511,7 +511,7 @@ class split_text {
 
   uint64_t hash(uint64_t i, uint64_t len) const {
     const uint64_t h = m_codes.hash(i, len);
-    if (!m_payloads || len == 0) return h;
+    if (!m_has_payloads || len == 0) return h;
     return payload_hash(i, len, h);
   }
 
@@ -547,7 +547,7 @@ class split_text {
     std::array<uint8_t, 256> to_char{};
   };
 
-  void cache() {
+  void cache_pointers() {
     data_t& d = *m_data;
     m_classes = m_codes.packed_data();
     m_classes_limit = m_classes + (m_size * m_width + 63) / 64 * 8;
@@ -588,9 +588,9 @@ class split_text {
         cost = double(width) * double(size);
       } else {
         cost = optimal_lengths(sorted, width, candidate);
-        bool payloads = false;
-        for (uint8_t l : candidate) payloads = payloads || l != 0;
-        if (payloads) cost += double(table_bits(size));
+        bool any_payload = false;
+        for (uint8_t l : candidate) any_payload = any_payload || l != 0;
+        if (any_payload) cost += double(table_bits(size));
       }
 
       if (cost < best) {
@@ -810,15 +810,15 @@ class split_text {
   }
 
   template <bool t_chars>
-  void decode_chunk(uint64_t chunk, uint64_t skip, uint64_t end, uint64_t& position, uint8_t* __restrict out) const {
+  void decode_batch(uint64_t batch, uint64_t skip, uint64_t end, uint64_t& position, uint8_t* __restrict out) const {
     const uint8_t* table = t_chars ? m_char_of : m_symbol_of;
     uint64_t bit = position;
 #if defined(LCE_SPLIT_TEXT_VBMI) || defined(LCE_SPLIT_TEXT_AVX2)
     if (m_width <= max_split_width) {
       alignas(64) uint8_t classes[simd_symbols];
-      const uint64_t m = decode_direct(chunk, t_chars ? m_direct_char : m_direct_symbol, classes, out) & lane_range(skip, end);
+      const uint64_t m = decode_direct(batch, t_chars ? m_direct_char : m_direct_symbol, classes, out) & lane_range(skip, end);
 
-      if (m_payloads) {
+      if (m_has_payloads) {
         uint64_t rest = m;
 
         while (rest != 0) {
@@ -836,7 +836,7 @@ class split_text {
     }
 #endif
 
-    packed_text::cursor classes = m_codes.cursor_at(chunk + skip);
+    packed_text::cursor classes = m_codes.cursor_at(batch + skip);
 
     for (uint64_t x = skip; x < end; ++x) {
       const uint8_t c = classes.next();
@@ -858,11 +858,11 @@ class split_text {
 
   __m512i unpack(uint64_t first) const { return unpack_at(m_classes + (first * m_width) / 8); }
 
-  uint64_t decode_direct(uint64_t chunk, const uint8_t* direct, uint8_t* classes, uint8_t* __restrict out) const {
-    const __m512i cls = unpack(chunk);
+  uint64_t decode_direct(uint64_t batch, const uint8_t* direct, uint8_t* classes, uint8_t* __restrict out) const {
+    const __m512i cls = unpack(batch);
     _mm512_store_si512(classes, cls);
     _mm512_storeu_si512(out, _mm512_permutexvar_epi8(cls, _mm512_load_si512(direct)));
-    if (!m_payloads) return 0;
+    if (!m_has_payloads) return 0;
     const __m512i lens = _mm512_permutexvar_epi8(cls, _mm512_load_si512(m_len));
     return _cvtmask64_u64(_mm512_test_epi8_mask(lens, lens));
   }
@@ -872,12 +872,12 @@ class split_text {
     const uint8_t* p = m_classes + (first * m_width) / 8;
     __m512i acc = zero;
     const __m512i table = _mm512_load_si512(m_len);
-    const uint64_t chunk_bytes = simd_symbols * m_width / 8;
+    const uint64_t batch_bytes = simd_symbols * m_width / 8;
 
-    for (uint64_t c = 0; c < chunks_per_block; ++c) {
+    for (uint64_t c = 0; c < batches_per_block; ++c) {
       const uint64_t take = std::min<uint64_t>(count > c * simd_symbols ? count - c * simd_symbols : 0, simd_symbols);
       const __mmask64 k = _cvtu64_mask64(take >= simd_symbols ? ~uint64_t{0} : (uint64_t{1} << take) - 1);
-      const __m512i cls = unpack_at(std::min(p + c * chunk_bytes, m_classes_limit));
+      const __m512i cls = unpack_at(std::min(p + c * batch_bytes, m_classes_limit));
       acc = _mm512_add_epi64(acc, _mm512_sad_epu8(_mm512_maskz_permutexvar_epi8(k, cls, table), zero));
     }
 
@@ -890,19 +890,19 @@ class split_text {
     const uint64_t end = i + len;
     __m512i acc = zero;
 
-    for (uint64_t chunk = i / simd_symbols * simd_symbols; chunk < end; chunk += simd_symbols) {
-      const uint64_t lo = i > chunk ? i - chunk : 0;
-      const uint64_t hi = std::min(end - chunk, simd_symbols);
+    for (uint64_t batch = i / simd_symbols * simd_symbols; batch < end; batch += simd_symbols) {
+      const uint64_t lo = i > batch ? i - batch : 0;
+      const uint64_t hi = std::min(end - batch, simd_symbols);
       const __mmask64 k = _cvtu64_mask64(lane_range(lo, hi));
-      acc = _mm512_add_epi64(acc, _mm512_sad_epu8(_mm512_maskz_permutexvar_epi8(k, unpack(chunk), table), zero));
+      acc = _mm512_add_epi64(acc, _mm512_sad_epu8(_mm512_maskz_permutexvar_epi8(k, unpack(batch), table), zero));
     }
 
     return uint64_t(_mm512_reduce_add_epi64(acc));
   }
 
-  uint64_t chunk_lens(uint64_t chunk, uint64_t lanes, uint8_t* lens) const {
+  uint64_t batch_lens(uint64_t batch, uint64_t lanes, uint8_t* lens) const {
     const __mmask64 k = _cvtu64_mask64(lanes);
-    const __m512i l = _mm512_maskz_permutexvar_epi8(k, unpack(chunk), _mm512_load_si512(m_len));
+    const __m512i l = _mm512_maskz_permutexvar_epi8(k, unpack(batch), _mm512_load_si512(m_len));
     _mm512_store_si512(lens, l);
     return uint64_t(_mm512_reduce_add_epi64(_mm512_sad_epu8(l, _mm512_setzero_si512())));
   }
@@ -951,13 +951,13 @@ class split_text {
     return sum_bytes(la, lb);
   }
 
-  uint64_t decode_direct(uint64_t chunk, const uint8_t* direct, uint8_t* classes, uint8_t* __restrict out) const {
-    unpack_bytes(m_classes + (chunk * m_width) / 8, classes);
+  uint64_t decode_direct(uint64_t batch, const uint8_t* direct, uint8_t* classes, uint8_t* __restrict out) const {
+    unpack_bytes(m_classes + (batch * m_width) / 8, classes);
     const __m256i a = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(classes));
     const __m256i b = _mm256_loadu_si256(reinterpret_cast<const __m256i*>(classes + 32));
     _mm256_storeu_si256(reinterpret_cast<__m256i*>(out), lookup(direct, a));
     _mm256_storeu_si256(reinterpret_cast<__m256i*>(out + 32), lookup(direct, b));
-    if (!m_payloads) return 0;
+    if (!m_has_payloads) return 0;
     const __m256i zero = _mm256_setzero_si256();
     const uint32_t ma = uint32_t(_mm256_movemask_epi8(_mm256_cmpeq_epi8(lookup(m_len, a), zero)));
     const uint32_t mb = uint32_t(_mm256_movemask_epi8(_mm256_cmpeq_epi8(lookup(m_len, b), zero)));
@@ -965,14 +965,14 @@ class split_text {
   }
 
   uint64_t prefix_bits(uint64_t first, uint64_t count) const {
-    const uint64_t chunk_bytes = simd_symbols * m_width / 8;
+    const uint64_t batch_bytes = simd_symbols * m_width / 8;
     const uint8_t* p = m_classes + (first * m_width) / 8;
     alignas(64) uint8_t classes[simd_symbols];
     uint64_t bits = 0;
 
-    for (uint64_t c = 0; c < chunks_per_block && count > c * simd_symbols; ++c) {
+    for (uint64_t c = 0; c < batches_per_block && count > c * simd_symbols; ++c) {
       const uint64_t take = std::min<uint64_t>(count - c * simd_symbols, simd_symbols);
-      unpack_bytes(std::min(p + c * chunk_bytes, m_classes_limit), classes);
+      unpack_bytes(std::min(p + c * batch_bytes, m_classes_limit), classes);
       __m256i la, lb;
       bits += lens_of(classes, lane_range(0, take), la, lb);
     }
@@ -985,10 +985,10 @@ class split_text {
     alignas(64) uint8_t classes[simd_symbols];
     uint64_t bits = 0;
 
-    for (uint64_t chunk = i / simd_symbols * simd_symbols; chunk < end; chunk += simd_symbols) {
-      const uint64_t lo = i > chunk ? i - chunk : 0;
-      const uint64_t hi = std::min(end - chunk, simd_symbols);
-      unpack_bytes(m_classes + (chunk * m_width) / 8, classes);
+    for (uint64_t batch = i / simd_symbols * simd_symbols; batch < end; batch += simd_symbols) {
+      const uint64_t lo = i > batch ? i - batch : 0;
+      const uint64_t hi = std::min(end - batch, simd_symbols);
+      unpack_bytes(m_classes + (batch * m_width) / 8, classes);
       __m256i la, lb;
       bits += lens_of(classes, lane_range(lo, hi), la, lb);
     }
@@ -996,9 +996,9 @@ class split_text {
     return bits;
   }
 
-  uint64_t chunk_lens(uint64_t chunk, uint64_t lanes, uint8_t* lens) const {
+  uint64_t batch_lens(uint64_t batch, uint64_t lanes, uint8_t* lens) const {
     alignas(64) uint8_t classes[simd_symbols];
-    unpack_bytes(m_classes + (chunk * m_width) / 8, classes);
+    unpack_bytes(m_classes + (batch * m_width) / 8, classes);
     __m256i la, lb;
     const uint64_t sum = lens_of(classes, lanes, la, lb);
     _mm256_storeu_si256(reinterpret_cast<__m256i*>(lens), la);
@@ -1014,11 +1014,11 @@ class split_text {
 
   uint64_t range_bits(uint64_t i, uint64_t len) const { return prefix_bits(i, len); }
 
-  uint64_t chunk_lens(uint64_t chunk, uint64_t lanes, uint8_t* lens) const {
+  uint64_t batch_lens(uint64_t batch, uint64_t lanes, uint8_t* lens) const {
     uint64_t sum = 0;
 
     for (uint64_t x = 0; x < simd_symbols; ++x) {
-      lens[x] = (lanes >> x) & 1 ? m_len[m_codes[chunk + x]] : 0;
+      lens[x] = (lanes >> x) & 1 ? m_len[m_codes[batch + x]] : 0;
       sum += lens[x];
     }
 
@@ -1028,12 +1028,12 @@ class split_text {
 
   LCE_SPLIT_TEXT_NOINLINE uint64_t select_forward(uint64_t i, uint64_t d) const {
     alignas(64) uint8_t lens[simd_symbols];
-    uint64_t chunk = i / simd_symbols * simd_symbols;
-    uint64_t skip = i - chunk;
+    uint64_t batch = i / simd_symbols * simd_symbols;
+    uint64_t skip = i - batch;
     uint64_t m = 0;
 
     for (;;) {
-      const uint64_t sum = chunk_lens(chunk, ~uint64_t{0} << skip, lens);
+      const uint64_t sum = batch_lens(batch, ~uint64_t{0} << skip, lens);
 
       if (sum > d) {
         for (uint64_t x = skip;; ++x) {
@@ -1045,19 +1045,19 @@ class split_text {
 
       d -= sum;
       m += simd_symbols - skip;
-      chunk += simd_symbols;
+      batch += simd_symbols;
       skip = 0;
     }
   }
 
   LCE_SPLIT_TEXT_NOINLINE uint64_t select_backward(uint64_t i, uint64_t s) const {
     alignas(64) uint8_t lens[simd_symbols];
-    uint64_t chunk = i / simd_symbols * simd_symbols;
-    uint64_t last = i - chunk;
+    uint64_t batch = i / simd_symbols * simd_symbols;
+    uint64_t last = i - batch;
     uint64_t m = 0;
 
     for (;;) {
-      const uint64_t sum = chunk_lens(chunk, last == 63 ? ~uint64_t{0} : (uint64_t{1} << (last + 1)) - 1, lens);
+      const uint64_t sum = batch_lens(batch, last == 63 ? ~uint64_t{0} : (uint64_t{1} << (last + 1)) - 1, lens);
 
       if (sum > s) {
         for (uint64_t x = last;; --x) {
@@ -1069,7 +1069,7 @@ class split_text {
 
       s -= sum;
       m += last + 1;
-      chunk -= simd_symbols;
+      batch -= simd_symbols;
       last = simd_symbols - 1;
     }
   }
@@ -1139,13 +1139,13 @@ class split_text {
   uint64_t m_direct_low = 0;
   uint32_t m_avg_x256 = 0;
   uint16_t m_sigma = 0;
-  uint16_t m_direct = 0;
+  uint16_t m_direct_classes = 0;
   uint8_t m_width = 0;
   uint8_t m_class_mask = 0;
   uint8_t m_short = 0;
   bool m_direct_high = false;
   bool m_eager = false;
-  bool m_payloads = false;
+  bool m_has_payloads = false;
 };
 
 }
