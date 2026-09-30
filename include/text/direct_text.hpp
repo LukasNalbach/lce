@@ -43,34 +43,47 @@ namespace lce::text {
 
 template <typename t_char_type = char>
 class direct_text {
-  static_assert(sizeof(t_char_type) == 1);
+  static_assert(sizeof(t_char_type) == 1 || sizeof(t_char_type) == 2 || sizeof(t_char_type) == 4);
 
  public:
   using char_type = t_char_type;
+  static constexpr bool is_byte_text = sizeof(t_char_type) == 1;
+  using symbol_type = std::conditional_t<is_byte_text, uint8_t, std::make_unsigned_t<t_char_type>>;
+  static constexpr uint64_t symbol_bytes = sizeof(t_char_type);
+  static constexpr uint64_t word_symbols = 8 / symbol_bytes;
 
   class cursor {
    public:
     cursor() = default;
-    explicit cursor(const uint8_t* at) : m_at(at) {}
-    uint8_t next() { return *m_at++; }
+    explicit cursor(const symbol_type* at) : m_at(at) {}
+    symbol_type next() { return *m_at++; }
 
    private:
-    const uint8_t* m_at = nullptr;
+    const symbol_type* m_at = nullptr;
   };
 
   direct_text() = default;
   direct_text(char_type* data, uint64_t size) : m_data(data), m_size(size) {}
 
+  direct_text(char_type* data, uint64_t size, uint64_t sigma)
+    requires(!is_byte_text)
+      : m_data(data), m_size(size), m_sigma(sigma) {}
+
   char_type* data() const { return m_data; }
   uint64_t size() const { return m_size; }
-  uint64_t sigma() const { return 256; }
-  uint64_t size_in_bytes() const { return m_size; }
 
-  uint8_t operator[](uint64_t i) const { return uint8_t(m_data[i]); }
+  uint64_t sigma() const {
+    if constexpr (is_byte_text) return 256;
+    else return m_sigma;
+  }
+
+  uint64_t size_in_bytes() const { return m_size * symbol_bytes; }
+
+  symbol_type operator[](uint64_t i) const { return symbol_type(m_data[i]); }
   char_type char_at(uint64_t i) const { return m_data[i]; }
   bool less_char(uint64_t i, uint64_t j) const { return m_data[i] < m_data[j]; }
-  uint8_t to_char(uint8_t symbol) const { return symbol; }
-  cursor cursor_at(uint64_t i) const { return cursor(bytes() + i); }
+  symbol_type to_char(symbol_type symbol) const { return symbol; }
+  cursor cursor_at(uint64_t i) const { return cursor(symbols() + i); }
 
   uint64_t lce(uint64_t i, uint64_t j,
                uint64_t max = std::numeric_limits<uint64_t>::max()) const {
@@ -78,14 +91,14 @@ class direct_text {
     const uint64_t l = std::min(i, j);
     const uint64_t r = std::max(i, j);
     const uint64_t limit = std::min(max, m_size - r);
-    const uint8_t* a = bytes() + l;
-    const uint8_t* b = bytes() + r;
+    const symbol_type* a = symbols() + l;
+    const symbol_type* b = symbols() + r;
     uint64_t k = 0;
 
-    while (k + 8 <= limit) {
+    while (k + word_symbols <= limit) {
       const uint64_t diff = util::load_u64(a + k) ^ util::load_u64(b + k);
-      if (diff != 0) return k + std::countr_zero(diff) / 8;
-      k += 8;
+      if (diff != 0) return k + std::countr_zero(diff) / (8 * symbol_bytes);
+      k += word_symbols;
     }
 
     while (k < limit && a[k] == b[k]) ++k;
@@ -96,14 +109,14 @@ class direct_text {
                     uint64_t max = std::numeric_limits<uint64_t>::max()) const {
     if (i == j) [[unlikely]] return std::min(max, i + 1);
     const uint64_t limit = std::min({max, i + 1, j + 1});
-    const uint8_t* a = bytes() + i + 1;
-    const uint8_t* b = bytes() + j + 1;
+    const symbol_type* a = symbols() + i + 1;
+    const symbol_type* b = symbols() + j + 1;
     uint64_t k = 0;
 
-    while (k + 8 <= limit) {
-      const uint64_t diff = util::load_u64(a - k - 8) ^ util::load_u64(b - k - 8);
-      if (diff != 0) return k + std::countl_zero(diff) / 8;
-      k += 8;
+    while (k + word_symbols <= limit) {
+      const uint64_t diff = util::load_u64(a - k - word_symbols) ^ util::load_u64(b - k - word_symbols);
+      if (diff != 0) return k + std::countl_zero(diff) / (8 * symbol_bytes);
+      k += word_symbols;
     }
 
     while (k < limit && a[-1 - int64_t(k)] == b[-1 - int64_t(k)]) ++k;
@@ -111,16 +124,17 @@ class direct_text {
   }
 
   bool equal(uint64_t i, uint64_t j, uint64_t len) const {
-    return std::memcmp(m_data + i, m_data + j, len) == 0;
+    return std::memcmp(m_data + i, m_data + j, len * symbol_bytes) == 0;
   }
 
   uint64_t hash(uint64_t i, uint64_t len) const {
-    const uint8_t* p = bytes() + i;
-    const uint64_t full = len >> 3;
+    const uint8_t* p = bytes() + i * symbol_bytes;
+    const uint64_t len_bytes = len * symbol_bytes;
+    const uint64_t full = len_bytes >> 3;
     const uint64_t h = util::hash_words(full, [p](uint64_t k) { return util::load_u64(p + 8 * k); });
-    if ((len & 7) == 0) return h;
+    if ((len_bytes & 7) == 0) return h;
     uint64_t tail = 0;
-    std::memcpy(&tail, p + 8 * full, len & 7);
+    std::memcpy(&tail, p + 8 * full, len_bytes & 7);
     return util::hash_mix(h, tail);
   }
 
@@ -132,9 +146,13 @@ class direct_text {
 
  private:
   const uint8_t* bytes() const { return reinterpret_cast<const uint8_t*>(m_data); }
+  const symbol_type* symbols() const { return reinterpret_cast<const symbol_type*>(m_data); }
+
+  struct no_sigma {};
 
   char_type* m_data = nullptr;
   uint64_t m_size = 0;
+  [[no_unique_address]] std::conditional_t<is_byte_text, no_sigma, uint64_t> m_sigma{};
 };
 
 template <typename t_text>
@@ -151,7 +169,7 @@ struct text_of {
 };
 
 template <typename t_type>
-  requires(std::is_integral_v<t_type> && sizeof(t_type) == 1)
+  requires(std::is_integral_v<t_type> && (sizeof(t_type) == 1 || sizeof(t_type) == 2 || sizeof(t_type) == 4))
 struct text_of<t_type> {
   using type = direct_text<t_type>;
 };
