@@ -247,7 +247,7 @@ class string_synchronizing_set {
   template <typename t_text>
   uint64_t find_period(t_text const& text, const uint64_t x, const uint64_t block,
                        const uint64_t max_period) const {
-    if constexpr (lce::text::is_direct_text_v<t_text>) {
+    if constexpr (lce::text::is_direct_text_v<t_text> && t_text::is_byte_text) {
       const uint8_t* data = reinterpret_cast<const uint8_t*>(text.data());
 #if defined(__AVX2__)
       if (block >= max_period + 40) {

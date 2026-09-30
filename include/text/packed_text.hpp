@@ -36,6 +36,7 @@
 #include <limits>
 #include <memory>
 #include <numeric>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -44,24 +45,31 @@
 
 namespace lce::text {
 
+template <typename t_symbol = uint8_t>
 class packed_text {
+  static_assert(std::is_same_v<t_symbol, uint8_t> || std::is_same_v<t_symbol, uint32_t>);
+
  public:
   using window_t = uint64_t;
-  using char_type = char;
-  using histogram_t = std::array<uint64_t, 256>;
+  using symbol_type = t_symbol;
+  static constexpr bool is_byte_text = sizeof(t_symbol) == 1;
+  using char_type = std::conditional_t<is_byte_text, char, t_symbol>;
+  using histogram_t = std::conditional_t<is_byte_text, std::array<uint64_t, 256>, std::vector<uint64_t>>;
+  using mask_type = std::conditional_t<is_byte_text, uint8_t, uint64_t>;
 
   static constexpr uint64_t padding_bytes = 64;
   static constexpr uint64_t chunk_symbols = 64;
+  static constexpr uint64_t max_width = is_byte_text ? 8 : 32;
 
   class cursor {
    public:
     cursor() = default;
-    cursor(const uint8_t* bytes, uint64_t bit, uint8_t width, uint8_t mask)
+    cursor(const uint8_t* bytes, uint64_t bit, uint8_t width, mask_type mask)
         : m_bytes(bytes), m_bit(bit), m_width(width), m_mask(mask) {}
 
-    uint8_t next() {
+    symbol_type next() {
       if (m_buffered == 0) [[unlikely]] refill();
-      const uint8_t symbol = uint8_t(m_window) & m_mask;
+      const symbol_type symbol = symbol_type(m_window) & m_mask;
       m_window >>= m_width;
       --m_buffered;
       return symbol;
@@ -79,27 +87,89 @@ class packed_text {
     uint64_t m_window = 0;
     uint8_t m_buffered = 0;
     uint8_t m_width = 0;
-    uint8_t m_mask = 0;
+    mask_type m_mask = 0;
   };
 
   packed_text() = default;
 
   packed_text(const char* data, uint64_t size, int threads = omp_get_max_threads())
+    requires(is_byte_text)
       : packed_text(count_chars(data, size, threads), size) {
     pack(data, size, 0, threads);
   }
 
+  packed_text(const symbol_type* data, uint64_t size, uint64_t sigma, int threads = omp_get_max_threads())
+    requires(!is_byte_text)
+      : packed_text(sigma, size) {
+    pack(data, size, 0, threads);
+  }
+
+  packed_text(uint64_t sigma, uint64_t size)
+    requires(!is_byte_text)
+      : m_size(size) {
+    m_sigma = sigma;
+    init();
+  }
+
   packed_text(const histogram_t& histogram, uint64_t size) : m_size(size) {
-    m_sigma = 0;
-    for (uint16_t c = 0; c < 256; ++c) {
-      if (histogram[c] == 0) continue;
-      m_to_symbol[c] = uint8_t(m_sigma);
-      m_to_char[m_sigma] = uint8_t(c);
-      ++m_sigma;
+    if constexpr (is_byte_text) {
+      m_sigma = 0;
+      for (uint16_t c = 0; c < 256; ++c) {
+        if (histogram[c] == 0) continue;
+        m_to_symbol[c] = uint8_t(m_sigma);
+        m_to_char[m_sigma] = uint8_t(c);
+        ++m_sigma;
+      }
+    } else {
+      m_sigma = histogram.size();
     }
 
-    m_width = uint8_t(std::max<int>(1, std::bit_width(uint64_t(std::max<uint16_t>(m_sigma, 1) - 1))));
-    m_mask = uint8_t((uint16_t{1} << m_width) - 1);
+    init();
+  }
+
+  static histogram_t count_chars(const char* data, uint64_t size,
+                                 int threads = omp_get_max_threads())
+    requires(is_byte_text)
+  {
+    histogram_t histogram{};
+    add_char_counts(histogram, data, size, threads);
+    return histogram;
+  }
+
+  static void add_char_counts(histogram_t& histogram, const char* data, uint64_t size,
+                              int threads = omp_get_max_threads())
+    requires(is_byte_text)
+  {
+    std::vector<histogram_t> partial(threads, histogram_t{});
+
+#pragma omp parallel num_threads(threads)
+    {
+      histogram_t& local = partial[omp_get_thread_num()];
+#pragma omp for
+      for (uint64_t i = 0; i < size; ++i) ++local[uint8_t(data[i])];
+    }
+
+    for (const histogram_t& local : partial) {
+      for (uint16_t c = 0; c < 256; ++c) histogram[c] += local[c];
+    }
+  }
+
+  void pack(const char* data, uint64_t length, uint64_t at, int threads = omp_get_max_threads())
+    requires(is_byte_text)
+  {
+    pack_symbols(length, at, [this, data](uint64_t i) { return uint64_t(m_to_symbol[uint8_t(data[i])]); }, threads);
+  }
+
+  void pack(const symbol_type* data, uint64_t length, uint64_t at, int threads = omp_get_max_threads())
+    requires(!is_byte_text)
+  {
+    pack_symbols(length, at, [data](uint64_t i) { return uint64_t(data[i]); }, threads);
+  }
+
+ private:
+  void init() {
+    m_width = uint8_t(std::max<int>(1, std::bit_width(uint64_t(std::max<uint64_t>(m_sigma, 1) - 1))));
+    m_mask = mask_type((uint64_t{1} << m_width) - 1);
     m_window_symbols = uint8_t((64 - (8 - std::gcd<int>(m_width, 8))) / m_width);
     const uint64_t window_bits = uint64_t{m_window_symbols} * m_width;
     m_window_mask = window_bits == 64 ? ~window_t(0) : (window_t(1) << window_bits) - 1;
@@ -124,33 +194,7 @@ class packed_text {
     m_bytes = m_storage->data();
   }
 
-  static histogram_t count_chars(const char* data, uint64_t size,
-                                 int threads = omp_get_max_threads()) {
-    histogram_t histogram{};
-    add_char_counts(histogram, data, size, threads);
-    return histogram;
-  }
-
-  static void add_char_counts(histogram_t& histogram, const char* data, uint64_t size,
-                              int threads = omp_get_max_threads()) {
-    std::vector<histogram_t> partial(threads, histogram_t{});
-
-#pragma omp parallel num_threads(threads)
-    {
-      histogram_t& local = partial[omp_get_thread_num()];
-#pragma omp for
-      for (uint64_t i = 0; i < size; ++i) ++local[uint8_t(data[i])];
-    }
-
-    for (const histogram_t& local : partial) {
-      for (uint16_t c = 0; c < 256; ++c) histogram[c] += local[c];
-    }
-  }
-
-  void pack(const char* data, uint64_t length, uint64_t at, int threads = omp_get_max_threads()) {
-    pack_symbols(length, at, [this, data](uint64_t i) { return uint64_t(m_to_symbol[uint8_t(data[i])]); }, threads);
-  }
-
+ public:
   template <typename symbol_at_t>
   void pack_symbols(uint64_t length, uint64_t at, symbol_at_t symbol_at, int threads = omp_get_max_threads()) {
     uint8_t* out = m_storage->data();
@@ -186,16 +230,34 @@ class packed_text {
   uint64_t size_in_bytes() const { return sizeof(*this) + (m_storage ? m_storage->size() : 0); }
   const uint8_t* packed_data() const { return m_bytes; }
 
-  uint8_t operator[](uint64_t i) const {
-    if (m_width == 8) [[likely]] return m_bytes[i];
-    const uint64_t bit = i * m_width;
-    return uint8_t(util::load_u64(m_bytes + (bit >> 3)) >> (bit & 7)) & m_mask;
+  symbol_type operator[](uint64_t i) const {
+    if constexpr (is_byte_text) {
+      if (m_width == 8) [[likely]] return m_bytes[i];
+      const uint64_t bit = i * m_width;
+      return uint8_t(util::load_u64(m_bytes + (bit >> 3)) >> (bit & 7)) & m_mask;
+    } else {
+      const uint64_t bit = i * m_width;
+      return symbol_type((util::load_u64(m_bytes + (bit >> 3)) >> (bit & 7)) & m_mask);
+    }
   }
 
-  char_type char_at(uint64_t i) const { return char_type(m_to_char[(*this)[i]]); }
+  char_type char_at(uint64_t i) const {
+    if constexpr (is_byte_text) return char_type(m_to_char[(*this)[i]]);
+    else return (*this)[i];
+  }
+
   bool less_char(uint64_t i, uint64_t j) const { return (*this)[i] < (*this)[j]; }
-  uint8_t to_char(uint8_t symbol) const { return m_to_char[symbol]; }
-  uint8_t to_symbol(uint8_t c) const { return m_to_symbol[c]; }
+
+  symbol_type to_char(symbol_type symbol) const {
+    if constexpr (is_byte_text) return m_to_char[symbol];
+    else return symbol;
+  }
+
+  symbol_type to_symbol(symbol_type c) const {
+    if constexpr (is_byte_text) return m_to_symbol[c];
+    else return c;
+  }
+
   cursor cursor_at(uint64_t i) const { return cursor(m_bytes, i * m_width, m_width, m_mask); }
 
   uint64_t lce(uint64_t i, uint64_t j,
@@ -216,7 +278,7 @@ class packed_text {
     if (diff != 0) return m_bit_to_symbol[lowest_bit(diff)];
     k = narrow;
 
-    if (m_width != 8 && k + 3 * m_wide_min <= limit) {
+    if (wide_usable() && k + 3 * m_wide_min <= limit) {
       const uint64_t bl = (l + k) * m_width;
       const uint64_t br = (r + k) * m_width;
       const uint8_t sl = uint8_t(bl & 7);
@@ -272,7 +334,7 @@ class packed_text {
     if (diff != 0) return narrow - 1 - m_bit_to_symbol[highest_bit(diff)];
     k = narrow;
 
-    if (m_width != 8 && k + 3 * m_wide_min <= limit) {
+    if (wide_usable() && k + 3 * m_wide_min <= limit) {
       const uint64_t bl = (i + 1 - k) * m_width;
       const uint64_t br = (j + 1 - k) * m_width;
       const uint8_t sl = uint8_t(bl & 7);
@@ -363,8 +425,15 @@ class packed_text {
  private:
   uint64_t words() const { return (m_size * m_width + 63) / 64; }
 
+  bool wide_usable() const {
+    if constexpr (is_byte_text) return m_width != 8;
+    else return m_width != 8 && m_wide_min != 0;
+  }
+
   window_t window(uint64_t i) const {
-    if (m_width == 8) [[likely]] return util::load_u64(m_bytes + i);
+    if constexpr (is_byte_text) {
+      if (m_width == 8) [[likely]] return util::load_u64(m_bytes + i);
+    }
     const uint64_t bit = i * m_width;
     return (util::load_u64(m_bytes + (bit >> 3)) >> (bit & 7)) & m_window_mask;
   }
@@ -377,9 +446,9 @@ class packed_text {
   const uint8_t* m_bytes = nullptr;
   uint64_t m_size = 0;
   window_t m_window_mask = 0;
-  uint16_t m_sigma = 0;
+  std::conditional_t<is_byte_text, uint16_t, uint64_t> m_sigma = 0;
   uint8_t m_width = 0;
-  uint8_t m_mask = 0;
+  mask_type m_mask = 0;
   uint8_t m_window_symbols = 0;
   uint8_t m_wide_min = 0;
   std::array<uint8_t, 64> m_bit_to_symbol{};

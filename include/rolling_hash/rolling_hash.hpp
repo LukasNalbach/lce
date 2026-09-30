@@ -14,6 +14,7 @@
 #include <cstdint>
 #include <iterator>
 #include <random>
+#include <type_traits>
 #include <vector>
 
 #include "rolling_hash/mersenne_modular_arithmetic.hpp"
@@ -75,6 +76,22 @@ class rk_prime {
     return fp;
   }
 
+  template <typename t_symbol>
+    requires(std::is_unsigned_v<t_symbol> && (sizeof(t_symbol) == 2 || sizeof(t_symbol) == 4))
+  inline uint128_t roll_in(uint128_t fp, t_symbol in) const {
+    return roll(fp, t_symbol(0), in);
+  }
+
+  template <typename t_symbol>
+    requires(std::is_unsigned_v<t_symbol> && (sizeof(t_symbol) == 2 || sizeof(t_symbol) == 4))
+  inline uint128_t roll(uint128_t fp, t_symbol out, t_symbol in) const {
+    const uint128_t hi = mersenne::mod<uint128_t, m_prime>(uint128_t{uint64_t(out) >> 16} * m_base_pow_tau);
+    const uint128_t out_influence =
+        mersenne::mod<uint128_t, m_prime>((hi << 16) + uint128_t{uint64_t(out) & 0xFFFF} * m_base_pow_tau);
+    fp *= m_base;
+    return mersenne::mod<uint128_t, m_prime>(fp + in + (m_prime - out_influence));
+  }
+
   // Roll the window by specifying the character that is rolled out of the
   // window and the character that is rolled in the window.
   inline uint128_t roll(unsigned char out, unsigned char in) {
@@ -117,6 +134,7 @@ class rk_prime {
   uint128_t m_fp;
 
   uint128_t m_base;
+  uint128_t m_base_pow_tau = 0;
   std::vector<std::array<uint128_t, 256>> m_char_influence =
       std::vector<std::array<uint128_t, 256>>(256);
 
@@ -130,6 +148,7 @@ class rk_prime {
   void fill_influence_table() {
     const uint128_t base_pow_tau_mod_prime =
         modular::pow_mod<uint128_t>(m_base, m_tau, m_prime);
+    m_base_pow_tau = base_pow_tau_mod_prime;
     const uint128_t minus_base_pow_tau_mod_prime =
         mersenne::additive_inverse_mod<uint128_t, m_prime>(
             base_pow_tau_mod_prime);
@@ -159,20 +178,34 @@ class rk_mersenne61 {
       : m_base(base % prime), m_base_is_small(m_base < (uint64_t{1} << 32)) {
     uint64_t pow = 1;
     for (uint64_t i = 0; i < tau; ++i) pow = reduce(uint128_t{pow} * m_base);
+    m_pow = pow;
     for (uint64_t c = 0; c < 256; ++c) {
       const uint64_t influence = reduce(uint128_t{c} * pow);
       m_out_influence[c] = influence == 0 ? 0 : prime - influence;
     }
   }
 
-  inline uint64_t roll_in(uint64_t fp, uint8_t in) const {
+  template <typename t_symbol>
+  inline uint64_t roll_in(uint64_t fp, t_symbol in) const {
+    static_assert(std::is_unsigned_v<t_symbol> && sizeof(t_symbol) <= 4);
     if (m_base_is_small) [[likely]] return reduce_small(uint128_t{fp} * m_base + in);
     return reduce(uint128_t{fp} * m_base + in);
   }
 
-  inline uint64_t roll(uint64_t fp, uint8_t out, uint8_t in) const {
-    if (m_base_is_small) [[likely]] return reduce_small(uint128_t{fp} * m_base + m_out_influence[out] + in);
-    return reduce(uint128_t{fp} * m_base + m_out_influence[out] + in);
+  template <typename t_symbol>
+  inline uint64_t roll(uint64_t fp, t_symbol out, t_symbol in) const {
+    static_assert(std::is_unsigned_v<t_symbol> && sizeof(t_symbol) <= 4);
+    uint64_t out_influence;
+
+    if constexpr (sizeof(t_symbol) == 1) {
+      out_influence = m_out_influence[out];
+    } else {
+      const uint64_t influence = reduce(uint128_t{out} * m_pow);
+      out_influence = influence == 0 ? 0 : prime - influence;
+    }
+
+    if (m_base_is_small) [[likely]] return reduce_small(uint128_t{fp} * m_base + out_influence + in);
+    return reduce(uint128_t{fp} * m_base + out_influence + in);
   }
 
  private:
@@ -189,6 +222,7 @@ class rk_mersenne61 {
 
   uint64_t m_base;
   bool m_base_is_small;
+  uint64_t m_pow = 1;
   std::array<uint64_t, 256> m_out_influence{};
 };
 }  // namespace lce::rolling_hash
