@@ -9,6 +9,7 @@
 #include <gtest/gtest.h>
 
 #include <cstdint>
+#include <memory>
 #include <random>
 #include <vector>
 
@@ -68,8 +69,11 @@ static void verify_rolling_hash(std::mt19937_64& g, uint64_t max_size) {
   const u128 base = std::uniform_int_distribution<uint64_t>(257, (1u << 20) - 1)(g);
 
   fuzz_timer tb(fuzz_construct_ns());
-  lce::rolling_hash::rk_prime<prime_exp> roller(tau, base);
-  lce::rolling_hash::rk_prime<prime_exp> fresh(tau, base);
+  using rk_type = lce::rolling_hash::rk_prime<prime_exp>;
+  const auto roller_owner = std::make_unique<rk_type>(tau, base);
+  const auto fresh_owner = std::make_unique<rk_type>(tau, base);
+  rk_type& roller = *roller_owner;
+  rk_type& fresh = *fresh_owner;
   tb.stop();
   fuzz_timer tq(fuzz_query_ns());
 
