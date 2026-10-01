@@ -81,7 +81,7 @@ class lce_classic_for_sss {
     // build lcp
     m_lcp.resize(sa.size());
     m_lcp[0] = 0;
-    uint16_t p = std::min<uint16_t>(omp_get_num_threads(), reduced_fps_size);
+    uint64_t p = std::min<uint64_t>(omp_get_max_threads(), reduced_fps_size);
 
 #pragma omp parallel num_threads(p)
     {

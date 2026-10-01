@@ -11,6 +11,7 @@
 #include <omp.h>
 #include <parallel_hashmap/phmap.h>
 
+#include <memory>
 #include <mutex>
 
 #include "ring_buffer.hpp"
@@ -37,8 +38,11 @@ class sss {
     std::vector<std::vector<t_index>> sss_part(omp_get_max_threads());
     std::vector<std::vector<uint128_t>> fps_part(omp_get_max_threads());
 
-    const rk_prime<> rk(t_tau, 296819);
-    const rk_prime<> rk3(3 * t_tau, 296819);
+    const auto rk_owner = std::make_unique<const rk_prime<>>(t_tau, 296819);
+    const auto rk3_owner =
+        std::make_unique<const rk_prime<>>(3 * t_tau, 296819);
+    const rk_prime<>& rk = *rk_owner;
+    const rk_prime<>& rk3 = *rk3_owner;
 #pragma omp parallel
     {
       const size_t sss_end = size - 2 * t_tau + 1;
@@ -65,7 +69,9 @@ class sss {
     // If the text contains long runs, the sss inflates. We the then use a
     // algorithm which detects runs.
     if (m_runs_detected) {
-      const rk_prime<> rk_small(t_tau / 4, 296819);
+      const auto rk_small_owner =
+          std::make_unique<const rk_prime<>>(t_tau / 4, 296819);
+      const rk_prime<>& rk_small = *rk_small_owner;
 #pragma omp parallel
       {
         const size_t sss_end = size - 2 * t_tau + 1;
