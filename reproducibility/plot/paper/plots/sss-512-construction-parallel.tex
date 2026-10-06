@@ -1,0 +1,948 @@
+% IMPORT-DATA results data/lce.results.new.par
+
+\begin{figure}[!tbhp]
+\input{plots/sss-construction-colorfix}
+\begin{tikzpicture}[]
+    \begin{axis}[
+        barchart,
+        title={dblp.xml},
+        xlabel={},
+        ylabel={time [ns/n]},
+        y label style={at={(-0.2,0.5)}},
+        xmode=log,]
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sss_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='dblp.xml' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-green] coordinates { (1,16.435) (2,8.33739) (4,4.17376) (8,2.1274) (16,1.02656) (32,0.624713) (64,0.354567) };
+        \addlegendentry{text=dblp.xml}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((pred_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='dblp.xml' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-deep-orange] coordinates { (1,0.0168841) (2,0.00675366) (4,0.00337683) (8,0.00337683) (16,0.0) (32,0.0) (64,0.00337683) };
+        \addlegendentry{text=dblp.xml}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((alphabet_reduction_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='dblp.xml' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-blue] coordinates { (1,3.11006) (2,1.53983) (4,0.786801) (8,0.405219) (16,0.236378) (32,0.145204) (64,0.121566) };
+        \addlegendentry{text=dblp.xml}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='dblp.xml' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-yellow] coordinates { (1,1.07045) (2,0.732772) (4,0.509901) (8,0.455872) (16,0.42548) (32,0.411973) (64,0.604452) };
+        \addlegendentry{text=dblp.xml}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((isa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='dblp.xml' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-brown] coordinates { (1,0.00675366) (2,0.00675366) (4,0.00337683) (8,0.0101305) (16,0.0236378) (32,0.0270146) (64,0.0371451) };
+        \addlegendentry{text=dblp.xml}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((lcp_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='dblp.xml' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-pink] coordinates { (1,0.813816) (2,0.428857) (4,0.28703) (8,0.155334) (16,0.0810439) (32,0.0709134) (64,0.077667) };
+        \addlegendentry{text=dblp.xml}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((rmq_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='dblp.xml' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-lipics-grey] coordinates { (1,0.00675366) (2,0.00337683) (4,0.0) (8,0.0) (16,0.0) (32,0.0) (64,0.0) };
+        \addlegendentry{text=dblp.xml}
+
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}
+    \begin{axis}[
+        barchart,
+        title={dna},
+        xlabel={},
+        ylabel={\phantom{v}},
+        xmode=log,]
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sss_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='dna' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-green] coordinates { (1,15.0844) (2,7.73158) (4,3.88436) (8,2.06968) (16,0.982849) (32,0.559506) (64,0.306986) };
+        \addlegendentry{text=dna}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((pred_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='dna' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-deep-orange] coordinates { (1,0.0173298) (2,0.00742707) (4,0.00495138) (8,0.00247569) (16,0.0) (32,0.0) (64,0.00247569) };
+        \addlegendentry{text=dna}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((alphabet_reduction_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='dna' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-blue] coordinates { (1,3.47834) (2,1.74289) (4,0.859065) (8,0.443149) (16,0.235191) (32,0.141114) (64,0.118833) };
+        \addlegendentry{text=dna}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='dna' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-yellow] coordinates { (1,1.20319) (2,0.868967) (4,0.59169) (8,0.495138) (16,0.46543) (32,0.462954) (64,0.60902) };
+        \addlegendentry{text=dna}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((isa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='dna' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-brown] coordinates { (1,0.0123785) (2,0.00495138) (4,0.00495138) (8,0.00742707) (16,0.0247569) (32,0.0247569) (64,0.0346597) };
+        \addlegendentry{text=dna}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((lcp_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='dna' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-pink] coordinates { (1,0.928384) (2,0.462954) (4,0.242618) (8,0.123785) (16,0.0742707) (32,0.0420867) (64,0.0866492) };
+        \addlegendentry{text=dna}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((rmq_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='dna' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-lipics-grey] coordinates { (1,0.00495138) (2,0.00247569) (4,0.0) (8,0.0) (16,0.0) (32,0.0) (64,0.0) };
+        \addlegendentry{text=dna}
+
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}
+    \begin{axis}[
+        barchart,
+        title={english},
+        xlabel={},
+        ylabel={\phantom{v}},
+        xmode=log,]
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sss_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='english' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-green] coordinates { (1,15.6076) (2,7.79363) (4,4.11827) (8,2.01729) (16,1.07085) (32,0.606679) (64,0.289541) };
+        \addlegendentry{text=english}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((pred_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='english' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-deep-orange] coordinates { (1,0.0176439) (2,0.00995297) (4,0.00542889) (8,0.00452408) (16,0.00226204) (32,0.00180963) (64,0.00226204) };
+        \addlegendentry{text=english}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((alphabet_reduction_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='english' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-blue] coordinates { (1,5.19952) (2,2.66242) (4,1.35541) (8,0.761855) (16,0.42843) (32,0.336591) (64,0.468694) };
+        \addlegendentry{text=english}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='english' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-yellow] coordinates { (1,2.23399) (2,1.64948) (4,1.38889) (8,1.30158) (16,1.19662) (32,1.18078) (64,1.2871) };
+        \addlegendentry{text=english}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((isa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='english' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-brown] coordinates { (1,0.0307637) (2,0.0199059) (4,0.0126674) (8,0.014477) (16,0.00859575) (32,0.00633371) (64,0.00859575) };
+        \addlegendentry{text=english}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((lcp_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='english' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-pink] coordinates { (1,1.00163) (2,0.584058) (4,0.328448) (8,0.162414) (16,0.0846002) (32,0.0515745) (64,0.0438835) };
+        \addlegendentry{text=english}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((rmq_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='english' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-lipics-grey] coordinates { (1,0.00678612) (2,0.00361926) (4,0.00180963) (8,0.00180963) (16,0.000904815) (32,0.000904815) (64,0.00135722) };
+        \addlegendentry{text=english}
+
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}
+    \begin{axis}[
+        barchart,
+        title={proteins},
+        xlabel={},
+        ylabel={\phantom{v}},
+        xmode=log,]
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sss_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='proteins' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-green] coordinates { (1,14.9284) (2,7.98445) (4,4.07837) (8,2.02778) (16,1.02783) (32,0.585278) (64,0.288839) };
+        \addlegendentry{text=proteins}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((pred_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='proteins' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-deep-orange] coordinates { (1,0.0177357) (2,0.00929013) (4,0.00675646) (8,0.00337823) (16,0.00253367) (32,0.00168912) (64,0.00253367) };
+        \addlegendentry{text=proteins}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((alphabet_reduction_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='proteins' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-blue] coordinates { (1,3.74815) (2,1.88167) (4,1.00671) (8,0.53376) (16,0.307419) (32,0.215362) (64,0.205227) };
+        \addlegendentry{text=proteins}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='proteins' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-yellow] coordinates { (1,1.94671) (2,1.38676) (4,1.1638) (8,1.03965) (16,0.991511) (32,0.965329) (64,0.974619) };
+        \addlegendentry{text=proteins}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((isa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='proteins' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-brown] coordinates { (1,0.0320932) (2,0.0194248) (4,0.0109792) (8,0.0101347) (16,0.0109792) (32,0.0194248) (64,0.0354714) };
+        \addlegendentry{text=proteins}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((lcp_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='proteins' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-pink] coordinates { (1,1.02191) (2,0.534605) (4,0.271103) (8,0.146108) (16,0.0836112) (32,0.0608081) (64,0.0743211) };
+        \addlegendentry{text=proteins}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((rmq_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='proteins' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-lipics-grey] coordinates { (1,0.0059119) (2,0.00337823) (4,0.00168912) (8,0.000844558) (16,0.000844558) (32,0.000844558) (64,0.000844558) };
+        \addlegendentry{text=proteins}
+
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+
+\begin{tikzpicture}
+    \begin{axis}[
+        barchart,
+        title={sources},
+        xlabel={},
+        ylabel={time [ns/n]},
+        y label style={at={(-0.2,0.5)}},
+        xmode=log,]
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sss_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='sources' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-green] coordinates { (1,15.8584) (2,8.26589) (4,4.06892) (8,2.12457) (16,1.07651) (32,0.607019) (64,0.34619) };
+        \addlegendentry{text=sources}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((pred_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='sources' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-deep-orange] coordinates { (1,0.014227) (2,0.00948467) (4,0.00474233) (8,0.0) (16,0.0) (32,0.0) (64,0.0) };
+        \addlegendentry{text=sources}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((alphabet_reduction_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='sources' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-blue] coordinates { (1,3.04932) (2,1.53177) (4,0.777743) (8,0.403098) (16,0.232374) (32,0.165982) (64,0.175466) };
+        \addlegendentry{text=sources}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='sources' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-yellow] coordinates { (1,1.03383) (2,0.644957) (4,0.441037) (8,0.369902) (16,0.34619) (32,0.341448) (64,0.445779) };
+        \addlegendentry{text=sources}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((isa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='sources' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-brown] coordinates { (1,0.00948467) (2,0.00474233) (4,0.00474233) (8,0.0189693) (16,0.0237117) (32,0.0237117) (64,0.0474233) };
+        \addlegendentry{text=sources}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((lcp_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='sources' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-pink] coordinates { (1,0.810939) (2,0.464749) (4,0.237117) (8,0.123301) (16,0.071135) (32,0.0616503) (64,0.042681) };
+        \addlegendentry{text=sources}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((rmq_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='sources' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-lipics-grey] coordinates { (1,0.00474233) (2,0.0) (4,0.0) (8,0.0) (16,0.0) (32,0.0) (64,0.0) };
+        \addlegendentry{text=sources}
+
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}
+    \begin{axis}[
+        barchart,
+        title={cere},
+        xlabel={},
+        ylabel={\phantom{v}},
+        xmode=log,]
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sss_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='cere' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-green] coordinates { (1,63.9169) (2,33.0185) (4,17.0328) (8,8.79713) (16,4.50696) (32,2.62743) (64,1.38092) };
+        \addlegendentry{text=cere}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((pred_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='cere' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-deep-orange] coordinates { (1,0.0173428) (2,0.0086714) (4,0.00650355) (8,0.00216785) (16,0.00216785) (32,0.00216785) (64,0.00216785) };
+        \addlegendentry{text=cere}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((alphabet_reduction_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='cere' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-blue] coordinates { (1,7.07803) (2,3.36017) (4,1.76246) (8,1.08176) (16,0.756579) (32,0.730565) (64,1.12078) };
+        \addlegendentry{text=cere}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='cere' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-yellow] coordinates { (1,1.31155) (2,0.917) (4,0.706719) (8,0.596159) (16,0.583151) (32,0.583151) (64,0.69588) };
+        \addlegendentry{text=cere}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((isa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='cere' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-brown] coordinates { (1,0.0108392) (2,0.0086714) (4,0.0043357) (8,0.0086714) (16,0.0086714) (32,0.0108392) (64,0.0151749) };
+        \addlegendentry{text=cere}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((lcp_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='cere' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-pink] coordinates { (1,0.923504) (2,0.437906) (4,0.242799) (8,0.151749) (16,0.0802104) (32,0.0520284) (64,0.0693712) };
+        \addlegendentry{text=cere}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((rmq_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='cere' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-lipics-grey] coordinates { (1,0.00650355) (2,0.00216785) (4,0.00216785) (8,0.0) (16,0.0) (32,0.0) (64,0.0) };
+        \addlegendentry{text=cere}
+
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}
+    \begin{axis}[
+        barchart,
+        title={coreutils},
+        xlabel={},
+        ylabel={\phantom{v}},
+        xmode=log,]
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sss_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='coreutils' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-green] coordinates { (1,15.7686) (2,8.48103) (4,4.10168) (8,2.11904) (16,1.11554) (32,0.628405) (64,0.316638) };
+        \addlegendentry{text=coreutils}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((pred_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='coreutils' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-deep-orange] coordinates { (1,0.0146141) (2,0.00974271) (4,0.00487135) (8,0.0) (16,0.0) (32,0.0) (64,0.0) };
+        \addlegendentry{text=coreutils}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((alphabet_reduction_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='coreutils' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-blue] coordinates { (1,6.32302) (2,3.22971) (4,1.66113) (8,1.20322) (16,0.984013) (32,1.0035) (64,1.57832) };
+        \addlegendentry{text=coreutils}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='coreutils' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-yellow] coordinates { (1,1.16425) (2,0.779416) (4,0.594305) (8,0.555334) (16,0.579691) (32,0.681989) (64,1.11067) };
+        \addlegendentry{text=coreutils}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((isa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='coreutils' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-brown] coordinates { (1,0.00487135) (2,0.00487135) (4,0.0) (8,0.00974271) (16,0.00487135) (32,0.00487135) (64,0.00487135) };
+        \addlegendentry{text=coreutils}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((lcp_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='coreutils' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-pink] coordinates { (1,0.579691) (2,0.336123) (4,0.199725) (8,0.121784) (16,0.0779416) (32,0.0633276) (64,0.082813) };
+        \addlegendentry{text=coreutils}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((rmq_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='coreutils' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-lipics-grey] coordinates { (1,0.00487135) (2,0.0) (4,0.0) (8,0.0) (16,0.0) (32,0.0) (64,0.0) };
+        \addlegendentry{text=coreutils}
+
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}
+    \begin{axis}[
+        barchart,
+        title={einstein.de.txt},
+        xlabel={},
+        ylabel={\phantom{v}},
+        xmode=log,]
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sss_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='einstein.de.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-green] coordinates { (1,15.5565) (2,8.41972) (4,4.23681) (8,2.09145) (16,1.02417) (32,0.603719) (64,0.301859) };
+        \addlegendentry{text=einstein.de.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((pred_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='einstein.de.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-deep-orange] coordinates { (1,0.0107807) (2,0.0) (4,0.0) (8,0.0) (16,0.0) (32,0.0) (64,0.0) };
+        \addlegendentry{text=einstein.de.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((alphabet_reduction_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='einstein.de.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-blue] coordinates { (1,6.34983) (2,3.60075) (4,2.06989) (8,1.94052) (16,1.86506) (32,2.16692) (64,3.26655) };
+        \addlegendentry{text=einstein.de.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='einstein.de.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-yellow] coordinates { (1,0.808552) (2,0.560596) (4,0.420447) (8,0.366543) (16,0.344982) (32,0.334201) (64,0.355763) };
+        \addlegendentry{text=einstein.de.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((isa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='einstein.de.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-brown] coordinates { (1,0.0) (2,0.0) (4,0.0) (8,0.0) (16,0.0) (32,0.0) (64,0.0) };
+        \addlegendentry{text=einstein.de.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((lcp_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='einstein.de.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-pink] coordinates { (1,0.183272) (2,0.107807) (4,0.0646841) (8,0.0431228) (16,0.0215614) (32,0.0215614) (64,0.0323421) };
+        \addlegendentry{text=einstein.de.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((rmq_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='einstein.de.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-lipics-grey] coordinates { (1,0.0) (2,0.0) (4,0.0) (8,0.0) (16,0.0) (32,0.0) (64,0.0) };
+        \addlegendentry{text=einstein.de.txt}
+
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+
+\begin{tikzpicture}
+    \begin{axis}[
+        barchart,
+        title={einstein.en.txt},
+        xlabel={\phantom{threads}},
+        ylabel={time [ns/n]},
+        y label style={at={(-0.2,0.5)}},
+        xmode=log,]
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sss_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='einstein.en.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-green] coordinates { (1,15.6065) (2,8.43194) (4,4.07163) (8,2.1021) (16,1.0564) (32,0.618015) (64,0.340015) };
+        \addlegendentry{text=einstein.en.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((pred_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='einstein.en.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-deep-orange] coordinates { (1,0.0128308) (2,0.00641538) (4,0.00427692) (8,0.00213846) (16,0.00213846) (32,0.0) (64,0.00213846) };
+        \addlegendentry{text=einstein.en.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((alphabet_reduction_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='einstein.en.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-blue] coordinates { (1,7.06761) (2,3.90483) (4,2.17267) (8,1.79844) (16,1.85191) (32,1.95027) (64,3.13284) };
+        \addlegendentry{text=einstein.en.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='einstein.en.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-yellow] coordinates { (1,1.04357) (2,0.921676) (4,0.816891) (8,1.34723) (16,2.13846) (32,3.92835) (64,10.6559) };
+        \addlegendentry{text=einstein.en.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((isa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='einstein.en.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-brown] coordinates { (1,0.0128308) (2,0.00641538) (4,0.00427692) (8,0.00855383) (16,0.00855383) (32,0.00641538) (64,0.0128308) };
+        \addlegendentry{text=einstein.en.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((lcp_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='einstein.en.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-pink] coordinates { (1,0.198877) (2,0.119754) (4,0.0662922) (8,0.0449076) (16,0.051323) (32,0.0171077) (64,0.0149692) };
+        \addlegendentry{text=einstein.en.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((rmq_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='einstein.en.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-lipics-grey] coordinates { (1,0.00855383) (2,0.00427692) (4,0.00213846) (8,0.0) (16,0.0) (32,0.0) (64,0.0) };
+        \addlegendentry{text=einstein.en.txt}
+
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}
+    \begin{axis}[
+        barchart,
+        title={Escherichia\_Coli},
+        xlabel={\phantom{threads}},
+        ylabel={\phantom{v}},
+        xmode=log,]
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sss_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='Escherichia_Coli' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-green] coordinates { (1,15.0502) (2,8.31488) (4,4.06426) (8,1.93452) (16,0.993881) (32,0.567932) (64,0.310588) };
+        \addlegendentry{text=Escherichia\_Coli}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((pred_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='Escherichia_Coli' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-deep-orange] coordinates { (1,0.0177479) (2,0.00887394) (4,0.0) (8,0.0) (16,0.0) (32,0.0) (64,0.0) };
+        \addlegendentry{text=Escherichia\_Coli}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((alphabet_reduction_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='Escherichia_Coli' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-blue] coordinates { (1,4.14413) (2,2.09425) (4,1.09149) (8,0.656672) (16,0.425949) (32,0.399327) (64,0.594554) };
+        \addlegendentry{text=Escherichia\_Coli}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='Escherichia_Coli' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-yellow] coordinates { (1,1.06487) (2,0.736537) (4,0.559058) (8,0.58568) (16,0.674419) (32,0.914016) (64,1.89902) };
+        \addlegendentry{text=Escherichia\_Coli}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((isa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='Escherichia_Coli' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-brown] coordinates { (1,0.00887394) (2,0.0) (4,0.0) (8,0.00887394) (16,0.0) (32,0.0) (64,0.0) };
+        \addlegendentry{text=Escherichia\_Coli}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((lcp_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='Escherichia_Coli' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-pink] coordinates { (1,0.550184) (2,0.301714) (4,0.168605) (8,0.0976133) (16,0.0532436) (32,0.0354958) (64,0.0621176) };
+        \addlegendentry{text=Escherichia\_Coli}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((rmq_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='Escherichia_Coli' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-lipics-grey] coordinates { (1,0.0) (2,0.0) (4,0.0) (8,0.0) (16,0.0) (32,0.0) (64,0.0) };
+        \addlegendentry{text=Escherichia\_Coli}
+
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}
+    \begin{axis}[
+        barchart,
+        title={influenza},
+        xlabel={\phantom{threads}},
+        ylabel={\phantom{v}},
+        xmode=log,]
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sss_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='influenza' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-green] coordinates { (1,15.0444) (2,8.44915) (4,4.08246) (8,1.94434) (16,1.03999) (32,0.581363) (64,0.374656) };
+        \addlegendentry{text=influenza}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((pred_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='influenza' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-deep-orange] coordinates { (1,0.0129192) (2,0.00645959) (4,0.0) (8,0.0) (16,0.0) (32,0.0) (64,0.0) };
+        \addlegendentry{text=influenza}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((alphabet_reduction_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='influenza' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-blue] coordinates { (1,5.09662) (2,2.51924) (4,1.29192) (8,0.704095) (16,0.394035) (32,0.31006) (64,0.426333) };
+        \addlegendentry{text=influenza}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='influenza' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-yellow] coordinates { (1,1.05937) (2,0.645959) (4,0.529686) (8,0.387575) (16,0.361737) (32,0.368197) (64,0.445712) };
+        \addlegendentry{text=influenza}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((isa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='influenza' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-brown] coordinates { (1,0.00645959) (2,0.0) (4,0.0) (8,0.00645959) (16,0.0193788) (32,0.0193788) (64,0.00645959) };
+        \addlegendentry{text=influenza}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((lcp_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='influenza' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-pink] coordinates { (1,1.05937) (2,0.549065) (4,0.284222) (8,0.167949) (16,0.0839747) (32,0.0516767) (64,0.109813) };
+        \addlegendentry{text=influenza}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((rmq_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='influenza' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-lipics-grey] coordinates { (1,0.00645959) (2,0.0) (4,0.0) (8,0.0) (16,0.0) (32,0.0) (64,0.0) };
+        \addlegendentry{text=influenza}
+
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}
+    \begin{axis}[
+        barchart,
+        title={kernel},
+        xlabel={threads},
+        ylabel={\phantom{v}},
+        xmode=log,]
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sss_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='kernel' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-green] coordinates { (1,15.9171) (2,7.9508) (4,4.20993) (8,2.02743) (16,1.04279) (32,0.616371) (64,0.333383) };
+        \addlegendentry{text=kernel}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((pred_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='kernel' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-deep-orange] coordinates { (1,0.0155062) (2,0.00775309) (4,0.00387655) (8,0.00387655) (16,0.0) (32,0.0) (64,0.00387655) };
+        \addlegendentry{text=kernel}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((alphabet_reduction_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='kernel' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-blue] coordinates { (1,6.87699) (2,3.78739) (4,2.03906) (8,1.7018) (16,1.60489) (32,1.63203) (64,2.53914) };
+        \addlegendentry{text=kernel}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='kernel' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-yellow] coordinates { (1,1.14358) (2,0.728791) (4,0.523334) (8,0.430297) (16,0.391531) (32,0.387655) (64,0.41479) };
+        \addlegendentry{text=kernel}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((isa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='kernel' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-brown] coordinates { (1,0.00775309) (2,0.00387655) (4,0.00387655) (8,0.00775309) (16,0.00775309) (32,0.00387655) (64,0.00775309) };
+        \addlegendentry{text=kernel}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((lcp_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='kernel' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-pink] coordinates { (1,0.453556) (2,0.279111) (4,0.166691) (8,0.116296) (16,0.0581482) (32,0.0387655) (64,0.0542716) };
+        \addlegendentry{text=kernel}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((rmq_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='kernel' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-lipics-grey] coordinates { (1,0.00387655) (2,0.00387655) (4,0.0) (8,0.0) (16,0.0) (32,0.0) (64,0.0) };
+        \addlegendentry{text=kernel}
+
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+
+\vspace{-0.4cm}
+\begin{tikzpicture}
+    \begin{axis}[
+        barchart,
+        title={wiki.txt},
+        xlabel={threads},
+        ylabel={time [ns/n]},
+        y label style={at={(-0.2,0.5)}},
+        xmode=log,]
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sss_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='wiki.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-green] coordinates { (1,16.5643) (2,8.78878) (1,16.6089) (2,8.84347) (4,4.30871) (8,2.1782) (16,1.12239) (32,0.642142) (64,0.330434) (1,16.8589) };
+        \addlegendentry{text=wiki.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((pred_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='wiki.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-deep-orange] coordinates { (1,0.0233673) (2,0.0147771) (1,0.0234241) (2,0.0146918) (4,0.00883784) (8,0.00846029) (16,0.00740073) (32,0.00704754) (64,0.00716121) (1,0.0233551) };
+        \addlegendentry{text=wiki.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((alphabet_reduction_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='wiki.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-blue] coordinates { (1,6.60863) (2,4.62583) (1,6.68055) (2,4.60185) (4,2.09531) (8,1.04543) (16,0.548056) (32,0.336065) (64,0.322831) (1,6.5789) };
+        \addlegendentry{text=wiki.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='wiki.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-yellow] coordinates { (1,3.18312) (2,2.85364) (1,3.18707) (2,2.89121) (4,2.2569) (8,2.42214) (16,2.64594) (32,2.91203) (64,4.6986) (1,3.18501) };
+        \addlegendentry{text=wiki.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((isa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='wiki.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-brown] coordinates { (1,0.115489) (2,0.0704632) (1,0.114859) (2,0.067796) (4,0.0375192) (8,0.0282429) (16,0.0213497) (32,0.018309) (64,0.0206067) (1,0.114531) };
+        \addlegendentry{text=wiki.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((lcp_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='wiki.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-pink] coordinates { (1,2.31708) (2,1.73461) (1,2.35864) (2,1.71987) (4,0.881705) (8,0.429701) (16,0.221259) (32,0.124379) (64,0.115643) (1,2.31975) };
+        \addlegendentry{text=wiki.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((rmq_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='wiki.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-lipics-grey] coordinates { (1,0.0113264) (2,0.00800561) (1,0.0113832) (2,0.00800155) (4,0.00466859) (8,0.00465641) (16,0.00396627) (32,0.0037917) (64,0.00394597) (1,0.0112939) };
+        \addlegendentry{text=wiki.txt}
+
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}
+    \begin{axis}[
+        barchart,
+        title={dna.txt},
+        xlabel={threads},
+        ylabel={\phantom{v}},
+        xmode=log,]
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sss_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='dna.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-green] coordinates { (1,16.0278) (2,8.23467) (4,4.10593) (8,2.05984) (16,1.04296) (32,0.627361) (64,0.304482) (1,16.1322) };
+        \addlegendentry{text=dna.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((pred_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='dna.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-deep-orange] coordinates { (1,0.0256983) (2,0.0104644) (4,0.0137123) (8,0.00858241) (16,0.00978813) (32,0.00978368) (64,0.0018553) (1,0.0187265) };
+        \addlegendentry{text=dna.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((alphabet_reduction_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='dna.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-blue] coordinates { (1,6.17373) (2,4.22661) (4,1.94356) (8,0.954374) (16,0.512382) (32,0.319267) (64,0.196212) (1,6.17615) };
+        \addlegendentry{text=dna.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='dna.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-yellow] coordinates { (1,5.47464) (2,5.1775) (4,4.52512) (8,4.23799) (16,4.00574) (32,3.69116) (64,1.8545) (1,5.50862) };
+        \addlegendentry{text=dna.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((isa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='dna.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-brown] coordinates { (1,0.163044) (2,0.104395) (4,0.0558947) (8,0.0480998) (16,0.0325366) (32,0.0247551) (64,0.0193494) (1,0.165709) };
+        \addlegendentry{text=dna.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((lcp_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='dna.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-pink] coordinates { (1,3.67648) (2,2.5925) (4,1.22014) (8,0.598927) (16,0.313901) (32,0.178064) (64,0.0873813) (1,3.50989) };
+        \addlegendentry{text=dna.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((rmq_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='dna.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-lipics-grey] coordinates { (1,0.014958) (2,0.00961906) (4,0.00767923) (8,0.00796843) (16,0.0060019) (32,0.00566822) (64,0.00101441) (1,0.0110828) };
+        \addlegendentry{text=dna.txt}
+
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}
+    \begin{axis}[
+        barchart,
+        title={cc.txt},
+        xlabel={threads},
+        ylabel={\phantom{v}},
+        xmode=log,]
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sss_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='cc.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-green] coordinates { (1,16.7888) (2,8.70096) (4,4.36255) (8,2.2154) (16,1.11342) (32,0.635929) (64,0.328999) (1,16.8136) };
+        \addlegendentry{text=cc.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((pred_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='cc.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-deep-orange] coordinates { (1,0.0234908) (2,0.0147853) (4,0.0088224) (8,0.00840591) (16,0.00741041) (32,0.00708027) (64,0.00702948) (1,0.0234401) };
+        \addlegendentry{text=cc.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((alphabet_reduction_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='cc.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-blue] coordinates { (1,7.76556) (2,5.41964) (4,2.49579) (8,1.40345) (16,0.987885) (32,1.02355) (64,1.39959) (1,7.76523) };
+        \addlegendentry{text=cc.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((sa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='cc.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-yellow] coordinates { (1,3.0037) (2,2.55712) (4,2.02528) (8,1.92621) (16,1.88656) (32,1.83502) (64,1.95772) (1,3.00151) };
+        \addlegendentry{text=cc.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((isa_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='cc.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-brown] coordinates { (1,0.104696) (2,0.0617974) (4,0.0435685) (8,0.0290931) (16,0.0217233) (32,0.0190873) (64,0.0211443) (1,0.105112) };
+        \addlegendentry{text=cc.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((lcp_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='cc.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-pink] coordinates { (1,1.68866) (2,1.29527) (4,0.623632) (8,0.323498) (16,0.170973) (32,0.101196) (64,0.0767554) (1,1.6854) };
+        \addlegendentry{text=cc.txt}
+
+        %% MULTIPLOT(text)
+        %% SELECT threads AS x, ((rmq_time * 1000000.0) / text_size) AS y, text
+        %% FROM results
+        %% WHERE text='cc.txt' AND algo='sss512' AND threads<=64
+        \addplot[black,fill=my-lipics-grey] coordinates { (1,0.0117886) (2,0.00820275) (4,0.00487086) (8,0.0047388) (16,0.00416486) (32,0.00410899) (64,0.00394646) (1,0.0118699) };
+        \addlegendentry{text=cc.txt}
+
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\hspace*{3.3cm}
+
+\begin{tikzpicture}[legendmarks]
+    \begin{axis}[legend,legend columns=8,]
+        \addplot[color=my-green,squaremark] coordinates { (0,0) };
+        \addlegendentry{SSS}
+        \addplot[color=my-deep-orange,squaremark] coordinates { (0,0) };
+        \addlegendentry{Succ}
+        \addplot[color=my-blue,squaremark] coordinates { (0,0) };
+        \addlegendentry{T' Alphabet Compactification}
+        \addplot[color=my-yellow,squaremark] coordinates { (0,0) };
+        \addlegendentry{SA}
+        \addplot[color=my-brown,squaremark] coordinates { (0,0) };
+        \addlegendentry{SA\smash{$^{-1}$}}
+        \addplot[color=my-pink,squaremark] coordinates { (0,0) };
+        \addlegendentry{LCP}
+        \addplot[color=my-lipics-grey,squaremark] coordinates { (0,0) };
+        \addlegendentry{RMQ}
+    \end{axis}
+\end{tikzpicture}
+\centering
+\caption{Running times of the different phases during the construction of \texttt{sss-512} versus the number of used threads.}
+\label{fig:sss-512-construction-parallel}
+\end{figure}

@@ -1,0 +1,278 @@
+% IMPORT-DATA results data/lce.results.new.par
+
+\begin{figure}
+  \input{plots/sss-construction-colorfix}
+  \centering
+  \begin{tikzpicture}[pie chart]
+    \pie{size [MiB]}{
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (sss_mem / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'cere' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      9.118/sss/0/0,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (pred_mem / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'cere' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      4.504/succ/0/0,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (alphabet_reduction_mem / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'cere' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      8.978/isa/0/0,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (lcp_mem / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'cere' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      8.978/lcp/0/0.2,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (rmq_mem / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'cere' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      1.693/rmq/0/0
+    }{}{cere}
+  \end{tikzpicture}
+  \hspace*{-0.3cm}
+  \hfill
+  \begin{tikzpicture}[pie chart]
+    \pie{\phantom{size [MiB]}}{
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (sss_mem / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'dblp.xml' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      5.777/sss/0/0,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (pred_mem / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'dblp.xml' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      2.891/succ/0/0,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (isa_mem / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'dblp.xml' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      5.777/isa/0/0,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (lcp_mem / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'dblp.xml' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      5.777/lcp/0/0.2,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (rmq_mem / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'dblp.xml' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      1.042/rmq/0/0
+    }{}{dblp.xml}
+  \end{tikzpicture}
+  \hspace*{-0.3cm}
+  \hfill
+  \begin{tikzpicture}[pie chart]
+    \pie{\phantom{size [MiB]}}{
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (sss_mem / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'english' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      43.07/sss/0/0,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (pred_mem / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'english' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      21.58/succ/0/0,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (isa_mem / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'english' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      43.07/isa/0/0,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (lcp_mem / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'english' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      43.07/lcp/0/0.1,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (rmq_mem / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'english' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      9.317/rmq/0/0
+    }{}{english}
+  \end{tikzpicture}
+
+  \begin{tikzpicture}[pie chart]
+    \pie{memory peak [MiB]}{
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (sss_mem_peak / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'cere' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      298.9/sss/0/0,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (pred_mem_peak / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'cere' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      4.506/succ/0/1.0,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (alphabet_reduction_mem_peak / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'cere' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      35.91/strsort/0.0/0.85,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (sa_mem_peak / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'cere' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      40.48/sa/-0.2/0.9,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (isa_mem_peak / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'cere' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      8.980/isa/-0.2/0.65,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (lcp_mem_peak / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'cere' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      8.980/lcp/-0.2/0.35,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (rmq_mem_peak / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'cere' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      1.694/rmq/0/0
+    }{}{\phantom{v}}
+  \end{tikzpicture}
+  \hspace*{-0.3cm}
+  \hfill
+  \begin{tikzpicture}[pie chart]
+    \pie{\phantom{memory peak [MiB]}}{
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (sss_mem_peak / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'dblp.xml' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      16.33/sss/0/0,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (pred_mem_peak / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'dblp.xml' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      2.893/succ/0/0,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (alphabet_reduction_mem_peak / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'dblp.xml' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      23.10/strsort/0/0,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (sa_mem_peak / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'dblp.xml' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      41.80/sa/0/0,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (isa_mem_peak / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'dblp.xml' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      5.778/isa/0/0.6,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (lcp_mem_peak / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'dblp.xml' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      5.778/lcp/0/0.35,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (rmq_mem_peak / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'dblp.xml' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      1.044/rmq/0/0
+    }{}{\phantom{v}}
+  \end{tikzpicture}
+  \hspace*{-0.3cm}
+  \hfill
+  \begin{tikzpicture}[pie chart]
+    \pie{\phantom{memory peak [MiB]}}{
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (sss_mem_peak / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'english' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      127.0/sss/0/0,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (pred_mem_peak / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'english' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      21.58/succ/0/0,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (alphabet_reduction_mem_peak / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'english' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      172.3/strsort/0/0,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (sa_mem_peak / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'english' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      212.9/sa/0/0,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (isa_mem_peak / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'english' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      43.08/isa/0/0.5,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (lcp_mem_peak / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'english' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      43.08/lcp/0/0.35,
+      %% -MULTIPLOT(algo) 
+      %% SELECT algo, (rmq_mem_peak / 1000000.0) AS y, 0 AS x
+      %% FROM results
+      %% WHERE text LIKE 'english' AND algo LIKE 'sss512' AND threads=1
+      %% GROUP BY algo ORDER BY algo
+      9.319/rmq/0/0
+    }{}{\phantom{v}}
+  \end{tikzpicture}
+
+  \vspace*{-0.1cm}
+  \begin{tikzpicture}[legendmarks]
+    \begin{axis}[legend,legend columns=8]
+        \addplot[color=my-green,squaremark] coordinates { (0,0) };
+        \addlegendentry{SSS}
+        \addplot[color=my-deep-orange,squaremark] coordinates { (0,0) };
+        \addlegendentry{Succ}
+        \addplot[color=my-blue,squaremark] coordinates { (0,0) };
+        \addlegendentry{T' Alphabet Compactification}
+        \addplot[color=my-yellow,squaremark] coordinates { (0,0) };
+        \addlegendentry{SA}
+        \addplot[color=my-brown,squaremark] coordinates { (0,0) };
+        \addlegendentry{SA\smash{$^{-1}$}}
+        \addplot[color=my-pink,squaremark] coordinates { (0,0) };
+        \addlegendentry{LCP}
+        \addplot[color=my-lipics-grey,squaremark] coordinates { (0,0) };
+        \addlegendentry{RMQ}
+    \end{axis}
+  \end{tikzpicture}
+  \vspace*{-0.2cm}
+  \caption{Sizes (top) and memory peak during construction (bottom) of the data structures in \texttt{sss-512}.}
+  \label{fig:sss-512-construction-pies}
+\end{figure}

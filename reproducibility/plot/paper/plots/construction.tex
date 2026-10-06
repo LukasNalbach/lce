@@ -1,0 +1,676 @@
+% IMPORT-DATA results data/lce.results.new
+% IMPORT-DATA results_par data/lce.results.new.par
+
+\renewcommand{\dblpData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'dblp.xml' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[fp64] coordinates { (1.73907,0.01) };
+    \addlegendentry{algo=fp64}
+    \addplot[prezza] coordinates { (72.7842,0.01) };
+    \addlegendentry{algo=rk-prezza}
+    \addplot[sada] coordinates { (515.611,1.30934) (515.611,8.55996) };
+    \addlegendentry{algo=sdsl\_cst}
+    \addplot[sss512] coordinates { (20.9397,0.0788935) (20.9397,0.202372) };
+    \addlegendentry{algo=sss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'dblp.xml' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'dblp.xml' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[classic] coordinates { (498.872,12.4554) (498.872,17.4554) };
+    \addlegendentry{algo=classic}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'dblp.xml' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+}
+
+\renewcommand{\dnaData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'dna' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[fp64] coordinates { (1.73793,0.01) };
+    \addlegendentry{algo=fp64}
+    \addplot[prezza] coordinates { (52.3608,0.01) };
+    \addlegendentry{algo=rk-prezza}
+    \addplot[sada] coordinates { (623.577,1.59474) (623.577,8.63117) };
+    \addlegendentry{algo=sdsl\_cst}
+    \addplot[sss512] coordinates { (21.0855,0.0770675) (21.0855,0.188866) };
+    \addlegendentry{algo=sss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'dna' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'dna' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[classic] coordinates { (551.391,17.2103) (551.391,22.2103) };
+    \addlegendentry{algo=classic}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'dna' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+}
+
+\renewcommand{\englishData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'english' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[fp64] coordinates { (1.75172,0.01) };
+    \addlegendentry{algo=fp64}
+    \addplot[prezza] coordinates { (84.4378,0.01) };
+    \addlegendentry{algo=rk-prezza}
+    %\addplot[sada] coordinates { (19.2843,0.0370833) (19.2843,0.0831641) };
+    %\addlegendentry{algo=sada}
+    \addplot[sss512] coordinates { (23.2642,0.0733973) (23.2642,0.163628) };
+    \addlegendentry{algo=sss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'english' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+
+    %% MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'english' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[classic] coordinates { (703.442,12.8988) (703.442,17.8988) };
+    \addlegendentry{algo=classic}
+
+    %% MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'english' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+}
+
+\renewcommand{\proteinsData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'proteins' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[fp64] coordinates { (1.74823,0.01) };
+    \addlegendentry{algo=fp64}
+    \addplot[prezza] coordinates { (52.8972,0.01) };
+    \addlegendentry{algo=rk-prezza}
+    \addplot[sada] coordinates { (664.202,1.64323) (664.202,8.6212) };
+    \addlegendentry{algo=sdsl\_cst}
+    \addplot[sss512] coordinates { (21.6747,0.0755221) (21.6747,0.201896) };
+    \addlegendentry{algo=sss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'proteins' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+
+    %% MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'proteins' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[classic] coordinates { (629.233,12.7821) (629.233,17.7821) };
+    \addlegendentry{algo=classic}
+
+    %% MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'proteins' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+}
+
+\renewcommand{\sourcesData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'sources' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[fp64] coordinates { (1.73569,0.01) };
+    \addlegendentry{algo=fp64}
+    \addplot[prezza] coordinates { (83.1284,0.01) };
+    \addlegendentry{algo=rk-prezza}
+    \addplot[sada] coordinates { (475.343,1.43656) (475.343,8.61387) };
+    \addlegendentry{algo=sdsl\_cst}
+    \addplot[sss512] coordinates { (20.5817,0.0827457) (20.5817,0.188461) };
+    \addlegendentry{algo=sss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'sources' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+
+    %% MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'sources' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[classic] coordinates { (499.368,12.18) (499.368,17.18) };
+    \addlegendentry{algo=classic}
+
+    %% MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'sources' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+}
+
+\renewcommand{\cereData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'cere' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[fp64] coordinates { (1.73645,0.01) };
+    \addlegendentry{algo=fp64}
+    \addplot[prezza] coordinates { (31.9606,0.01) };
+    \addlegendentry{algo=rk-prezza}
+    \addplot[sada] coordinates { (590.934,1.4074) (590.934,8.72929) };
+    \addlegendentry{algo=sdsl\_cst}
+    \addplot[sss512] coordinates { (71.6669,0.0767043) (71.6669,0.648034) };
+    \addlegendentry{algo=sss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'cere' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+
+    %% MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'cere' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[classic] coordinates { (503.719,17.176) (503.719,22.176) };
+    \addlegendentry{algo=classic}
+
+    %% MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'cere' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+}
+
+\renewcommand{\coreutilsData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'coreutils' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[fp64] coordinates { (1.73907,0.01) };
+    \addlegendentry{algo=fp64}
+    \addplot[prezza] coordinates { (82.7545,0.01) };
+    \addlegendentry{algo=rk-prezza}
+    \addplot[sada] coordinates { (465.789,1.36914) (465.789,8.70393) };
+    \addlegendentry{algo=sdsl\_cst}
+    \addplot[sss512] coordinates { (22.9246,0.0853511) (22.9246,0.132766) };
+    \addlegendentry{algo=sss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'coreutils' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+
+    %% MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'coreutils' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[classic] coordinates { (493.069,12.1908) (493.069,17.1908) };
+    \addlegendentry{algo=classic}
+
+    %% MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'coreutils' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+}
+
+\renewcommand{\einsteindeData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'einstein.de.txt' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[fp64] coordinates { (1.73569,0.01) };
+    \addlegendentry{algo=fp64}
+    \addplot[prezza] coordinates { (72.7912,0.01) };
+    \addlegendentry{algo=rk-prezza}
+    \addplot[sada] coordinates { (424.554,1.36512) (424.554,8.74314) };
+    \addlegendentry{algo=sdsl\_cst}
+    \addplot[sss512] coordinates { (22.0573,0.0937115) (22.0573,0.132483) };
+    \addlegendentry{algo=sss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'einstein.de.txt' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+
+    %% MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'einstein.de.txt' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[classic] coordinates { (465.1,12.381) (465.1,17.381) };
+    \addlegendentry{algo=classic}
+
+    %% MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'einstein.de.txt' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+}
+
+\renewcommand{\einsteinenData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'einstein.en.txt' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[fp64] coordinates { (1.73643,0.01) };
+    \addlegendentry{algo=fp64}
+    \addplot[prezza] coordinates { (82.7947,0.01) };
+    \addlegendentry{algo=rk-prezza}
+    \addplot[sada] coordinates { (510.715,1.3704) (510.715,8.72466) };
+    \addlegendentry{algo=sdsl\_cst}
+    \addplot[sss512] coordinates { (22.8045,0.0807744) (22.8045,0.121257) };
+    \addlegendentry{algo=sss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'einstein.en.txt' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+
+    %% MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'einstein.en.txt' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[classic] coordinates { (537.495,12.6633) (537.495,17.6633) };
+    \addlegendentry{algo=classic}
+
+    %% MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'einstein.en.txt' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+}
+
+\renewcommand{\escherichiaData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE '%escherichia%' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[fp64] coordinates { (1.73929,0.01) };
+    \addlegendentry{algo=fp64}
+    \addplot[prezza] coordinates { (42.0891,0.01) };
+    \addlegendentry{algo=rk-prezza}
+    \addplot[sada] coordinates { (582.006,1.45627) (582.006,8.72262) };
+    \addlegendentry{algo=sdsl\_cst}
+    \addplot[sss512] coordinates { (20.7295,0.0908729) (20.7295,0.169324) };
+    \addlegendentry{algo=sss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE '%escherichia%' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+
+    %% MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE '%escherichia%' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[classic] coordinates { (460.859,16.2655) (460.859,21.2655) };
+    \addlegendentry{algo=classic}
+
+    %% MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE '%escherichia%' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+}
+
+\renewcommand{\influenzaData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'influenza' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[fp64] coordinates { (1.73763,0.01) };
+    \addlegendentry{algo=fp64}
+    \addplot[prezza] coordinates { (42.3426,0.01) };
+    \addlegendentry{algo=rk-prezza}
+    \addplot[sada] coordinates { (555.312,1.37831) (555.312,8.72932) };
+    \addlegendentry{algo=sdsl\_cst}
+    \addplot[sss512] coordinates { (21.1939,0.0851242) (21.1939,0.193259) };
+    \addlegendentry{algo=sss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'influenza' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+
+    %% MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'influenza' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[classic] coordinates { (441.352,16.0269) (441.352,21.0269) };
+    \addlegendentry{algo=classic}
+
+    %% MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'influenza' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+}
+
+\renewcommand{\kernelData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'kernel' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[fp64] coordinates { (1.73669,0.01) };
+    \addlegendentry{algo=fp64}
+    \addplot[prezza] coordinates { (82.9775,0.01) };
+    \addlegendentry{algo=rk-prezza}
+    \addplot[sada] coordinates { (473.21,1.3859) (473.21,8.73085) };
+    \addlegendentry{algo=sdsl\_cst}
+    \addplot[sss512] coordinates { (23.488,0.080146) (23.488,0.119327) };
+    \addlegendentry{algo=sss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'kernel' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+
+    %% MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'kernel' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[classic] coordinates { (512.646,12.2311) (512.646,17.2311) };
+    \addlegendentry{algo=classic}
+
+    %% MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'kernel' AND threads=1 AND (algo LIKE 'classic')
+    %% GROUP BY algo ORDER BY algo
+}
+
+\renewcommand{\wikitxtData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results_par
+    %% WHERE text LIKE 'wiki.txt' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[fp64] coordinates { (1.78007,0.01) };
+    \addlegendentry{algo=fp64}
+    \addplot[prezza] coordinates { (89.5161,0.01) };
+    \addlegendentry{algo=rk-prezza}
+    \addplot[sss512] coordinates { (28.8402,0.0764688) (28.8402,0.116722) };
+    \addlegendentry{algo=sss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results_par
+    %% WHERE text LIKE 'wiki.txt' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+}
+
+\renewcommand{\dnatxtData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results_par
+    %% WHERE text LIKE 'dna.txt' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[fp64] coordinates { (1.78103,0.01) };
+    \addlegendentry{algo=fp64}
+    \addplot[prezza] coordinates { (46.3716,0.01) };
+    \addlegendentry{algo=rk-prezza}
+    \addplot[sss512] coordinates { (31.5761,0.0744786) (31.5761,0.113638) };
+    \addlegendentry{algo=sss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results_par
+    %% WHERE text LIKE 'dna.txt' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+}
+
+\renewcommand{\cctxtData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results_par
+    %% WHERE text LIKE 'cc.txt' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+    \addplot[fp64] coordinates { (1.78054,0.01) };
+    \addlegendentry{algo=fp64}
+    \addplot[prezza] coordinates { (90.843,0.01) };
+    \addlegendentry{algo=rk-prezza}
+    \addplot[sss512] coordinates { (29.4044,0.0792259) (29.4044,0.121273) };
+    \addlegendentry{algo=sss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results_par
+    %% WHERE text LIKE 'cc.txt' AND threads=1 AND (algo LIKE 'sss512' OR algo LIKE 'fp64' OR algo LIKE 'rk-prezza' OR algo LIKE 'sdsl_cst')
+    %% GROUP BY algo ORDER BY algo
+}
+
+
+\begin{figure}
+\centering
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        title={dblp.xml},
+        ylabel={memory [B/$n$]},
+        xmode=log,ymode=log,
+        grid=both,]
+        \dblpData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        title={dna},
+        xmode=log,ymode=log,]
+        \dnaData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        title={english},
+        xmode=log,ymode=log,]
+        \englishData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        ylabel={memory [B/$n$]},
+        title={proteins},
+        xmode=log,ymode=log,]
+        \proteinsData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        title={sources},
+        xmode=log,ymode=log,]
+        \sourcesData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        title={cere},
+        xmode=log,ymode=log,]
+        \cereData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        ylabel={memory [B/$n$]},
+        title={coreutils},
+        xmode=log,ymode=log,]
+        \coreutilsData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        title={einstein.de.txt},
+        xmode=log,ymode=log,]
+        \einsteindeData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        title={einstein.en.txt},
+        xmode=log,ymode=log,]
+        \einsteinenData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        ylabel={memory [B/$n$]},
+        title={Escherichia\_Coli},
+        xmode=log,ymode=log,]
+        \escherichiaData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        title={influenza},
+        xmode=log,ymode=log,]
+        \influenzaData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        title={kernel},
+        xmode=log,ymode=log,]
+        \kernelData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        xlabel={construction time [$ns/n$]},
+        ylabel={memory [B/$n$]},
+        title={wiki.txt},
+        xmode=log,ymode=log,]
+        \wikitxtData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        xlabel={construction time [$ns/n$]},
+        title={dna.txt},
+        xmode=log,ymode=log,
+        xtickten={0,1,2},]
+        \dnatxtData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        title={cc.txt},
+        xlabel={construction time [ns/$n$]},
+        xmode=log,ymode=log,]
+        \cctxtData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+
+\begin{tikzpicture}[trim axis right,legendmarks]
+    \begin{axis}[LCERAMThroughput,legend,legend columns=5,]
+        \addplot[prezza] coordinates { (0,0.01) };
+        \addlegendentry{\texttt{rk-prezza}}
+        \addplot[fp64] coordinates { (0,0.01) };
+        \addlegendentry{\texttt{fp-64}}
+        \addplot[sss512] coordinates { (0,0.01) };
+        \addlegendentry{\texttt{sss-512}}
+        \addplot[sada] coordinates { (0,0.01) };
+        \addlegendentry{\texttt{sdsl-cst}}
+        \addplot[classic] coordinates { (0,0.01) };
+        \addlegendentry{\texttt{isa-lcp-rmq}}
+    \end{axis}
+\end{tikzpicture}
+\vspace*{-1.4cm}
+\caption{Construction time versus memory consumption of the LCE data structures. The upper mark is the memory peak during construction, and the lower mark is the size of the final data structure.}
+\label{fig:construction}
+\end{figure}

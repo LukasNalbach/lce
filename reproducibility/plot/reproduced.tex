@@ -1,0 +1,67 @@
+% Typesets the regenerated table and figures. Compiled by
+% scripts/05-make-figures.sh inside the output directory, which contains
+% info.tex, table-datasets.tex and plots/*.tex written by make_plots.py.
+\documentclass[10pt]{article}
+
+% The paper (acmart, format acmsmall) has a text width of 33pc. The fonts of
+% this document are slightly wider than those of acmart, so a few more
+% points are needed to keep three panels in a row as in the paper.
+\usepackage[a4paper,textwidth=36pc,textheight=58pc]{geometry}
+\usepackage{graphicx,booktabs,amssymb}
+
+% paper/definitions.tex is the unmodified preamble of the paper; it starts
+% with meta data commands of the acmart class that do not exist here
+\newcommand{\setcopyright}[1]{}
+\newcommand{\copyrightyear}[1]{}
+\newcommand{\acmYear}[1]{}
+\newcommand{\acmDOI}[1]{}
+\newcommand{\acmJournal}[1]{}
+\newcommand{\acmVolume}[1]{}
+\newcommand{\acmNumber}[1]{}
+\newcommand{\acmArticle}[1]{}
+\newcommand{\acmMonth}[1]{}
+\input{definitions}
+\overfullrule=0pt
+
+\input{info}
+
+\begin{document}
+
+\noindent{\Large\bfseries Practical Data Structures for Longest Common
+Extensions}\par\medskip
+\noindent{\large Regenerated table and figures}\par\bigskip
+
+\noindent
+\begin{tabular}{@{}ll@{}}
+  generated  & \ReproDate{} on \texttt{\ReproHost} \\
+  results    & \parbox[t]{26pc}{\raggedright\texttt{\ReproResults}} \\
+  texts      & \parbox[t]{26pc}{\raggedright\texttt{\ReproTexts}} \\
+\end{tabular}
+
+\bigskip\noindent
+Table and figure numbers are those of the paper (Figure~1 of the paper is an
+illustration and has no data). Panels of texts that were not measured stay
+empty.
+
+\clearpage
+\setcounter{figure}{1}
+
+\input{plots/predecessor-avg}
+\clearpage
+\input{table-datasets}
+\clearpage
+\input{plots/sss-construction}
+\clearpage
+\input{plots/lce-queries-sss}
+\clearpage
+\input{plots/lce-queries-fp-naive}
+\clearpage
+\input{plots/construction}
+\clearpage
+\input{plots/lce-queries}
+\clearpage
+\input{plots/sss-512-construction-parallel}
+\clearpage
+\input{plots/sss-512-construction-pies}
+
+\end{document}
