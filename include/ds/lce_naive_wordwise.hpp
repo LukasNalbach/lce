@@ -14,6 +14,8 @@
 #include <cstdint>
 #include <utility>
 
+#include "util/memory.hpp"
+
 namespace lce::ds {
 
 template <typename t_char_type = uint8_t>
@@ -105,11 +107,12 @@ class lce_naive_wordwise {
     static constexpr size_t blk_size = sizeof(uint64_t) / sizeof(char_type);
     const uint64_t max_lce = size - r;
     const uint64_t max_blks = max_lce / blk_size;
-    uint64_t const* const blk_l = reinterpret_cast<uint64_t const*>(text + l);
-    uint64_t const* const blk_r = reinterpret_cast<uint64_t const*>(text + r);
+    char_type const* const text_l = text + l;
+    char_type const* const text_r = text + r;
     size_t lce_val = 0;
 
-    while (lce_val < max_blks && blk_l[lce_val] == blk_r[lce_val]) {
+    while (lce_val < max_blks &&
+           util::load_u64(text_l + lce_val * blk_size) == util::load_u64(text_r + lce_val * blk_size)) {
       lce_val++;
     }
 

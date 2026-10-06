@@ -77,17 +77,21 @@ class rk_prime {
   }
 
   template <typename t_symbol>
-    requires(std::is_unsigned_v<t_symbol> && (sizeof(t_symbol) == 2 || sizeof(t_symbol) == 4))
+    requires(std::is_unsigned_v<t_symbol> && (sizeof(t_symbol) == 2 || sizeof(t_symbol) == 4 || sizeof(t_symbol) == 8))
   inline uint128_t roll_in(uint128_t fp, t_symbol in) const {
     return roll(fp, t_symbol(0), in);
   }
 
   template <typename t_symbol>
-    requires(std::is_unsigned_v<t_symbol> && (sizeof(t_symbol) == 2 || sizeof(t_symbol) == 4))
+    requires(std::is_unsigned_v<t_symbol> && (sizeof(t_symbol) == 2 || sizeof(t_symbol) == 4 || sizeof(t_symbol) == 8))
   inline uint128_t roll(uint128_t fp, t_symbol out, t_symbol in) const {
-    const uint128_t hi = mersenne::mod<uint128_t, m_prime>(uint128_t{uint64_t(out) >> 16} * m_base_pow_tau);
-    const uint128_t out_influence =
-        mersenne::mod<uint128_t, m_prime>((hi << 16) + uint128_t{uint64_t(out) & 0xFFFF} * m_base_pow_tau);
+    uint128_t out_influence = 0;
+
+    for (int shift = 8 * sizeof(t_symbol) - 16; shift >= 0; shift -= 16) {
+      out_influence = mersenne::mod<uint128_t, m_prime>(
+          (out_influence << 16) + uint128_t{(uint64_t(out) >> shift) & 0xFFFF} * m_base_pow_tau);
+    }
+
     fp *= m_base;
     return mersenne::mod<uint128_t, m_prime>(fp + in + (m_prime - out_influence));
   }
@@ -187,14 +191,14 @@ class rk_mersenne61 {
 
   template <typename t_symbol>
   inline uint64_t roll_in(uint64_t fp, t_symbol in) const {
-    static_assert(std::is_unsigned_v<t_symbol> && sizeof(t_symbol) <= 4);
+    static_assert(std::is_unsigned_v<t_symbol> && sizeof(t_symbol) <= 8);
     if (m_base_is_small) [[likely]] return reduce_small(uint128_t{fp} * m_base + in);
     return reduce(uint128_t{fp} * m_base + in);
   }
 
   template <typename t_symbol>
   inline uint64_t roll(uint64_t fp, t_symbol out, t_symbol in) const {
-    static_assert(std::is_unsigned_v<t_symbol> && sizeof(t_symbol) <= 4);
+    static_assert(std::is_unsigned_v<t_symbol> && sizeof(t_symbol) <= 8);
     uint64_t out_influence;
 
     if constexpr (sizeof(t_symbol) == 1) {
