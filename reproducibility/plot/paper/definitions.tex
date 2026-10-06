@@ -1,0 +1,420 @@
+% for non-review version, remove option 'review' (line numbering and colored links)
+% for print version, remove option 'screen' (colored links)
+
+%% Rights management information.  This information is sent to you
+%% when you complete the rights form.  These commands have SAMPLE
+%% values in them; it is your responsibility as an author to replace
+%% the commands and values with those provided to you when you
+%% complete the rights form.
+\setcopyright{rightsretained}
+\copyrightyear{2025}
+\acmYear{2025}
+\acmDOI{XXXXXXX.XXXXXXX}
+
+%%
+%% These commands are for a JOURNAL article.
+\acmJournal{TALG}
+\acmVolume{XX}
+\acmNumber{X}
+\acmArticle{XXX}
+\acmMonth{0}
+
+\usepackage{amsmath}
+\usepackage{subcaption} %recommended by acm
+\usepackage{siunitx}
+\usepackage{multirow}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{tikz,pgfplots}
+
+%~ \usepackage{todonotes}
+%~ \let\tdntodo\todo
+%~ \let\todo\relax
+
+\pgfplotsset{compat=newest}
+\usetikzlibrary{calc,patterns,pgfplots.groupplots,positioning}
+% Timo's TODOs
+%~ \newcommand{\todo}[1]{%
+  %~ \index{\marginpar}\marginpar{%
+    %~ \raggedright\sffamily\textbf{TODO}\par%
+  %~ }{{\sffamily\textbf{TODO}}[\textit{#1}]}
+%~ }
+\setlength{\marginparwidth}{7ex}
+\overfullrule=2mm
+
+%%%% Better colors
+\definecolor{my-dark-red}{RGB}{183, 28, 28}
+\definecolor{my-red}{RGB}{244,67,54}
+\definecolor{my-pink}{RGB}{233,30,99}
+\definecolor{my-purple}{RGB}{156,39,176}
+\definecolor{my-deep-purple}{RGB}{103,58,183}
+\definecolor{my-indigo}{RGB}{63,81,181}
+\definecolor{my-blue}{RGB}{33,150,243}
+\definecolor{my-light-blue}{RGB}{3,169,244}
+\definecolor{my-cyan}{RGB}{0,188,212}
+\definecolor{my-teal}{RGB}{0,150,136}
+\definecolor{my-green}{RGB}{76,175,80}
+\definecolor{my-light-green}{RGB}{139,195,74}
+\definecolor{my-lime}{RGB}{205,220,57}
+\definecolor{my-yellow}{RGB}{255,235,59}
+\definecolor{my-amber}{RGB}{255,193,7}
+\definecolor{my-orange}{RGB}{255,152,0}
+\definecolor{my-deep-orange}{RGB}{255,87,34}
+\definecolor{my-brown}{RGB}{121,85,72}
+\definecolor{my-indigo}{RGB}{158,158,158}
+\definecolor{my-blue-grey}{RGB}{96,125,139}
+\definecolor{my-lipics-grey}{rgb}{0.6,0.6,0.61}
+
+\tikzset{
+  %unaive/.style={my-indigo, mark=o},
+  naive/.style={my-amber, mark=Mercedes star},
+  naivestd/.style={my-indigo, mark=pentagon},
+  naivewordwise/.style={my-yellow, mark=o},
+  naivewordwisexor/.style={my-pink, mark=otimes},
+  fp64/.style={my-red, mark=diamond},
+  fp128/.style={my-green, mark=diamond},
+  fp256/.style={my-purple, mark=diamond},
+  fp512/.style={my-cyan, mark=diamond},
+  fpunlimited/.style={my-lipics-grey, mark=diamond},
+  prezza/.style={my-orange, mark=triangle},
+  prezzam/.style={my-brown, mark=square},
+  sada/.style={my-teal, mark=square},
+  classic/.style={black, mark=Mercedes star flipped},
+  sss2048old/.style={my-red, mark=+},
+  sss1024old/.style={my-yellow, mark=+},
+  sss512old/.style={my-blue, mark=+},
+  sss256old/.style={my-green, mark=+},
+  sss2048/.style={my-red, mark=x},
+  sss1024/.style={my-yellow, mark=x},
+  sss512/.style={my-blue, mark=x},
+  sss256/.style={my-green, mark=x},
+  sss2048pl/.style={my-red, mark=|},
+  sss1024pl/.style={my-yellow, mark=|},
+  sss512pl/.style={my-blue, mark=|},
+  sss256pl/.style={my-green, mark=|},
+  sss2048mempeak/.style={sss2048, mark=x},
+  sss1024mempeak/.style={sss1024, mark=x},
+  sss512mempeak/.style={sss512, mark=x},
+  sss256mempeak/.style={sss256, mark=x},
+  sss2048line/.style={sss2048, dotted, thick},
+  sss1024line/.style={sss1024, dotted, thick},
+  sss512line/.style={sss512, dotted, thick},
+  sss256line/.style={sss256, dotted, thick}, %
+  sssn2048/.style={my-red, mark=square}, 
+  sssn1024/.style={my-yellow, mark=square},
+  sssn512/.style={my-blue, mark=square},
+  sssn256/.style={my-green, mark=square},
+  sssn2048pl/.style={my-red, mark=+},
+  sssn1024pl/.style={my-yellow, mark=+},
+  sssn512pl/.style={my-blue, mark=+},
+  sssn256pl/.style={my-green, mark=+},
+  sssn2048mempeak/.style={sssn2048, mark=square},
+  sssn1024mempeak/.style={sssn1024, mark=square},
+  sssn512mempeak/.style={sssn512, mark=square},
+  sssn256mempeak/.style={sssn256, mark=square},
+  sssn2048line/.style={sssn2048, dotted, thick},
+  sssn1024line/.style={sssn1024, dotted, thick},
+  sssn512line/.style={sssn512, dotted, thick},
+  sssn256line/.style={sssn256, dotted, thick},
+  sadaline/.style={sada, dotted, thick},
+  classicline/.style={classic, dotted, thick},
+  sssno2048/.style={my-red, mark=triangle}, %
+  sssno1024/.style={my-yellow, mark=triangle},
+  sssno512/.style={my-blue, mark=triangle},
+  sssno256/.style={my-green, mark=triangle},
+  sssno2048pl/.style={sssno2048, dotted, every mark/.append style={solid}},
+  sssno1024pl/.style={sssno1024, dotted, every mark/.append style={solid}},
+  sssno512pl/.style={sssno512, dotted, every mark/.append style={solid}},
+  sssno256pl/.style={sssno256, dotted, every mark/.append style={solid}},
+  sssno2048mempeak/.style={sssno2048, mark=square},
+  sssno1024mempeak/.style={sssno1024, mark=square},
+  sssno512mempeak/.style={sssno512, mark=square},
+  sssno256mempeak/.style={sssno256, mark=square},
+  sssno2048line/.style={sssno2048, dotted, thick},
+  sssno1024line/.style={sssno1024, dotted, thick},
+  sssno512line/.style={sssno512, dotted, thick},
+  sssno256line/.style={sssno256, dotted, thick},
+  bin/.style={my-green, mark=star},
+  binscan/.style={my-green, mark=10-pointed star},
+  jind/.style={my-blue, mark=diamond},
+  rank/.style={my-deep-orange, mark=pentagon},
+  pgm8/.style={my-green, mark=o},
+  pgm16/.style={my-blue, mark=o},
+  pgm32/.style={my-pink, mark=o},
+  pgm64/.style={my-deep-purple, mark=o}, 
+  pgm128/.style={my-orange, mark=o}, 
+  ind6/.style={my-green, mark=x},
+  ind7/.style={my-blue, mark=x},
+  ind8/.style={my-pink, mark=x},
+  ind9/.style={my-deep-purple, mark=x},
+  ind10/.style={my-orange, mark=x},
+  ind11/.style={my-amber, mark=x},
+  ind12/.style={my-red, mark=x},
+  lavector1/.style={my-green, mark=triangle},
+  lavector2/.style={my-blue, mark=triangle},
+  lavector4/.style={my-pink, mark=triangle},
+  lavector8/.style={my-deep-purple, mark=triangle}, 
+  lavector16/.style={my-orange, mark=triangle}, 
+  lavector32/.style={my-yellow, mark=triangle},
+  lavector64/.style={my-red, mark=triangle}, 
+  lavector128/.style={my-teal, mark=triangle}, 
+  lavector256/.style={my-brown, mark=triangle}, 
+  lavector512/.style={my-cyan, mark=triangle}, 
+  sdarray1/.style={my-green, mark=square},
+  sdarray2/.style={my-blue, mark=square},
+  sdarray4/.style={my-pink, mark=square},
+  sdarray8/.style={my-deep-purple, mark=square}, 
+  sdarray16/.style={my-orange, mark=square}, 
+  sdarray32/.style={my-yellow, mark=square},
+  sdarray64/.style={my-red, mark=square}, 
+  sdarray128/.style={my-teal, mark=square}, 
+  sdarray256/.style={my-brown, mark=square}, 
+  sdarray512/.style={my-cyan, mark=square},
+  legendmarks/.style={
+    every plot/.append style={only marks},
+  },
+  squaremark/.style={
+    mark=square*,
+    semithick,
+    draw=black,
+    mark size=2.85pt,
+  },
+}
+
+% setup pgfplots
+% TODO: this is pretty much the default from sqlplot-tools and should be updated
+\pgfplotscreateplotcyclelist{succcolorlist}{%
+    my-dark-red,mark=triangle*\\%
+    my-indigo,mark=triangle*\\%
+    my-brown,mark=*\\%
+    my-green,mark=*\\%
+    my-deep-orange,mark=*\\%
+    my-purple,mark=*\\%
+    my-cyan,mark=*\\%
+    my-blue-grey,mark=*\\%
+    Black,mark=*\\%
+    my-amber,mark=square*\\%
+}
+
+\pgfplotsset{
+  title style={yshift=-2pt, font=\bfseries, inner sep=0pt},
+  major grid style={thin,dotted,color=my-blue-grey},
+  minor grid style={thin,dotted,color=my-lipics-grey!45},
+  ymajorgrids,
+  yminorgrids,
+  xmajorgrids,
+  xminorgrids,
+  max space between ticks=19,
+  every tick label/.append style={font=\footnotesize},
+  every axis label/.append style={font=\small},
+  enlarge x limits=0.1,
+  enlarge y limits=0.1,
+  every axis/.append style={
+    cycle list name=succcolorlist,
+    line width=0.5pt,
+    tick style={
+      line cap=round,
+      thin,
+      major tick length=4pt,
+      minor tick length=2pt,
+    },
+  },
+  legend cell align=left,
+  LCERAMThroughput/.style={
+    width=8.0cm,
+    height=5.3cm,
+    height=25mm, width=35mm,
+    mark options={scale=1.25,thick},
+    scale only axis,
+    x tick label style={/pgf/number format/.cd,%
+      set thousands separator={},
+      fixed},
+  },
+  succRAMThroughput/.style={
+    mark options={scale=1.05, thick},
+    height=32mm,
+    width=39mm,
+  },
+  lceQueryThroughput/.style={
+    height=57.5mm,
+    width=50.5mm,
+  },
+  legend/.style={
+    width=2cm,
+    height=2cm,
+    xmin=10,xmax=10,
+    ymin=10,ymax=10,
+    ymajorgrids=false,
+    xtick=\empty,
+    ytick=\empty,
+    x axis line style={-,draw opacity=0},
+    y axis line style={-,draw opacity=0},
+    xtick style={draw=none},
+    ytick style={draw=none},
+    legend style={
+        font=\footnotesize,
+        /tikz/every even column/.append style={column sep=0.1cm},
+        at={(1.0, 0.9)}
+    },
+  },
+  barchart/.style={
+    width=4.1cm,
+    height=5.2cm,
+    ymin=0,
+    title style={at={(0.5,1.0)}},
+    x label style={at={(0.5,-0.12)}},
+    y label style={at={(-0.1,0.4)}},
+    legend style={at={(0.5,-0.3)},anchor=north},
+    legend columns=-1,
+    log basis x={2},
+    log ticks with fixed point,
+    xtick style={draw=none},
+    ybar stacked,
+    bar width=10.2pt,
+    enlarge x limits={abs=5.1pt},
+    enlarge y limits=false,
+    ymajorgrids=true,
+    yminorgrids=false,
+    xmajorgrids=false,
+    minor tick style={draw=none},
+    major tick style={draw=none},
+    max space between ticks=12,
+  },
+}
+
+\tikzset{
+  chart/.style={
+    legend label/.style={font={\scriptsize},anchor=west,align=left},
+    legend box/.style={rectangle, draw, minimum size=5pt},
+    axis/.style={black,semithick,->},
+    axis label/.style={anchor=east,font={\tiny}},
+  },
+  pie chart/.style={
+    chart,
+    slice/.style={line cap=round, line join=round, thin,draw=black},
+    pie title/.style={},
+    slice type/.style 2 args={
+        ##1/.style={fill=##2},
+        values of ##1/.style={}
+    },
+    slice type={sss}{my-green},
+    slice type={succ}{my-deep-orange},
+    slice type={strsort}{my-blue},
+    slice type={sa}{my-yellow},
+    slice type={isa}{my-brown},
+    slice type={lcp}{my-pink},
+    slice type={rmq}{my-lipics-grey},
+    pie values/.style={font={\footnotesize}, yshift=-.1cm},
+    scale=.75,
+  }
+}
+
+\pgfdeclarelayer{background}
+\pgfdeclarelayer{foreground}
+\pgfsetlayers{background,main,foreground}
+
+%\usepackage{showframe}
+
+%This is a template for producing LIPIcs articles. 
+%See lipics-manual.pdf for further information.
+%for A4 paper format use option "a4paper", for US-letter use option "letterpaper"
+%for british hyphenation rules use option "UKenglish", for american hyphenation rules use option "USenglish"
+% for section-numbered lemmas etc., use "numberwithinsect"
+
+%\graphicspath{{./graphics/}}%helpful if your graphic files are in another directory
+
+\newcommand{\lce}{\text{lce}}
+\newcommand{\suc}{\text{succ}}
+\newcommand{\rank}{\text{rank}}
+\newcommand{\period}{\text{per}}
+\newcommand{\hibits}{\text{hi}}
+\newcommand{\PE}{PE}
+\newcommand{\PEs}{PEs}
+\newcommand{\ident}{\textsf{id}}
+
+\newcommand{\Oh}[1]{{\mathcal{O}}{\left({#1}\right)}}
+\newcommand{\oh}[1]{o\left({#1}\right)}
+\newcommand{\Th}[1]{\Theta\left({#1}\right)}
+\newcommand{\Wh}[1]{\Omega\left({#1}\right)}
+\newcommand{\Prob}[1]{\mathbb{P}\left[{#1}\right]}
+\newcommand{\Expect}[1]{\mathbb{E}\left[{#1}\right]}
+\newcommand{\IndexIdChar}[3]{\parbox[b]{1em}{\centering{\scriptsize #1}\\\texttt{#3}\\#2}}
+\newcommand{\IndexItem}[2]{\parbox[b]{2em}{\centering{\scriptsize #1}\\#2}}
+\newcommand{\absolute}[1]{\left\lvert#1\right\rvert}
+
+\newcommand{\pie}[5][]{
+    \begin{scope}[#1]
+    \pgfmathsetmacro{\curA}{90}
+    \pgfmathsetmacro{\radius}{1}
+    \def\Centre{(0,0)}
+
+    \ifx&#2&%
+       % #1 is empty
+    \else
+    \node[pie title, rotate=90] at (180:2.95) {#2}; % #1 is nonempty
+    \fi
+    \node[pie title] at (90:2) {\textbf{#5}};
+
+    \pgfmathsetmacro{\totalnum}{0}
+    \foreach \v/\s/\ox/\oy in {#3} {
+        \pgfmathparse{\v+\totalnum}
+        \global\let\totalnum=\pgfmathresult
+    }
+
+    \newcount\cntr
+    \cntr=1 %
+
+    \foreach \v/\s/\ox/\oy in{#3}{
+      \pgfmathsetmacro{\deltaA}{\v/\totalnum*360}
+      \pgfmathsetmacro{\nextA}{\curA + \deltaA}
+      \pgfmathsetmacro{\midA}{(\curA+\nextA)/2}
+
+      \path[slice,\s] \Centre
+      -- +(\curA:\radius)
+      arc (\curA:\nextA:\radius)
+      -- cycle;
+
+      % to determine direction of lines (left/right, up/down
+      \pgfmathsetmacro{\ysign}{ifthenelse(mod(\midA,360)<=180,1,-1)}
+      \pgfmathsetmacro{\xsign}{ifthenelse(mod(\midA-90,360)<=180,-1,1)}
+
+      \begin{pgfonlayer}{foreground}
+        \draw[-,thin] \Centre ++(\midA:\radius/1.1) -- 
+        ++(\xsign*0.5*\radius-\ox,\ysign*0.4*\radius-\oy) -- 
+        ++(\xsign*\radius,0) 
+        node[above,near end,pie values,values of \s] (\the\cntr) {$\v#4$};
+      \end{pgfonlayer}
+
+      \node[] (v\the\cntr) at (\the\cntr) {\hphantom{$\v#4$}~};
+
+      \node[right of=v\the\cntr, circle, draw, \s, node distance=.5cm, inner sep=.05cm, minimum size=.1cm] {};
+      
+      \global\advance\cntr by1
+      \global\let\curA\nextA
+    }
+
+  \end{scope}
+}
+
+\newcommand{\legend}[2][]{
+    \begin{scope}[#1]
+    \path
+        \foreach \n/\s in {#2}
+            {
+                  ++(0,-10pt) node[\s,legend box] (\s) {} +(5pt,0) node[legend label] {\n}
+            }
+    ;
+    \end{scope}
+}
+
+
+\def\splitanyinternal#1#2\relax{%
+#1\def\tmp{#2}\ifx\empty\tmp\else %
+\hspace{0pt}\splitanyinternal#2\relax\fi}
+\newcommand{\splitany}[1]{\splitanyinternal#1\relax}
+
+\edef\slshcmd{/}
+\def\splitslashinternal#1#2\relax{%
+#1\edef\tmp{#2}\ifx\empty\tmp\else %
+\edef\tmp{#1}\ifx\tmp\slshcmd\hspace{0pt}\fi%
+\splitslashinternal#2\relax\fi}
+\newcommand{\splitslash}[1]{\splitslashinternal#1\relax}

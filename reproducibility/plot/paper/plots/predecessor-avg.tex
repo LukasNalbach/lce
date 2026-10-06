@@ -1,0 +1,459 @@
+% IMPORT-DATA results data/pred.results.new
+
+\begin{figure}
+  \centering
+  \begin{tikzpicture}[trim axis right]
+    \begin{loglogaxis}[
+      succRAMThroughput,
+      title={average ($\tau=256$)},
+      %ylabel style={yshift=-.25cm},
+      xlabel={throughput $\left[\text{queries/s}\right]$},
+      ylabel={memory [B$/n$]},
+      height=6.5cm,
+      width=7.3cm,
+      enlarge y limits=false,
+      ymin=0.0001,
+      ymax=40,
+      ytickten={-4,-3,-2,-1,0,1,2,3},
+      yticklabels={$0$,$10^{-3}$,$10^{-2}$,$10^{-1}$,$10^0$,$10^1$,$10^2$,$10^3$},
+      grid=both,
+      xtickten={6,7,8},]
+
+      %% MULTIPLOT(algo) SELECT algo, (AVG(q_size/succ_time)*1000.0001) AS x, AVG(c_mem/(1.0*data_size)) AS y, MULTIPLOT
+      %% FROM results WHERE threads=1 AND data LIKE '%sss256'
+      %% GROUP BY algo ORDER BY algo
+      \addplot[binscan] coordinates { (3.6034e+06,0.0001) };
+      \addlegendentry{algo=binsearch\_cache}
+      \addplot[bin] coordinates { (4.12677e+06,0.0001) };
+      \addlegendentry{algo=binsearch\_std}
+      \addplot[lavector1] coordinates { (6.32279e+06,3.09656) };
+      \addlegendentry{algo=la\_vector1}
+      \addplot[lavector128] coordinates { (6.08957e+06,0.027973) };
+      \addlegendentry{algo=la\_vector128}
+      \addplot[lavector16] coordinates { (7.53507e+06,0.208061) };
+      \addlegendentry{algo=la\_vector16}
+      \addplot[lavector2] coordinates { (6.61457e+06,1.57379) };
+      \addlegendentry{algo=la\_vector2}
+      \addplot[lavector256] coordinates { (4.90021e+06,0.0145444) };
+      \addlegendentry{algo=la\_vector256}
+      \addplot[lavector32] coordinates { (7.27979e+06,0.106228) };
+      \addlegendentry{algo=la\_vector32}
+      \addplot[lavector4] coordinates { (7.23336e+06,0.801175) };
+      \addlegendentry{algo=la\_vector4}
+      \addplot[lavector512] coordinates { (3.474e+06,0.00772017) };
+      \addlegendentry{algo=la\_vector512}
+      \addplot[lavector1] coordinates { (7.01371e+06,0.054342) };
+      \addlegendentry{algo=la\_vector64}
+      \addplot[lavector8] coordinates { (7.29707e+06,0.408258) };
+      \addlegendentry{algo=la\_vector8}
+      \addplot[pgm128] coordinates { (5.84029e+06,0.000987052) };
+      \addlegendentry{algo=pgm\_index128}
+      \addplot[pgm16] coordinates { (7.47057e+06,0.0625089) };
+      \addlegendentry{algo=pgm\_index16}
+      \addplot[pgm32] coordinates { (7.74257e+06,0.0156347) };
+      \addlegendentry{algo=pgm\_index32}
+      \addplot[pgm64] coordinates { (6.36471e+06,0.00391712) };
+      \addlegendentry{algo=pgm\_index64}
+      \addplot[pgm8] coordinates { (8.33136e+06,0.250011) };
+      \addlegendentry{algo=pgm\_index8}
+      \addplot[ind10] coordinates { (2.00761e+07,0.498115) };
+      \addlegendentry{algo=pred\_index10}
+      \addplot[ind11] coordinates { (1.77117e+07,0.249059) };
+      \addlegendentry{algo=pred\_index11}
+      \addplot[ind12] coordinates { (1.41442e+07,0.12453) };
+      \addlegendentry{algo=pred\_index12}
+      \addplot[ind6] coordinates { (3.10919e+07,7.96981) };
+      \addlegendentry{algo=pred\_index6}
+      \addplot[ind7] coordinates { (2.73826e+07,3.98491) };
+      \addlegendentry{algo=pred\_index7}
+      \addplot[ind8] coordinates { (2.46567e+07,1.99245) };
+      \addlegendentry{algo=pred\_index8}
+      \addplot[ind9] coordinates { (2.34394e+07,0.996228) };
+      \addlegendentry{algo=pred\_index9}
+      \addplot[rank] coordinates { (1.10111e+07,19.0572) };
+      \addlegendentry{algo=rank\_index}
+      \addplot[sdarray1] coordinates { (6.52836e+06,1.2889) };
+      \addlegendentry{algo=sd\_array1}
+      \addplot[sdarray128] coordinates { (5.103e+06,0.01688) };
+      \addlegendentry{algo=sd\_array128}
+      \addplot[sdarray16] coordinates { (6.32121e+06,0.118995) };
+      \addlegendentry{algo=sd\_array16}
+      \addplot[sdarray2] coordinates { (6.616e+06,0.711495) };
+      \addlegendentry{algo=sd\_array2}
+      \addplot[sdarray256] coordinates { (4.17743e+06,0.00900787) };
+      \addlegendentry{algo=sd\_array256}
+      \addplot[sdarray32] coordinates { (6.0385e+06,0.0636784) };
+      \addlegendentry{algo=sd\_array32}
+      \addplot[sdarray4] coordinates { (6.59e+06,0.391456) };
+      \addlegendentry{algo=sd\_array4}
+      \addplot[sdarray512] coordinates { (3.24807e+06,0.00471444) };
+      \addlegendentry{algo=sd\_array512}
+      \addplot[sdarray64] coordinates { (5.77386e+06,0.0331447) };
+      \addlegendentry{algo=sd\_array64}
+      \addplot[sdarray8] coordinates { (6.43786e+06,0.215585) };
+      \addlegendentry{algo=sd\_array8}
+
+      \legend{}
+    \end{loglogaxis}
+  \end{tikzpicture}
+  \hfill
+  \begin{tikzpicture}[trim axis right]
+    \begin{loglogaxis}[
+      succRAMThroughput,
+      title={average ($\tau=512$)},
+      xlabel={throughput $\left[\text{queries/s}\right]$},
+      height=6.5cm,
+      width=7.3cm,
+      enlarge y limits=false,
+      ymin=0.0001,
+      ymax=100,
+      ytickten={-4,-3,-2,-1,0,1,2,3},
+      yticklabels={$0$,$10^{-3}$,$10^{-2}$,$10^{-1}$,$10^0$,$10^1$,$10^2$,$10^3$},
+      grid=both,
+      minor x tick num=9,
+      xtickten={6,7,8},]
+      
+      %% MULTIPLOT(algo) SELECT algo, (AVG(q_size/succ_time)*1000.0001) AS x, AVG(c_mem/(1.0*data_size)) AS y, MULTIPLOT
+      %% FROM results WHERE threads=1 AND data LIKE '%sss512'
+      %% GROUP BY algo ORDER BY algo
+      \addplot[binscan] coordinates { (4.8722e+06,0.0001) };
+      \addlegendentry{algo=binsearch\_cache}
+      \addplot[bin] coordinates { (4.81529e+06,0.0001) };
+      \addlegendentry{algo=binsearch\_std}
+      \addplot[lavector1] coordinates { (7.97693e+06,3.20847) };
+      \addlegendentry{algo=la\_vector1}
+      \addplot[lavector128] coordinates { (7.41122e+06,0.0297859) };
+      \addlegendentry{algo=la\_vector128}
+      \addplot[lavector16] coordinates { (8.7905e+06,0.215267) };
+      \addlegendentry{algo=la\_vector16}
+      \addplot[lavector2] coordinates { (8.03507e+06,1.62835) };
+      \addlegendentry{algo=la\_vector2}
+      \addplot[lavector256] coordinates { (5.71457e+06,0.016033) };
+      \addlegendentry{algo=la\_vector256}
+      \addplot[lavector32] coordinates { (8.61072e+06,0.110196) };
+      \addlegendentry{algo=la\_vector32}
+      \addplot[lavector4] coordinates { (8.59693e+06,0.828405) };
+      \addlegendentry{algo=la\_vector4}
+      \addplot[lavector512] coordinates { (4.46771e+06,0.00897905) };
+      \addlegendentry{algo=la\_vector512}
+      \addplot[lavector1] coordinates { (8.45136e+06,0.0567826) };
+      \addlegendentry{algo=la\_vector64}
+      \addplot[lavector8] coordinates { (8.6505e+06,0.422243) };
+      \addlegendentry{algo=la\_vector8}
+      \addplot[pgm128] coordinates { (6.87829e+06,0.000994522) };
+      \addlegendentry{algo=pgm\_index128}
+      \addplot[pgm16] coordinates { (8.94614e+06,0.0625241) };
+      \addlegendentry{algo=pgm\_index16}
+      \addplot[pgm32] coordinates { (8.8665e+06,0.0156476) };
+      \addlegendentry{algo=pgm\_index32}
+      \addplot[pgm64] coordinates { (7.67972e+06,0.00392783) };
+      \addlegendentry{algo=pgm\_index64}
+      \addplot[pgm8] coordinates { (9.50329e+06,0.250025) };
+      \addlegendentry{algo=pgm\_index8}
+      \addplot[ind10] coordinates { (2.81154e+07,0.985914) };
+      \addlegendentry{algo=pred\_index10}
+      \addplot[ind11] coordinates { (2.50711e+07,0.49296) };
+      \addlegendentry{algo=pred\_index11}
+      \addplot[ind12] coordinates { (2.00159e+07,0.246482) };
+      \addlegendentry{algo=pred\_index12}
+      \addplot[ind6] coordinates { (4.27038e+07,15.7745) };
+      \addlegendentry{algo=pred\_index6}
+      \addplot[ind7] coordinates { (3.91081e+07,7.88727) };
+      \addlegendentry{algo=pred\_index7}
+      \addplot[ind8] coordinates { (3.46917e+07,3.94364) };
+      \addlegendentry{algo=pred\_index8}
+      \addplot[ind9] coordinates { (3.28292e+07,1.97182) };
+      \addlegendentry{algo=pred\_index9}
+      \addplot[rank] coordinates { (1.29495e+07,37.7413) };
+      \addlegendentry{algo=rank\_index}
+      \addplot[sdarray1] coordinates { (7.69793e+06,1.42124) };
+      \addlegendentry{algo=sd\_array1}
+      \addplot[sdarray128] coordinates { (5.85607e+06,0.0179924) };
+      \addlegendentry{algo=sd\_array128}
+      \addplot[sdarray16] coordinates { (7.39593e+06,0.128677) };
+      \addlegendentry{algo=sd\_array16}
+      \addplot[sdarray2] coordinates { (7.71129e+06,0.781731) };
+      \addlegendentry{algo=sd\_array2}
+      \addplot[sdarray256] coordinates { (4.9285e+06,0.00942147) };
+      \addlegendentry{algo=sd\_array256}
+      \addplot[sdarray32] coordinates { (6.94293e+06,0.0665901) };
+      \addlegendentry{algo=sd\_array32}
+      \addplot[sdarray4] coordinates { (7.63914e+06,0.428876) };
+      \addlegendentry{algo=sd\_array4}
+      \addplot[sdarray512] coordinates { (3.838e+06,0.0050656) };
+      \addlegendentry{algo=sd\_array512}
+      \addplot[sdarray64] coordinates { (6.70029e+06,0.0337245) };
+      \addlegendentry{algo=sd\_array64}
+      \addplot[sdarray8] coordinates { (7.39664e+06,0.238894) };
+      \addlegendentry{algo=sd\_array8}
+
+      \legend{}
+    \end{loglogaxis}
+  \end{tikzpicture}\vspace{.2cm}
+
+  \begin{tikzpicture}[trim axis right]
+    \begin{loglogaxis}[
+      succRAMThroughput,
+      title={average ($\tau=1024$)},
+      xlabel={throughput $\left[\text{queries/s}\right]$},
+      height=6.5cm,
+      width=7.3cm,
+      ylabel={memory [B$/n$]},
+      enlarge y limits=false,
+      ymin=0.0001,
+      ymax=300,
+      ytickten={-4,-3,-2,-1,0,1,2,3},
+      yticklabels={$0$,$10^{-3}$,$10^{-2}$,$10^{-1}$,$10^0$,$10^1$,$10^2$,$10^3$},
+      grid=both,
+      minor x tick num=9,
+      xtickten={6,7,8},]
+      %% MULTIPLOT(algo) SELECT algo, (AVG(q_size/succ_time)*1000.0001) AS x, AVG(c_mem/(1.0*data_size)) AS y, MULTIPLOT
+      %% FROM results WHERE threads=1 AND data LIKE '%sss1024'
+      %% GROUP BY algo ORDER BY algo
+      \addplot[binscan] coordinates { (5.9608e+06,0.0001) };
+      \addlegendentry{algo=binsearch\_cache}
+      \addplot[bin] coordinates { (6.16962e+06,0.0001) };
+      \addlegendentry{algo=binsearch\_std}
+      \addplot[lavector1] coordinates { (9.56e+06,3.31088) };
+      \addlegendentry{algo=la\_vector1}
+      \addplot[lavector128] coordinates { (8.15064e+06,0.0343331) };
+      \addlegendentry{algo=la\_vector128}
+      \addplot[lavector16] coordinates { (1.02105e+07,0.224011) };
+      \addlegendentry{algo=la\_vector16}
+      \addplot[lavector2] coordinates { (9.33793e+06,1.68009) };
+      \addlegendentry{algo=la\_vector2}
+      \addplot[lavector256] coordinates { (6.60993e+06,0.0197533) };
+      \addlegendentry{algo=la\_vector256}
+      \addplot[lavector32] coordinates { (9.86207e+06,0.116713) };
+      \addlegendentry{algo=la\_vector32}
+      \addplot[lavector4] coordinates { (9.8e+06,0.855193) };
+      \addlegendentry{algo=la\_vector4}
+      \addplot[lavector512] coordinates { (4.93779e+06,0.0118721) };
+      \addlegendentry{algo=la\_vector512}
+      \addplot[lavector1] coordinates { (9.60514e+06,0.0622911) };
+      \addlegendentry{algo=la\_vector64}
+      \addplot[lavector8] coordinates { (1.00129e+07,0.436362) };
+      \addlegendentry{algo=la\_vector8}
+      \addplot[pgm128] coordinates { (8.31822e+06,0.0012265) };
+      \addlegendentry{algo=pgm\_index128}
+      \addplot[pgm16] coordinates { (1.12599e+07,0.0625519) };
+      \addlegendentry{algo=pgm\_index16}
+      \addplot[pgm32] coordinates { (1.02537e+07,0.0156714) };
+      \addlegendentry{algo=pgm\_index32}
+      \addplot[pgm64] coordinates { (9.37093e+06,0.00395118) };
+      \addlegendentry{algo=pgm\_index64}
+      \addplot[pgm8] coordinates { (1.10684e+07,0.250048) };
+      \addlegendentry{algo=pgm\_index8}
+      \addplot[ind10] coordinates { (3.93538e+07,1.93622) };
+      \addlegendentry{algo=pred\_index10}
+      \addplot[ind11] coordinates { (3.45131e+07,0.968114) };
+      \addlegendentry{algo=pred\_index11}
+      \addplot[ind12] coordinates { (2.8599e+07,0.484062) };
+      \addlegendentry{algo=pred\_index12}
+      \addplot[ind6] coordinates { (5.51616e+07,30.9793) };
+      \addlegendentry{algo=pred\_index6}
+      \addplot[ind7] coordinates { (5.85451e+07,15.4897) };
+      \addlegendentry{algo=pred\_index7}
+      \addplot[ind8] coordinates { (5.31918e+07,7.74483) };
+      \addlegendentry{algo=pred\_index8}
+      \addplot[ind9] coordinates { (4.40468e+07,3.87242) };
+      \addlegendentry{algo=pred\_index9}
+      \addplot[rank] coordinates { (1.50967e+07,74.2061) };
+      \addlegendentry{algo=rank\_index}
+      \addplot[sdarray1] coordinates { (8.664e+06,1.55949) };
+      \addlegendentry{algo=sd\_array1}
+      \addplot[sdarray128] coordinates { (6.74929e+06,0.0187975) };
+      \addlegendentry{algo=sd\_array128}
+      \addplot[sdarray16] coordinates { (8.28086e+06,0.132795) };
+      \addlegendentry{algo=sd\_array16}
+      \addplot[sdarray2] coordinates { (8.73207e+06,0.856321) };
+      \addlegendentry{algo=sd\_array2}
+      \addplot[sdarray256] coordinates { (5.67657e+06,0.0101074) };
+      \addlegendentry{algo=sd\_array256}
+      \addplot[sdarray32] coordinates { (7.91907e+06,0.0673169) };
+      \addlegendentry{algo=sd\_array32}
+      \addplot[sdarray4] coordinates { (8.54764e+06,0.476237) };
+      \addlegendentry{algo=sd\_array4}
+      \addplot[sdarray512] coordinates { (4.424e+06,0.00555767) };
+      \addlegendentry{algo=sd\_array512}
+      \addplot[sdarray64] coordinates { (7.51522e+06,0.0359142) };
+      \addlegendentry{algo=sd\_array64}
+      \addplot[sdarray8] coordinates { (8.47764e+06,0.256609) };
+      \addlegendentry{algo=sd\_array8}
+
+      \legend{}
+    \end{loglogaxis}
+  \end{tikzpicture}
+  \hfill
+  \begin{tikzpicture}[trim axis right]
+    \begin{loglogaxis}[
+      succRAMThroughput,
+      title={average ($\tau=2048$)},
+      xlabel={throughput $\left[\text{queries/s}\right]$},
+      height=6.5cm,
+      width=7.3cm,
+      enlarge y limits=false,
+      ymin=0.0001,
+      ymax=500,
+      ytickten={-4,-3,-2,-1,0,1,2,3},
+      yticklabels={$0$,$10^{-3}$,$10^{-2}$,$10^{-1}$,$10^0$,$10^1$,$10^2$,$10^3$},
+      grid=both,
+      minor x tick num=9,
+      xtickten={6,7,8},]
+      
+      %% MULTIPLOT(algo) SELECT algo, (AVG(q_size/succ_time)*1000.0001) AS x, AVG(c_mem/(1.0*data_size)) AS y, MULTIPLOT
+      %% FROM results WHERE threads=1 AND data LIKE '%sss2048'
+      %% GROUP BY algo ORDER BY algo
+      \addplot[binscan] coordinates { (7.24027e+06,0.0001) };
+      \addlegendentry{algo=binsearch\_cache}
+      \addplot[bin] coordinates { (6.69508e+06,0.0001) };
+      \addlegendentry{algo=binsearch\_std}
+      \addplot[lavector1] coordinates { (1.05553e+07,3.40842) };
+      \addlegendentry{algo=la\_vector1}
+      \addplot[lavector128] coordinates { (8.95536e+06,0.0449605) };
+      \addlegendentry{algo=la\_vector128}
+      \addplot[lavector16] coordinates { (1.08282e+07,0.243554) };
+      \addlegendentry{algo=la\_vector16}
+      \addplot[lavector2] coordinates { (1.04657e+07,1.73213) };
+      \addlegendentry{algo=la\_vector2}
+      \addplot[lavector256] coordinates { (6.38479e+06,0.0272755) };
+      \addlegendentry{algo=la\_vector256}
+      \addplot[lavector32] coordinates { (1.10664e+07,0.133381) };
+      \addlegendentry{algo=la\_vector32}
+      \addplot[lavector4] coordinates { (1.05453e+07,0.886206) };
+      \addlegendentry{algo=la\_vector4}
+      \addplot[lavector512] coordinates { (5.5405e+06,0.016701) };
+      \addlegendentry{algo=la\_vector512}
+      \addplot[lavector1] coordinates { (1.01352e+07,0.075504) };
+      \addlegendentry{algo=la\_vector64}
+      \addplot[lavector8] coordinates { (1.13199e+07,0.460003) };
+      \addlegendentry{algo=la\_vector8}
+      \addplot[pgm128] coordinates { (9.76814e+06,0.00138849) };
+      \addlegendentry{algo=pgm\_index128}
+      \addplot[pgm16] coordinates { (1.13645e+07,0.0625898) };
+      \addlegendentry{algo=pgm\_index16}
+      \addplot[pgm32] coordinates { (1.13276e+07,0.0157136) };
+      \addlegendentry{algo=pgm\_index32}
+      \addplot[pgm64] coordinates { (9.52393e+06,0.00398477) };
+      \addlegendentry{algo=pgm\_index64}
+      \addplot[pgm8] coordinates { (1.2085e+07,0.250083) };
+      \addlegendentry{algo=pgm\_index8}
+      \addplot[ind10] coordinates { (5.07741e+07,3.80692) };
+      \addlegendentry{algo=pred\_index10}
+      \addplot[ind11] coordinates { (4.56615e+07,1.90347) };
+      \addlegendentry{algo=pred\_index11}
+      \addplot[ind12] coordinates { (3.51401e+07,0.951743) };
+      \addlegendentry{algo=pred\_index12}
+      \addplot[ind6] coordinates { (6.35409e+07,60.9103) };
+      \addlegendentry{algo=pred\_index6}
+      \addplot[ind7] coordinates { (8.33185e+07,30.4552) };
+      \addlegendentry{algo=pred\_index7}
+      \addplot[ind8] coordinates { (8.26922e+07,15.2276) };
+      \addlegendentry{algo=pred\_index8}
+      \addplot[ind9] coordinates { (6.51189e+07,7.61381) };
+      \addlegendentry{algo=pred\_index9}
+      \addplot[rank] coordinates { (1.70464e+07,146.07) };
+      \addlegendentry{algo=rank\_index}
+      \addplot[sdarray1] coordinates { (9.1545e+06,1.71811) };
+      \addlegendentry{algo=sd\_array1}
+      \addplot[sdarray128] coordinates { (6.90679e+06,0.0202288) };
+      \addlegendentry{algo=sd\_array128}
+      \addplot[sdarray16] coordinates { (8.78672e+06,0.136851) };
+      \addlegendentry{algo=sd\_array16}
+      \addplot[sdarray2] coordinates { (9.15986e+06,0.944892) };
+      \addlegendentry{algo=sd\_array2}
+      \addplot[sdarray256] coordinates { (6.06107e+06,0.0110897) };
+      \addlegendentry{algo=sd\_array256}
+      \addplot[sdarray32] coordinates { (8.15043e+06,0.0718074) };
+      \addlegendentry{algo=sd\_array32}
+      \addplot[sdarray4] coordinates { (9.17436e+06,0.512765) };
+      \addlegendentry{algo=sd\_array4}
+      \addplot[sdarray512] coordinates { (4.54543e+06,0.00626263) };
+      \addlegendentry{algo=sd\_array512}
+      \addplot[sdarray64] coordinates { (8.00443e+06,0.0375878) };
+      \addlegendentry{algo=sd\_array64}
+      \addplot[sdarray8] coordinates { (8.73486e+06,0.265244) };
+      \addlegendentry{algo=sd\_array8}
+
+      \legend{}
+    \end{loglogaxis}
+  \end{tikzpicture}
+
+  \begin{tikzpicture}[trim axis right,legendmarks]
+    \begin{axis}[LCERAMThroughput,legend,legend columns=5,]
+      \addplot[lavector1] coordinates { (0,0) };
+      \addlegendentry{\texttt{la-vector-1}}
+      \addplot[lavector2] coordinates { (0,0) };
+      \addlegendentry{\texttt{la-vector-2}}
+      \addplot[lavector4] coordinates { (0,0) };
+      \addlegendentry{\texttt{la-vector-4}}
+      \addplot[lavector8] coordinates { (0,0) };
+      \addlegendentry{\texttt{la-vector-8}}
+      \addplot[lavector16] coordinates { (0,0) };
+      \addlegendentry{\texttt{la-vector-16}}
+      \addplot[lavector32] coordinates { (0,0) };
+      \addlegendentry{\texttt{la-vector-32}}
+      \addplot[lavector64] coordinates { (0,0) };
+      \addlegendentry{\texttt{la-vector-64}}
+      \addplot[lavector128] coordinates { (0,0) };
+      \addlegendentry{\texttt{la-vector-128}}
+      \addplot[lavector256] coordinates { (0,0) };
+      \addlegendentry{\texttt{la-vector-256}}
+      \addplot[lavector512] coordinates { (0,0) };
+      \addlegendentry{\texttt{la-vector-512}}
+      \addplot[sdarray1] coordinates { (0,0) };
+      \addlegendentry{\texttt{sd-array-1}}
+      \addplot[sdarray2] coordinates { (0,0) };
+      \addlegendentry{\texttt{sd-array-2}}
+      \addplot[sdarray4] coordinates { (0,0) };
+      \addlegendentry{\texttt{sd-array-4}}
+      \addplot[sdarray8] coordinates { (0,0) };
+      \addlegendentry{\texttt{sd-array-8}}
+      \addplot[sdarray16] coordinates { (0,0) };
+      \addlegendentry{\texttt{sd-array-16}}
+      \addplot[sdarray32] coordinates { (0,0) };
+      \addlegendentry{\texttt{sd-array-32}}
+      \addplot[sdarray64] coordinates { (0,0) };
+      \addlegendentry{\texttt{sd-array-64}}
+      \addplot[sdarray128] coordinates { (0,0) };
+      \addlegendentry{\texttt{sd-array-128}}
+      \addplot[sdarray256] coordinates { (0,0) };
+      \addlegendentry{\texttt{sd-array-256}}
+      \addplot[sdarray512] coordinates { (0,0) };
+      \addlegendentry{\texttt{sd-array-512}}
+      \addplot[pgm8] coordinates { (0,0) };
+      \addlegendentry{\texttt{pgm-index-8}}
+      \addplot[pgm16] coordinates { (0,0) };
+      \addlegendentry{\texttt{pgm-index-16}}
+      \addplot[pgm32] coordinates { (0,0) };
+      \addlegendentry{\texttt{pgm-index-32}}
+      \addplot[pgm64] coordinates { (0,0) };
+      \addlegendentry{\texttt{pgm-index-64}}
+      \addplot[pgm128] coordinates { (0,0) };
+      \addlegendentry{\texttt{pgm-index-128}}
+      \addplot[ind6] coordinates { (0,0) };
+      \addlegendentry{\texttt{succ-index-6}}
+      \addplot[ind7] coordinates { (0,0) };
+      \addlegendentry{\texttt{succ-index-7}}
+      \addplot[ind8] coordinates { (0,0) };
+      \addlegendentry{\texttt{succ-index-8}}
+      \addplot[ind9] coordinates { (0,0) };
+      \addlegendentry{\texttt{succ-index-9}}
+      \addplot[ind10] coordinates { (0,0) };
+      \addlegendentry{\texttt{succ-index-10}}
+      \addplot[ind11] coordinates { (0,0) };
+      \addlegendentry{\texttt{succ-index-11}}
+      \addplot[ind12] coordinates { (0,0) };
+      \addlegendentry{\texttt{succ-index-12}}
+      \addplot[rank] coordinates { (0,0) };
+      \addlegendentry{\texttt{rank}}
+      \addplot[bin] coordinates { (0,0) };
+      \addlegendentry{\texttt{bin-search}}
+      \addplot[binscan] coordinates { (0,0) };
+      \addlegendentry{\texttt{bin-search-scan}}
+    \end{axis}
+  \end{tikzpicture}
+  %\vspace*{-1.3cm}
+  \caption{Query throughput versus space usage for static successor data structures built on top of string synchronizing sets, averaged over all texts in the corpus (Tbl.~\ref{tab:datasets}). Note that ``\texttt{la-vector}'' and ``\texttt{sd-array}'' are not directly comparable to the other data structures because they include an encoding of the input sequence.}
+  \label{fig:succ-avg}
+\end{figure}

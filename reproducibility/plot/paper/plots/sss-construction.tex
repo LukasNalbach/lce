@@ -1,0 +1,713 @@
+% IMPORT-DATA results data/lce.results.new
+% IMPORT-DATA results_par data/lce.results.new.par
+
+\newcommand{\dblpData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'dblp.xml' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+    \addplot[sss1024] coordinates { (18.3936,0.0428637) (18.3936,0.101181) };
+    \addlegendentry{algo=sss1024}
+    \addplot[sss2048] coordinates { (16.6782,0.0249388) (16.6782,0.0506513) };
+    \addlegendentry{algo=sss2048}
+    \addplot[sss256] coordinates { (25.9982,0.150901) (25.9982,0.404072) };
+    \addlegendentry{algo=sss256}
+    \addplot[sss512] coordinates { (20.9397,0.0788935) (20.9397,0.202372) };
+    \addlegendentry{algo=sss512}
+    \addplot[sssno1024] coordinates { (16.4384,0.0428637) (16.4384,0.122638) };
+    \addlegendentry{algo=sss\_noss1024}
+    \addplot[sssno2048] coordinates { (16.0669,0.0249388) (16.0669,0.0613982) };
+    \addlegendentry{algo=sss\_noss2048}
+    \addplot[sssno256] coordinates { (19.8389,0.150902) (19.8389,0.48971) };
+    \addlegendentry{algo=sss\_noss256}
+    \addplot[sssno512] coordinates { (17.2792,0.0788935) (17.2792,0.24529) };
+    \addlegendentry{algo=sss\_noss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'dblp.xml' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+}
+
+\newcommand{\dnaData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'dna' AND threads=1 AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+    \addplot[sss1024] coordinates { (18.4068,0.041065) (18.4068,0.0946009) };
+    \addlegendentry{algo=sss1024}
+    \addplot[sss2048] coordinates { (16.701,0.0230589) (16.701,0.0473005) };
+    \addlegendentry{algo=sss2048}
+    \addplot[sss256] coordinates { (26.6731,0.14925) (26.6731,0.377149) };
+    \addlegendentry{algo=sss256}
+    \addplot[sss512] coordinates { (21.0855,0.0770675) (21.0855,0.188866) };
+    \addlegendentry{algo=sss512}
+    \addplot[sssno1024] coordinates { (15.6612,0.041065) (15.6612,0.116082) };
+    \addlegendentry{algo=sss\_noss1024}
+    \addplot[sssno2048] coordinates { (15.1141,0.0230589) (15.1141,0.058034) };
+    \addlegendentry{algo=sss\_noss2048}
+    \addplot[sssno256] coordinates { (19.7139,0.14925) (19.7139,0.462791) };
+    \addlegendentry{algo=sss\_noss256}
+    \addplot[sssno512] coordinates { (16.7951,0.0770675) (16.7951,0.231751) };
+    \addlegendentry{algo=sss\_noss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'dna' AND threads=1 AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+}
+
+\newcommand{\englishData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'english' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+    \addplot[sss1024] coordinates { (19.2843,0.0370833) (19.2843,0.0831641) };
+    \addlegendentry{algo=sss1024}
+    \addplot[sss2048] coordinates { (17.6172,0.0189589) (17.6172,0.0420341) };
+    \addlegendentry{algo=sss2048}
+    \addplot[sss256] coordinates { (31.3329,0.146103) (31.3329,0.324766) };
+    \addlegendentry{algo=sss256}
+    \addplot[sss512] coordinates { (23.2642,0.0733973) (23.2642,0.163628) };
+    \addlegendentry{algo=sss512}
+    \addplot[sssno1024] coordinates { (16.583,0.0370833) (16.583,0.120725) };
+    \addlegendentry{algo=sss\_noss1024}
+    \addplot[sssno2048] coordinates { (15.5714,0.0189589) (15.5714,0.0604568) };
+    \addlegendentry{algo=sss\_noss2048}
+    \addplot[sssno256] coordinates { (21.3975,0.146103) (21.3975,0.482213) };
+    \addlegendentry{algo=sss\_noss256}
+    \addplot[sssno512] coordinates { (18.0547,0.0733973) (18.0547,0.241278) };
+    \addlegendentry{algo=sss\_noss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'english' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+}
+
+\newcommand{\proteinsData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'proteins' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+    \addplot[sss1024] coordinates { (17.7171,0.0388279) (17.7171,0.102218) };
+    \addlegendentry{algo=sss1024}
+    \addplot[sss2048] coordinates { (15.9115,0.0202647) (15.9115,0.0513681) };
+    \addlegendentry{algo=sss2048}
+    \addplot[sss256] coordinates { (27.7201,0.147894) (27.7201,0.396014) };
+    \addlegendentry{algo=sss256}
+    \addplot[sss512] coordinates { (21.6747,0.0755221) (21.6747,0.201896) };
+    \addlegendentry{algo=sss512}
+    \addplot[sssno1024] coordinates { (16.3515,0.0388279) (16.3515,0.124373) };
+    \addlegendentry{algo=sss\_noss1024}
+    \addplot[sssno2048] coordinates { (14.985,0.0202646) (14.985,0.0624616) };
+    \addlegendentry{algo=sss\_noss2048}
+    \addplot[sssno256] coordinates { (20.543,0.147894) (20.543,0.482785) };
+    \addlegendentry{algo=sss\_noss256}
+    \addplot[sssno512] coordinates { (17.4857,0.0755221) (17.4857,0.24584) };
+    \addlegendentry{algo=sss\_noss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'proteins' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+}
+
+\newcommand{\sourcesData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'sources' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+    \addplot[sss1024] coordinates { (18.5425,0.0468362) (18.5425,0.0960784) };
+    \addlegendentry{algo=sss1024}
+    \addplot[sss2048] coordinates { (17.006,0.0288167) (17.006,0.0565482) };
+    \addlegendentry{algo=sss2048}
+    \addplot[sss256] coordinates { (25.1676,0.154894) (25.1676,0.373254) };
+    \addlegendentry{algo=sss256}
+    \addplot[sss512] coordinates { (20.5817,0.0827457) (20.5817,0.188461) };
+    \addlegendentry{algo=sss512}
+    \addplot[sssno1024] coordinates { (16.8495,0.0468362) (16.8495,0.118142) };
+    \addlegendentry{algo=sss\_noss1024}
+    \addplot[sssno2048] coordinates { (16.2852,0.0288167) (16.2852,0.0678366) };
+    \addlegendentry{algo=sss\_noss2048}
+    \addplot[sssno256] coordinates { (19.2017,0.154895) (19.2017,0.459455) };
+    \addlegendentry{algo=sss\_noss256}
+    \addplot[sssno512] coordinates { (16.8353,0.0827457) (16.8353,0.232292) };
+    \addlegendentry{algo=sss\_noss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'sources' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+}
+
+\newcommand{\cereData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'cere' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+    \addplot[sss1024] coordinates { (83.0178,0.0414033) (83.0178,0.579491) };
+    \addlegendentry{algo=sss1024}
+    \addplot[sss2048] coordinates { (85.1423,0.0233695) (85.1423,0.319979) };
+    \addlegendentry{algo=sss2048}
+    \addplot[sss256] coordinates { (64.9314,0.144612) (64.9314,0.706208) };
+    \addlegendentry{algo=sss256}
+    \addplot[sss512] coordinates { (71.6669,0.0767043) (71.6669,0.648034) };
+    \addlegendentry{algo=sss512}
+    \addplot[sssno1024] coordinates { (80.5746,0.0413926) (80.5746,2.43294) };
+    \addlegendentry{algo=sss\_noss1024}
+    \addplot[sssno2048] coordinates { (81.3724,0.0233644) (81.3724,1.34208) };
+    \addlegendentry{algo=sss\_noss2048}
+    \addplot[sssno256] coordinates { (57.8599,0.144603) (57.8599,2.96583) };
+    \addlegendentry{algo=sss\_noss256}
+    \addplot[sssno512] coordinates { (67.496,0.0766869) (67.496,2.72128) };
+    \addlegendentry{algo=sss\_noss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'cere' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+}
+
+\newcommand{\coreutilsData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'coreutils' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+    \addplot[sss1024] coordinates { (20.2112,0.0482971) (20.2112,0.0701051) };
+    \addlegendentry{algo=sss1024}
+    \addplot[sss2048] coordinates { (18.3601,0.0285683) (18.3601,0.0394527) };
+    \addlegendentry{algo=sss2048}
+    \addplot[sss256] coordinates { (27.3867,0.157208) (27.3867,0.236404) };
+    \addlegendentry{algo=sss256}
+    \addplot[sss512] coordinates { (22.9246,0.0853511) (22.9246,0.132766) };
+    \addlegendentry{algo=sss512}
+    \addplot[sssno1024] coordinates { (16.3824,0.0482977) (16.3824,0.0975702) };
+    \addlegendentry{algo=sss\_noss1024}
+    \addplot[sssno2048] coordinates { (16.0316,0.0285683) (16.0316,0.0505577) };
+    \addlegendentry{algo=sss\_noss2048}
+    \addplot[sssno256] coordinates { (19.1493,0.15721) (19.1493,0.380998) };
+    \addlegendentry{algo=sss\_noss256}
+    \addplot[sssno512] coordinates { (17.3177,0.0853517) (17.3177,0.192683) };
+    \addlegendentry{algo=sss\_noss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'coreutils' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+}
+
+\newcommand{\einsteindeData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'einstein.de.txt' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+    \addplot[sss1024] coordinates { (20.1383,0.0587483) (20.1383,0.0785813) };
+    \addlegendentry{algo=sss1024}
+    \addplot[sss2048] coordinates { (18.9309,0.040729) (18.9309,0.0507228) };
+    \addlegendentry{algo=sss2048}
+    \addplot[sss256] coordinates { (25.8521,0.168244) (25.8521,0.24763) };
+    \addlegendentry{algo=sss256}
+    \addplot[sss512] coordinates { (22.0573,0.0937115) (22.0573,0.132483) };
+    \addlegendentry{algo=sss512}
+    \addplot[sssno1024] coordinates { (16.1279,0.0587483) (16.1279,0.102392) };
+    \addlegendentry{algo=sss\_noss1024}
+    \addplot[sssno2048] coordinates { (16.2573,0.0407312) (16.2573,0.0616994) };
+    \addlegendentry{algo=sss\_noss2048}
+    \addplot[sssno256] coordinates { (17.7235,0.1682) (17.7235,0.404436) };
+    \addlegendentry{algo=sss\_noss256}
+    \addplot[sssno512] coordinates { (16.4621,0.0937361) (16.4621,0.200803) };
+    \addlegendentry{algo=sss\_noss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'einstein.de.txt' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+}
+
+\newcommand{\einsteinenData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'einstein.en.txt' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+    \addplot[sss1024] coordinates { (21.0061,0.0459886) (21.0061,0.0678083) };
+    \addlegendentry{algo=sss1024}
+    \addplot[sss2048] coordinates { (19.8363,0.0280582) (19.8363,0.0401894) };
+    \addlegendentry{algo=sss2048}
+    \addplot[sss256] coordinates { (26.4164,0.153392) (26.4164,0.232978) };
+    \addlegendentry{algo=sss256}
+    \addplot[sss512] coordinates { (22.8045,0.0807744) (22.8045,0.121257) };
+    \addlegendentry{algo=sss512}
+    \addplot[sssno1024] coordinates { (16.7677,0.0459886) (16.7677,0.0931871) };
+    \addlegendentry{algo=sss\_noss1024}
+    \addplot[sssno2048] coordinates { (16.2801,0.0280582) (16.2801,0.0731216) };
+    \addlegendentry{algo=sss\_noss2048}
+    \addplot[sssno256] coordinates { (18.9703,0.153392) (18.9703,0.355554) };
+    \addlegendentry{algo=sss\_noss256}
+    \addplot[sssno512] coordinates { (17.0585,0.0807744) (17.0585,0.179329) };
+    \addlegendentry{algo=sss\_noss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'einstein.en.txt' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+}
+
+\newcommand{\escherichiaData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE '%escherichia%' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+    \addplot[sss1024] coordinates { (17.8455,0.0546932) (17.8455,0.087061) };
+    \addlegendentry{algo=sss1024}
+    \addplot[sss2048] coordinates { (16.612,0.0363325) (16.612,0.0525382) };
+    \addlegendentry{algo=sss2048}
+    \addplot[sss256] coordinates { (25.9119,0.162838) (25.9119,0.327955) };
+    \addlegendentry{algo=sss256}
+    \addplot[sss512] coordinates { (20.7295,0.0908729) (20.7295,0.169324) };
+    \addlegendentry{algo=sss512}
+    \addplot[sssno1024] coordinates { (15.5738,0.0546934) (15.5738,0.108729) };
+    \addlegendentry{algo=sss\_noss1024}
+    \addplot[sssno2048] coordinates { (15.0591,0.0363325) (15.0591,0.0632482) };
+    \addlegendentry{algo=sss\_noss2048}
+    \addplot[sssno256] coordinates { (18.2093,0.16284) (18.2093,0.414537) };
+    \addlegendentry{algo=sss\_noss256}
+    \addplot[sssno512] coordinates { (16.8871,0.0908731) (16.8871,0.212731) };
+    \addlegendentry{algo=sss\_noss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE '%escherichia%' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+}
+
+\newcommand{\influenzaData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'influenza' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+    \addplot[sss1024] coordinates { (17.8349,0.0492896) (17.8349,0.0993084) };
+    \addlegendentry{algo=sss1024}
+    \addplot[sss2048] coordinates { (16.0262,0.0313605) (16.0262,0.0530189) };
+    \addlegendentry{algo=sss2048}
+    \addplot[sss256] coordinates { (26.7944,0.157114) (26.7944,0.313109) };
+    \addlegendentry{algo=sss256}
+    \addplot[sss512] coordinates { (21.1939,0.0851242) (21.1939,0.193259) };
+    \addlegendentry{algo=sss512}
+    \addplot[sssno1024] coordinates { (15.5224,0.0492924) (15.5224,0.120843) };
+    \addlegendentry{algo=sss\_noss1024}
+    \addplot[sssno2048] coordinates { (15.0508,0.0313605) (15.0508,0.0637729) };
+    \addlegendentry{algo=sss\_noss2048}
+    \addplot[sssno256] coordinates { (18.4228,0.157113) (18.4228,0.448334) };
+    \addlegendentry{algo=sss\_noss256}
+    \addplot[sssno512] coordinates { (16.3621,0.0851242) (16.3621,0.236364) };
+    \addlegendentry{algo=sss\_noss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'influenza' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+}
+
+\newcommand{\kernelData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'kernel' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+    \addplot[sss1024] coordinates { (20.4759,0.0439418) (20.4759,0.0634874) };
+    \addlegendentry{algo=sss1024}
+    \addplot[sss2048] coordinates { (19.2083,0.0259667) (19.2083,0.0357371) };
+    \addlegendentry{algo=sss2048}
+    \addplot[sss256] coordinates { (27.4459,0.151708) (27.4459,0.229433) };
+    \addlegendentry{algo=sss256}
+    \addplot[sss512] coordinates { (23.488,0.080146) (23.488,0.119327) };
+    \addlegendentry{algo=sss512}
+    \addplot[sssno1024] coordinates { (16.3009,0.0439418) (16.3009,0.0849809) };
+    \addlegendentry{algo=sss\_noss1024}
+    \addplot[sssno2048] coordinates { (16.3474,0.0259667) (16.3474,0.0464777) };
+    \addlegendentry{algo=sss\_noss2048}
+    \addplot[sssno256] coordinates { (19.1773,0.151709) (19.1773,0.334065) };
+    \addlegendentry{algo=sss\_noss256}
+    \addplot[sssno512] coordinates { (17.3553,0.080146) (17.3553,0.16789) };
+    \addlegendentry{algo=sss\_noss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results
+    %% WHERE text LIKE 'kernel' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+}
+
+\newcommand{\wikitxtData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results_par
+    %% WHERE text LIKE 'wiki.txt' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+    \addplot[sss1024] coordinates { (22.8447,0.0392109) (22.8447,0.0599358) };
+    \addlegendentry{algo=sss1024}
+    \addplot[sss2048] coordinates { (20.2504,0.0204867) (20.2504,0.0313605) };
+    \addlegendentry{algo=sss2048}
+    \addplot[sss256] coordinates { (40.7947,0.151125) (40.7947,0.230383) };
+    \addlegendentry{algo=sss256}
+    \addplot[sss512] coordinates { (28.8402,0.0764688) (28.8402,0.116722) };
+    \addlegendentry{algo=sss512}
+    \addplot[sssno1024] coordinates { (18.8415,0.0392109) (18.8415,0.0827333) };
+    \addlegendentry{algo=sss\_noss1024}
+    \addplot[sssno2048] coordinates { (18.1074,0.0204868) (18.1074,0.0433216) };
+    \addlegendentry{algo=sss\_noss2048}
+    \addplot[sssno256] coordinates { (26.3027,0.151125) (26.3027,0.317568) };
+    \addlegendentry{algo=sss\_noss256}
+    \addplot[sssno512] coordinates { (21.1186,0.0764688) (21.1186,0.161001) };
+    \addlegendentry{algo=sss\_noss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results_par
+    %% WHERE text LIKE 'wiki.txt' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+}
+
+\newcommand{\dnatxtData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results_par
+    %% WHERE text LIKE 'dna.txt' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+    \addplot[sss1024] coordinates { (22.8308,0.0372567) (22.8308,0.0568938) };
+    \addlegendentry{algo=sss1024}
+    \addplot[sss2048] coordinates { (18.8947,0.018696) (18.8947,0.0285657) };
+    \addlegendentry{algo=sss2048}
+    \addplot[sss256] coordinates { (50.1692,0.148868) (50.1692,0.226893) };
+    \addlegendentry{algo=sss256}
+    \addplot[sss512] coordinates { (31.5761,0.0744786) (31.5761,0.113638) };
+    \addlegendentry{algo=sss512}
+    \addplot[sssno1024] coordinates { (19.4454,0.0372567) (19.4454,0.0784947) };
+    \addlegendentry{algo=sss\_noss1024}
+    \addplot[sssno2048] coordinates { (17.0306,0.018696) (17.0306,0.0394224) };
+    \addlegendentry{algo=sss\_noss2048}
+    \addplot[sssno256] coordinates { (35.2147,0.148868) (35.2147,0.31272) };
+    \addlegendentry{algo=sss\_noss256}
+    \addplot[sssno512] coordinates { (24.2564,0.0744786) (24.2564,0.156712) };
+    \addlegendentry{algo=sss\_noss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results_par
+    %% WHERE text LIKE 'dna.txt' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+}
+
+\newcommand{\cctxtData}{%
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mem / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results_par
+    %% WHERE text LIKE 'cc.txt' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+    \addplot[sss1024] coordinates { (23.7989,0.0415491) (23.7989,0.0637959) };
+    \addlegendentry{algo=sss1024}
+    \addplot[sss2048] coordinates { (21.0875,0.0221604) (21.0875,0.0341397) };
+    \addlegendentry{algo=sss2048}
+    \addplot[sss256] coordinates { (40.3357,0.153892) (40.3357,0.234987) };
+    \addlegendentry{algo=sss256}
+    \addplot[sss512] coordinates { (29.4044,0.0792259) (29.4044,0.121273) };
+    \addlegendentry{algo=sss512}
+    \addplot[sssno1024] coordinates { (18.9761,0.0415491) (18.9761,0.0882673) };
+    \addlegendentry{algo=sss\_noss1024}
+    \addplot[sssno2048] coordinates { (17.981,0.0221604) (17.981,0.047317) };
+    \addlegendentry{algo=sss\_noss2048}
+    \addplot[sssno256] coordinates { (27.5488,0.153892) (27.5488,0.324191) };
+    \addlegendentry{algo=sss\_noss256}
+    \addplot[sssno512] coordinates { (21.0275,0.0792259) (21.0275,0.167525) };
+    \addlegendentry{algo=sss\_noss512}
+
+    %% -MULTIPLOT(algo) 
+    %% SELECT algo, c_mempeak / CAST(text_size AS FLOAT) AS y, c_time * 1000000.0 / (CAST(text_size AS FLOAT)) AS x, MULTIPLOT
+    %% FROM results_par
+    %% WHERE text LIKE 'cc.txt' AND (algo LIKE 'sss256' OR algo LIKE 'sss512' OR algo LIKE 'sss1024' OR algo LIKE 'sss2048' OR algo LIKE 'sss_noss256' OR algo LIKE 'sss_noss512' OR algo LIKE 'sss_noss1024' OR algo LIKE 'sss_noss2048') AND threads=1
+    %% GROUP BY algo ORDER BY algo
+}
+
+
+\begin{figure}
+\centering
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        yticklabel style={/pgf/number format/fixed},
+        title={dblp.xml},
+        ylabel={memory [B/$n$]},
+        grid=both,
+        xminorgrids,
+        yminorgrids,
+        minor x tick num=1,
+        minor y tick num=3,]
+        \dblpData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        yticklabel style={/pgf/number format/fixed},
+        title={dna},
+        grid=both,
+        xminorgrids,
+        yminorgrids,
+        minor x tick num=1,
+        minor y tick num=3,]
+        \dnaData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        yticklabel style={/pgf/number format/fixed},
+        title={english},
+        grid=both,
+        xminorgrids,
+        yminorgrids,
+        minor x tick num=1,
+        minor y tick num=3,]
+        \englishData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        yticklabel style={/pgf/number format/fixed},
+        ylabel={memory [B/$n$]},
+        title={proteins},
+        grid=both,
+        xminorgrids,
+        yminorgrids,
+        minor x tick num=1,
+        minor y tick num=3,]
+        \proteinsData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        yticklabel style={/pgf/number format/fixed},
+        title={sources},
+        grid=both,
+        xminorgrids,
+        yminorgrids,
+        minor x tick num=1,
+        minor y tick num=3,]
+        \sourcesData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        yticklabel style={/pgf/number format/fixed},
+        title={cere},
+        grid=both,
+        xminorgrids,
+        yminorgrids,
+        minor x tick num=1,
+        minor y tick num=3,]
+        \cereData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        yticklabel style={/pgf/number format/fixed},
+        ylabel={memory [B/$n$]},
+        title={coreutils},
+        grid=both,
+        xminorgrids,
+        yminorgrids,
+        minor x tick num=1,
+        minor y tick num=3,]
+        \coreutilsData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        yticklabel style={/pgf/number format/fixed},
+        title={einstein.de.txt},
+        grid=both,
+        xminorgrids,
+        yminorgrids,
+        minor x tick num=1,
+        minor y tick num=3,]
+        \einsteindeData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        yticklabel style={/pgf/number format/fixed},
+        title={einstein.en.txt},
+        grid=both,
+        xminorgrids,
+        yminorgrids,
+        minor x tick num=1,
+        minor y tick num=3,]
+        \einsteinenData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        yticklabel style={/pgf/number format/fixed},
+        ylabel={memory [B/$n$]},
+        title={Escherichia\_Coli},
+        grid=both,
+        xminorgrids,
+        yminorgrids,
+        minor x tick num=1,
+        minor y tick num=3,]
+        \escherichiaData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        yticklabel style={/pgf/number format/fixed},
+        title={influenza},
+        grid=both,
+        xminorgrids,
+        yminorgrids,
+        minor x tick num=1,
+        minor y tick num=3,]
+        \influenzaData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        yticklabel style={/pgf/number format/fixed},
+        title={kernel},
+        grid=both,
+        xminorgrids,
+        yminorgrids,
+        minor x tick num=1,
+        minor y tick num=3,]
+        \kernelData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        yticklabel style={/pgf/number format/fixed},
+        xlabel={construction time [$ns/n$]},
+        ylabel={memory [B/$n$]},
+        title={wiki.txt},
+        grid=both,
+        xminorgrids,
+        yminorgrids,
+        minor x tick num=1,
+        minor y tick num=3,]
+        \wikitxtData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        yticklabel style={/pgf/number format/fixed},
+        xlabel={construction time [$ns/n$]},
+        title={dna.txt},
+        grid=both,
+        xminorgrids,
+        yminorgrids,
+        minor x tick num=1,
+        minor y tick num=3,]
+        \dnatxtData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+\hfill
+\begin{tikzpicture}[trim axis right]
+    \begin{axis}[
+        LCERAMThroughput,
+        yticklabel style={/pgf/number format/fixed},
+        title={cc.txt},
+        xlabel={construction time [ns/$n$]},
+        grid=both,
+        xminorgrids,
+        yminorgrids,
+        minor x tick num=1,
+        minor y tick num=3,]
+        \cctxtData
+        \legend{}
+    \end{axis}
+\end{tikzpicture}
+
+\begin{tikzpicture}[trim axis right,legendmarks]
+    \begin{axis}[LCERAMThroughput, legend,legend columns=4,]
+        \addplot[sss256] coordinates { (0,0) };
+        \addlegendentry{\texttt{sss-256}}
+        \addplot[sss512] coordinates { (0,0) };
+        \addlegendentry{\texttt{sss-512}}
+        \addplot[sss1024] coordinates { (0,0) };
+        \addlegendentry{\texttt{sss-1024}}
+        \addplot[sss2048] coordinates { (0,0) };
+        \addlegendentry{\texttt{sss-2048}}
+        \addplot[sssno256] coordinates { (0,0) };
+        \addlegendentry{\texttt{sss-noss-256}}
+        \addplot[sssno512] coordinates { (0,0) };
+        \addlegendentry{\texttt{sss-noss-512}}
+        \addplot[sssno1024] coordinates { (0,0) };
+        \addlegendentry{\texttt{sss-noss-1024}}
+        \addplot[sssno2048] coordinates { (0,0) };
+        \addlegendentry{\texttt{sss-noss-2048}}
+    \end{axis}
+\end{tikzpicture}
+\vspace*{-1.0cm}
+\caption{Construction time versus memory consumption of our SSS LCE data structures. The upper mark is the memory peak during construction, and the lower mark is the size of the final data structure.}
+\label{fig:sss-construction}
+\end{figure}
