@@ -3,8 +3,9 @@
 #   work/texts/<text>             the text
 #   work/queries/<text>/lce_<k>   LCE queries whose result is in [2^(k-1), 2^k)
 #   results/text-stats.txt        alphabet sizes etc. for Table 1
-# Inputs that already exist on this machine are linked; otherwise the texts
-# are downloaded and the queries are generated.
+# Texts that already exist on this machine are linked, the others are
+# downloaded. The queries are generated, except for the large texts, whose
+# query files are provided and linked from LCE_QUERY_SEARCH_PATH.
 
 source "$(dirname "${BASH_SOURCE[0]}")/common.sh"
 require_binaries
@@ -60,19 +61,21 @@ prepare_queries() {
   local text=$1 target="$QUERY_DIR/$1" dir
   has_queries "$target" && return
   rm -rf "$target"
-  local dirs
-  IFS=: read -ra dirs <<< "$LCE_QUERY_SEARCH_PATH"
-  for dir in "${dirs[@]}"; do
-    if has_queries "$dir/$text"; then
-      ln -s "$dir/$text" "$target"
-      log "$text: using the queries in $dir/$text"
-      return
-    fi
-  done
   # gen-sa-lcp builds the suffix and LCP array in RAM (about 25 bytes per
   # character); this is not feasible for the large texts.
-  is_large "$text" && die "no queries for $text were found in \
-$LCE_QUERY_SEARCH_PATH and they cannot be generated on this machine; see README.md"
+  if is_large "$text"; then
+    local dirs
+    IFS=: read -ra dirs <<< "$LCE_QUERY_SEARCH_PATH"
+    for dir in "${dirs[@]}"; do
+      if has_queries "$dir/$text"; then
+        ln -s "$dir/$text" "$target"
+        log "$text: using the queries in $dir/$text"
+        return
+      fi
+    done
+    die "no queries for $text were found in $LCE_QUERY_SEARCH_PATH and they \
+cannot be generated on this machine; see README.md"
+  fi
   log "$text: generating queries (suffix array and LCP array)"
   local sa="$TMP_DIR/$text.sa5" lcp="$TMP_DIR/$text.lcp5"
   OMP_NUM_THREADS=$LCE_PREP_THREADS \

@@ -30,10 +30,11 @@ TEXTS_LARGE=(wiki.txt dna.txt cc.txt)
 : "${LCE_OUTPUT_DIR:=$REPRO_DIR/output}"     # generated tables and figures
 : "${LCE_TOOLS_DIR:=$REPRO_DIR/tools}"       # locally installed TeX Live
 
-# Where to look for inputs that already exist on this machine before
-# downloading (texts) or generating (queries) them. Colon-separated.
-: "${LCE_TEXT_SEARCH_PATH:=/scratch/data/pc:/scratch/data/pc/real:/scratch/nalbach/texts:/bigdata/nalbach:/bigdata/ellert}"
-: "${LCE_QUERY_SEARCH_PATH:=/scratch/nalbach/lce_query_data}"
+# Where to look for texts that already exist on this machine before
+# downloading them, and for the provided query files of the large texts
+# (the queries of the other texts are generated). Colon-separated.
+: "${LCE_TEXT_SEARCH_PATH:=/scratch/repro-talg-2027/texts}"
+: "${LCE_QUERY_SEARCH_PATH:=/scratch/repro-talg-2027/lce_query_data}"
 
 # ---------------------------------------------------------------------------
 # Build
