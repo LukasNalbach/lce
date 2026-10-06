@@ -41,25 +41,37 @@
 
 namespace lce::text {
 
+template <typename t_char_type>
+struct direct_symbol {
+  using type = std::conditional_t<sizeof(t_char_type) == 1, uint8_t, std::make_unsigned_t<t_char_type>>;
+};
+
+template <>
+struct direct_symbol<util::uint40_t> {
+  using type = uint64_t;
+};
+
 template <typename t_char_type = char>
 class direct_text {
-  static_assert(sizeof(t_char_type) == 1 || sizeof(t_char_type) == 2 || sizeof(t_char_type) == 4);
+  static_assert(sizeof(t_char_type) == 1 || sizeof(t_char_type) == 2 || sizeof(t_char_type) == 4 ||
+                sizeof(t_char_type) == 8 || std::is_same_v<t_char_type, util::uint40_t>);
 
  public:
   using char_type = t_char_type;
   static constexpr bool is_byte_text = sizeof(t_char_type) == 1;
-  using symbol_type = std::conditional_t<is_byte_text, uint8_t, std::make_unsigned_t<t_char_type>>;
+  using symbol_type = typename direct_symbol<t_char_type>::type;
   static constexpr uint64_t symbol_bytes = sizeof(t_char_type);
   static constexpr uint64_t word_symbols = 8 / symbol_bytes;
+  static constexpr bool word_aligned = 8 % symbol_bytes == 0;
 
   class cursor {
    public:
     cursor() = default;
-    explicit cursor(const symbol_type* at) : m_at(at) {}
-    symbol_type next() { return *m_at++; }
+    explicit cursor(const char_type* at) : m_at(at) {}
+    symbol_type next() { return symbol_type(*m_at++); }
 
    private:
-    const symbol_type* m_at = nullptr;
+    const char_type* m_at = nullptr;
   };
 
   direct_text() = default;
@@ -83,7 +95,7 @@ class direct_text {
   char_type char_at(uint64_t i) const { return m_data[i]; }
   bool less_char(uint64_t i, uint64_t j) const { return m_data[i] < m_data[j]; }
   symbol_type to_char(symbol_type symbol) const { return symbol; }
-  cursor cursor_at(uint64_t i) const { return cursor(symbols() + i); }
+  cursor cursor_at(uint64_t i) const { return cursor(m_data + i); }
 
   uint64_t lce(uint64_t i, uint64_t j,
                uint64_t max = std::numeric_limits<uint64_t>::max()) const {
@@ -91,36 +103,72 @@ class direct_text {
     const uint64_t l = std::min(i, j);
     const uint64_t r = std::max(i, j);
     const uint64_t limit = std::min(max, m_size - r);
-    const symbol_type* a = symbols() + l;
-    const symbol_type* b = symbols() + r;
-    uint64_t k = 0;
 
-    while (k + word_symbols <= limit) {
-      const uint64_t diff = util::load_u64(a + k) ^ util::load_u64(b + k);
-      if (diff != 0) return k + std::countr_zero(diff) / (8 * symbol_bytes);
-      k += word_symbols;
+    if constexpr (!word_aligned) {
+      const uint8_t* a = bytes() + l * symbol_bytes;
+      const uint8_t* b = bytes() + r * symbol_bytes;
+      const uint64_t limit_bytes = limit * symbol_bytes;
+      uint64_t k = 0;
+
+      while (k + 8 <= limit_bytes) {
+        const uint64_t diff = util::load_u64(a + k) ^ util::load_u64(b + k);
+        if (diff != 0) return (k + std::countr_zero(diff) / 8) / symbol_bytes;
+        k += 8;
+      }
+
+      k /= symbol_bytes;
+      while (k < limit && (*this)[l + k] == (*this)[r + k]) ++k;
+      return k;
+    } else {
+      const symbol_type* a = symbols() + l;
+      const symbol_type* b = symbols() + r;
+      uint64_t k = 0;
+
+      while (k + word_symbols <= limit) {
+        const uint64_t diff = util::load_u64(a + k) ^ util::load_u64(b + k);
+        if (diff != 0) return k + std::countr_zero(diff) / (8 * symbol_bytes);
+        k += word_symbols;
+      }
+
+      while (k < limit && a[k] == b[k]) ++k;
+      return k;
     }
-
-    while (k < limit && a[k] == b[k]) ++k;
-    return k;
   }
 
   uint64_t lce_left(uint64_t i, uint64_t j,
                     uint64_t max = std::numeric_limits<uint64_t>::max()) const {
     if (i == j) [[unlikely]] return std::min(max, i + 1);
     const uint64_t limit = std::min({max, i + 1, j + 1});
-    const symbol_type* a = symbols() + i + 1;
-    const symbol_type* b = symbols() + j + 1;
-    uint64_t k = 0;
 
-    while (k + word_symbols <= limit) {
-      const uint64_t diff = util::load_u64(a - k - word_symbols) ^ util::load_u64(b - k - word_symbols);
-      if (diff != 0) return k + std::countl_zero(diff) / (8 * symbol_bytes);
-      k += word_symbols;
+    if constexpr (!word_aligned) {
+      const uint8_t* a = bytes() + (i + 1) * symbol_bytes;
+      const uint8_t* b = bytes() + (j + 1) * symbol_bytes;
+      const uint64_t limit_bytes = limit * symbol_bytes;
+      uint64_t k = 0;
+
+      while (k + 8 <= limit_bytes) {
+        const uint64_t diff = util::load_u64(a - k - 8) ^ util::load_u64(b - k - 8);
+        if (diff != 0) return (k + std::countl_zero(diff) / 8) / symbol_bytes;
+        k += 8;
+      }
+
+      k /= symbol_bytes;
+      while (k < limit && (*this)[i - k] == (*this)[j - k]) ++k;
+      return k;
+    } else {
+      const symbol_type* a = symbols() + i + 1;
+      const symbol_type* b = symbols() + j + 1;
+      uint64_t k = 0;
+
+      while (k + word_symbols <= limit) {
+        const uint64_t diff = util::load_u64(a - k - word_symbols) ^ util::load_u64(b - k - word_symbols);
+        if (diff != 0) return k + std::countl_zero(diff) / (8 * symbol_bytes);
+        k += word_symbols;
+      }
+
+      while (k < limit && a[-1 - int64_t(k)] == b[-1 - int64_t(k)]) ++k;
+      return k;
     }
-
-    while (k < limit && a[-1 - int64_t(k)] == b[-1 - int64_t(k)]) ++k;
-    return k;
   }
 
   bool equal(uint64_t i, uint64_t j, uint64_t len) const {
@@ -169,7 +217,8 @@ struct text_of {
 };
 
 template <typename t_type>
-  requires(std::is_integral_v<t_type> && (sizeof(t_type) == 1 || sizeof(t_type) == 2 || sizeof(t_type) == 4))
+  requires(std::is_integral_v<t_type> &&
+           (sizeof(t_type) == 1 || sizeof(t_type) == 2 || sizeof(t_type) == 4 || sizeof(t_type) == 8))
 struct text_of<t_type> {
   using type = direct_text<t_type>;
 };
