@@ -37,6 +37,44 @@
 
 namespace lce::sss {
 
+template <typename t_key_index>
+struct __attribute__((packed)) rank_key {
+  uint64_t hash;
+  t_key_index index;
+};
+
+template <typename index_type, typename t_key_index>
+struct __attribute__((packed)) rank_rep {
+  index_type pos;
+  t_key_index id;
+};
+
+template <typename t_key_index>
+void sort_rank_keys(std::vector<rank_key<t_key_index>>& keys) {
+  ips4o::parallel::sort(keys.begin(), keys.end(), [](const rank_key<t_key_index>& lhs, const rank_key<t_key_index>& rhs) {
+    const uint64_t l = lhs.hash;
+    const uint64_t r = rhs.hash;
+    return l < r || (l == r && uint64_t(lhs.index) < uint64_t(rhs.index));
+  });
+}
+
+template <typename t_text, typename sss_type, typename t_rep>
+struct rank_rep_less {
+  t_text const& text;
+  sss_type const& sync_set;
+  uint64_t n;
+  uint64_t len;
+
+  [[gnu::noinline]] bool operator()(const t_rep& a, const t_rep& b) const {
+    const uint64_t lhs = a.pos;
+    const uint64_t rhs = b.pos;
+    const uint64_t lce = text.lce(lhs, rhs, len);
+    if (std::max(lhs, rhs) + lce == n) return lhs > rhs;
+    if (lce < len) return text[lhs + lce] < text[rhs + lce];
+    return sync_set.get_run_info(lhs) < sync_set.get_run_info(rhs);
+  }
+};
+
 template <typename t_rank, typename t_key_index, typename t_text, typename sss_type>
 std::vector<t_rank> rank_3tau_substrings_impl(t_text const& text, sss_type const& sync_set) {
   using index_type = typename sss_type::index_type;
@@ -68,10 +106,7 @@ std::vector<t_rank> rank_3tau_substrings_impl(t_text const& text, sss_type const
   uint64_t m = s;
   while (m > 0 && sss[m - 1] + len >= n) --m;
 
-  struct __attribute__((packed)) key_t {
-    uint64_t hash;
-    t_key_index index;
-  };
+  using key_t = rank_key<t_key_index>;
 
   std::vector<key_t> keys;
   lce::util::no_init_resize(keys, m);
@@ -83,11 +118,7 @@ std::vector<t_rank> rank_3tau_substrings_impl(t_text const& text, sss_type const
     keys[i] = key_t{lce::util::hash_mix(text.hash(pos, len), run), t_key_index(i)};
   }
 
-  ips4o::parallel::sort(keys.begin(), keys.end(), [](const key_t& lhs, const key_t& rhs) {
-    const uint64_t l = lhs.hash;
-    const uint64_t r = rhs.hash;
-    return l < r || (l == r && uint64_t(lhs.index) < uint64_t(rhs.index));
-  });
+  sort_rank_keys(keys);
 
   const uint64_t p = std::max<uint64_t>(1, std::min<uint64_t>(omp_get_max_threads(), m));
   constexpr uint64_t none = std::numeric_limits<uint64_t>::max();
@@ -214,10 +245,7 @@ std::vector<t_rank> rank_3tau_substrings_impl(t_text const& text, sss_type const
 
   const uint64_t u = rep_index.size();
 
-  struct __attribute__((packed)) rep_t {
-    index_type pos;
-    t_key_index id;
-  };
+  using rep_t = rank_rep<index_type, t_key_index>;
 
   std::vector<rep_t> reps;
   lce::util::no_init_resize(reps, u);
@@ -227,14 +255,7 @@ std::vector<t_rank> rank_3tau_substrings_impl(t_text const& text, sss_type const
 
   rep_index = decltype(rep_index)();
 
-  ips4o::parallel::sort(reps.begin(), reps.end(), [&](const rep_t& a, const rep_t& b) {
-    const uint64_t lhs = a.pos;
-    const uint64_t rhs = b.pos;
-    const uint64_t lce = text.lce(lhs, rhs, len);
-    if (std::max(lhs, rhs) + lce == n) return lhs > rhs;
-    if (lce < len) return text[lhs + lce] < text[rhs + lce];
-    return sync_set.get_run_info(lhs) < sync_set.get_run_info(rhs);
-  });
+  ips4o::parallel::sort(reps.begin(), reps.end(), rank_rep_less<t_text, sss_type, rep_t>{text, sync_set, n, len});
 
   std::vector<t_key_index> rank_of_id;
   lce::util::no_init_resize(rank_of_id, u);

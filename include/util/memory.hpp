@@ -49,7 +49,7 @@
 
 namespace lce::util {
 
-struct uint40_t {
+struct __attribute__((packed)) uint40_t {
   static_assert(std::endian::native == std::endian::little);
 
   static constexpr uint8_t width = 5;
