@@ -2,7 +2,7 @@
 This repository contains implementations of Longest Common Extension (LCE) data structures based on string synchronizing sets [1] and in-place fingerprinting [2] as well as practical predecessor/successor data structures.
 
 ## CLI Build Instructions
-This implementation has been tested on Ubuntu 24.04 with gcc-12, g++-12, libtbb-dev and libomp-dev installed. To use the SDSL-based data structures, install and build [sdsl-lite](https://github.com/simongog/sdsl-lite) manually.
+This implementation has been tested on Ubuntu 24.04 with gcc-12 and g++-12 installed.
 
 ```shell
 git clone --recurse-submodules https://github.com/LukasNalbach/lce.git
@@ -13,7 +13,7 @@ cmake ..
 make
 ```
 
-The benchmark tools are written to `build/bench/` and the test executables to `build/tests/`.
+The benchmark tools are written to `build/bench/` and the test executables to `build/tests/`. The text classes `direct_text`, `packed_text` and `split_text`, which the LCE data structures accept as input, are in [compact-texts](https://github.com/LukasNalbach/compact-texts) (submodule `external/compact-texts`); the build settings, the memory and logging helpers and the libraries ips4o, libsais, malloc_count, sdsl-lite and googletest come from [string-utils](https://github.com/LukasNalbach/string-utils) (submodule `external/string-utils`).
 
 ## CLI Programs
 
@@ -34,73 +34,29 @@ The benchmark tools are written to `build/bench/` and the test executables to `b
 
 ## Supported Compilers and Systems
 
-lce is developed on Linux and its own code is portable C++20; the platform differences are almost entirely in third-party dependencies. A 64-bit x86 CPU is required (the library uses 128-bit integers and the `cmpxchg16b` instruction).
-
-| System | Compiler | Status |
-| --- | --- | --- |
-| Linux (x86-64) | GCC ≥ 12 | ✅ Primary development / test target |
-| Linux (x86-64) | Clang | ✅ Supported |
-| Windows (x64) | LLVM/Clang (`clang++`, GNU driver) | ✅ **Recommended Windows toolchain** — builds and runs |
-| Windows (x64) | MinGW-w64 (g++) | ✅ Supported — needs a MinGW-built oneTBB (see below) |
-
-Native MSVC (`cl.exe`) is not supported: it lacks `__uint128_t` and the `__atomic_*` / `__builtin_*` intrinsics that lce and its dependencies use throughout. Use `clang++` for MSVC-ABI-compatible binaries.
-
-Everything Windows-specific is handled automatically by the `if(WIN32)` block in `CMakeLists.txt` (the `MSVC_COMPILER` / `_REENTRANT` / `HURCHALLA_DISALLOW_INLINE_ASM_MODMUL` defines, `-mcx16`, static-CRT linking, the `libatomic` shim, the OpenMP/libomp wiring, a `<sys/mman.h>` / `<sys/resource.h>` shim, and copying the required runtime DLLs next to the test executables). The benchmark tools depend on POSIX I/O and are turned off on Windows automatically (`LCE_BUILD_BENCHMARKS`); the library and the tests are built.
-
-### oneTBB on Windows
-
-ips4o's parallel sort links Intel oneTBB. Point `-DLCE_WINDOWS_TBB_ROOT=<dir>` at an extracted oneTBB:
-
-- **Clang** (`clang++`, MSVC ABI): use a prebuilt [`oneapi-tbb-*-win`](https://github.com/uxlfoundation/oneTBB/releases) release directly. If you build oneTBB **static** (add `-DBUILD_SHARED_LIBS=OFF`), TBB is linked *into* the executables and no `tbb`/`tbb12` DLL is needed beside them; a prebuilt/shared oneTBB instead ships its DLL next to the exe (copied automatically).
-- **MinGW** (GNU ABI): the prebuilt release is MSVC-ABI and will not link. Use a MinGW-ABI oneTBB — e.g. MSYS2's `mingw-w64-x86_64-tbb` package, or build oneTBB from source with your MinGW.
-
-### Building on Windows (Clang)
-
-Requirements: **LLVM/Clang** for Windows (`winget install LLVM.LLVM` — provides `clang`, `clang++`, `libomp`), **Visual Studio** / Build Tools (MSVC runtime + Windows SDK + bundled CMake and Ninja), and an extracted **oneTBB** (above). From an *x64 Native Tools Command Prompt* (`vcvars64`):
-
-```shell
-cmake -S . -B build -G Ninja ^
-  -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ ^
-  -DCMAKE_BUILD_TYPE=Release -DLCE_MARCH_NATIVE=OFF ^
-  -DLCE_WINDOWS_TBB_ROOT="C:/path/to/oneapi-tbb-2023.0.0"
-ninja -C build
-```
-
-### Building on Windows (MinGW-w64)
-
-Requirements: a **MinGW-w64** toolchain (e.g. WinLibs or MSYS2's `mingw-w64-x86_64-gcc`), CMake, Ninja, and a MinGW-ABI **oneTBB** (above). The executables are linked `-static`, so only the OpenMP runtime (`libgomp-1.dll`) and the oneTBB DLL need to sit next to them (both staged automatically).
-
-```shell
-cmake -S . -B build -G Ninja ^
-  -DCMAKE_C_COMPILER=gcc -DCMAKE_CXX_COMPILER=g++ ^
-  -DCMAKE_BUILD_TYPE=Release -DLCE_MARCH_NATIVE=OFF ^
-  -DLCE_WINDOWS_TBB_ROOT="C:/path/to/mingw-onetbb"
-ninja -C build
-```
+lce is developed on Linux and its own code is portable C++20. A 64-bit x86 CPU is required (the library uses 128-bit integers and the `cmpxchg16b` instruction). The library and the tests also build on Windows with Clang or MinGW-w64 (see [string-utils](https://github.com/LukasNalbach/string-utils)); the benchmark tools are turned off on Windows.
 
 ## CMake Build Options
 
 | Option | Default | Effect |
 | --- | --- | --- |
-| `LCE_MARCH_NATIVE` | `ON` | Tune the build for the host CPU (`-march=native`); turn **OFF** for portable binaries and on Windows |
-| `LCE_BUILD_BENCHMARKS` | `ON` (forced `OFF` on Windows) | Build the benchmark/generator CLI tools |
-| `LCE_BUILD_TESTS` | `ON` | Build the test executables |
-| `LCE_USE_MALLOC_COUNT` | `ON` (stubbed on Windows) | Track memory usage via malloc_count |
+| `LCE_MARCH_NATIVE` | `ON` | Tune the build for the host CPU (`-march=native`); turn **OFF** for portable binaries |
+| `LCE_BUILD_BENCHMARKS` | `ON` if top-level (`OFF` on Windows) | Build the benchmark/generator CLI tools |
+| `LCE_BUILD_TESTS` | `ON` if top-level | Build the test executables |
+| `LCE_USE_MALLOC_COUNT` | `ON` | Track memory usage via malloc_count |
 | `LCE_ENABLE_LTO` | `ON` | Enable link-time optimization (LTO/IPO) for the lce executables |
 | `LCE_USE_SDSL` | `OFF` | Build the LCE data structures that depend on SDSL |
 | `LCE_BUILD_LA_VECTOR` | `OFF` | Build the predecessor data structure that depends on SDSL |
-| `LCE_WINDOWS_TBB_ROOT` | *(empty)* | Windows only: root of an extracted oneTBB release |
+
+The other options and the environment variables (`LCE_HUGE_PAGES`, `LCE_TEST_ITERATIONS`, ...) are described in [string-utils](https://github.com/LukasNalbach/string-utils).
 
 ## Usage in C++
 ### Cmake
 ```cmake
-set(LCE_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
-set(LCE_BUILD_TESTS OFF CACHE BOOL "" FORCE)
-set(LCE_USE_SDSL OFF CACHE BOOL "" FORCE)
-set(LCE_BUILD_LA_VECTOR OFF CACHE BOOL "" FORCE)
 add_subdirectory(lce/)
 target_link_libraries(<your_target> PRIVATE lce)
 ```
+If the project uses string-utils or compact-texts itself, it adds them first; lce then uses these copies.
 
 ### C++
 ```c++

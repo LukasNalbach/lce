@@ -23,9 +23,10 @@
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 
-#include "util/timer.hpp"
+#include <misc/log.hpp>
+#include <utility>
 #ifdef LCE_BENCHMARK_SPACE
-#include <malloc_count/malloc_count.h>
+#include <malloc_count.h>
 #endif
 #endif
 
@@ -45,7 +46,7 @@ class lce_sss_naive {
       : m_text(text), m_size(size), m_tau(tau) {
 
 #ifdef LCE_BENCHMARK_INTERNAL
-    lce::util::timer t;
+    auto t = now();
 #ifdef LCE_BENCHMARK_SPACE
     size_t mem_before = malloc_count_current();
     malloc_count_reset_peak();
@@ -56,7 +57,7 @@ class lce_sss_naive {
     // check_string_synchronizing_set(text, m_sync_set);
 
 #ifdef LCE_BENCHMARK_INTERNAL
-    fmt::print(" sss_time={}", t.get_and_reset());
+    fmt::print(" sss_time={}", time_diff_ns(std::exchange(t, now())) / 1'000'000);
     fmt::print(" sss_size={}", m_sync_set.size());
     fmt::print(" sss_runs={}", m_sync_set.num_runs());
 #ifdef LCE_BENCHMARK_SPACE
@@ -71,7 +72,7 @@ class lce_sss_naive {
         m_sync_set.get_sss(), uint8_t(std::bit_width(m_tau) - 1));
 
 #ifdef LCE_BENCHMARK_INTERNAL
-    fmt::print(" pred_time={}", t.get_and_reset());
+    fmt::print(" pred_time={}", time_diff_ns(std::exchange(t, now())) / 1'000'000);
 #ifdef LCE_BENCHMARK_SPACE
     fmt::print(" pred_mem={}", malloc_count_current() - mem_before);
     fmt::print(" pred_mem_peak={}", malloc_count_peak() - mem_before);
@@ -107,7 +108,7 @@ class lce_sss_naive {
   // Here l must be smaller than r.
   inline uint64_t lce_lr(size_t l, size_t r) const {
     auto const& sss = m_sync_set.get_sss();
-    std::vector<uint128_t> const& fps = m_sync_set.get_fps();
+    no_init_vector<uint128_t> const& fps = m_sync_set.get_fps();
     size_t l_, r_;
     if constexpr (t_prefer_long) {
       // Only scan until synchronizing position

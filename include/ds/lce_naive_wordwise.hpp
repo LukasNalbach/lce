@@ -14,7 +14,7 @@
 #include <cstdint>
 #include <utility>
 
-#include "util/memory.hpp"
+#include <compact_texts/common.hpp>
 
 namespace lce::ds {
 
@@ -112,7 +112,7 @@ class lce_naive_wordwise {
     size_t lce_val = 0;
 
     while (lce_val < max_blks &&
-           util::load_u64(text_l + lce_val * blk_size) == util::load_u64(text_r + lce_val * blk_size)) {
+           compact_texts::load_u64(text_l + lce_val * blk_size) == compact_texts::load_u64(text_r + lce_val * blk_size)) {
       lce_val++;
     }
 

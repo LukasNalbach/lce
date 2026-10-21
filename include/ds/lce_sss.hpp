@@ -13,7 +13,7 @@
 #include <vector>
 
 #include "ds/lce_classic_for_sss.hpp"
-#include "text/direct_text.hpp"
+#include <compact_texts/direct_text.hpp>
 #include "pred/pred_index.hpp"
 #include "sss/rank_3tau_substrings.hpp"
 #include "sss/string_synchronizing_set.hpp"
@@ -22,9 +22,10 @@
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 
-#include "util/timer.hpp"
+#include <misc/log.hpp>
+#include <utility>
 #ifdef LCE_BENCHMARK_SPACE
-#include <malloc_count/malloc_count.h>
+#include <malloc_count.h>
 #endif
 #endif
 
@@ -34,19 +35,19 @@ template <typename t_text = uint8_t, typename t_index_type = uint32_t,
           bool t_prefer_long = false>
 class lce_sss {
  public:
-  using text_type = lce::text::text_of_t<t_text>;
+  using text_type = compact_texts::text_of_t<t_text>;
   using char_type = typename text_type::char_type;
   __extension__ typedef unsigned __int128 uint128_t;
   lce_sss() : m_size(0), m_tau(0) {}
 
   lce_sss(char_type const* text, size_t size, uint64_t tau)
-    requires(lce::text::is_direct_text_v<text_type>)
+    requires(compact_texts::is_direct_text_v<text_type>)
       : lce_sss(text_type(const_cast<char_type*>(text), size), tau) {}
 
   lce_sss(text_type const& text, uint64_t tau)
       : m_text(text), m_size(text.size()), m_tau(tau) {
 #ifdef LCE_BENCHMARK_INTERNAL
-    lce::util::timer t;
+    auto t = now();
 #ifdef LCE_BENCHMARK_SPACE
     size_t mem_before = malloc_count_current();
     malloc_count_reset_peak();
@@ -57,7 +58,7 @@ class lce_sss {
     // check_string_synchronizing_set(text, m_sync_set);
 
 #ifdef LCE_BENCHMARK_INTERNAL
-    fmt::print(" sss_time={}", t.get_and_reset());
+    fmt::print(" sss_time={}", time_diff_ns(std::exchange(t, now())) / 1'000'000);
     fmt::print(" sss_size={}", m_sync_set.size());
     fmt::print(" sss_runs={}", m_sync_set.num_runs());
 #ifdef LCE_BENCHMARK_SPACE
@@ -72,7 +73,7 @@ class lce_sss {
         m_sync_set.get_sss(), uint8_t(std::bit_width(m_tau) + 1));
 
 #ifdef LCE_BENCHMARK_INTERNAL
-    fmt::print(" pred_time={}", t.get_and_reset());
+    fmt::print(" pred_time={}", time_diff_ns(std::exchange(t, now())) / 1'000'000);
 #ifdef LCE_BENCHMARK_SPACE
     fmt::print(" pred_mem={}", malloc_count_current() - mem_before);
     fmt::print(" pred_mem_peak={}", malloc_count_peak() - mem_before);
@@ -87,7 +88,7 @@ class lce_sss {
       m_sync_set.free_run_info();
 
 #ifdef LCE_BENCHMARK_INTERNAL
-      fmt::print(" alphabet_reduction_time={}", t.get_and_reset());
+      fmt::print(" alphabet_reduction_time={}", time_diff_ns(std::exchange(t, now())) / 1'000'000);
 #ifdef LCE_BENCHMARK_SPACE
       fmt::print(" alphabet_reduction_mem={}", malloc_count_current() - mem_before);
       fmt::print(" alphabet_reduction_mem_peak={}", malloc_count_peak() - mem_before);

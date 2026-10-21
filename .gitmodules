@@ -13,19 +13,12 @@
 [submodule "extlib/PGM-index"]
 	path = external/PGM-index
 	url = https://github.com/gvinciguerra/PGM-index.git
-[submodule "extlib/ips4o"]
-	path = external/ips4o
-	url = https://github.com/ips4o/ips4o.git
 [submodule "extlib/la_vector"]
 	path = external/la_vector
 	url = https://github.com/gvinciguerra/la_vector.git
-[submodule "extlib/libsais"]
-	path = external/libsais
-	url = https://github.com/IlyaGrebnov/libsais.git
-[submodule "extlib/malloc_count"]
-	path = external/malloc_count
-	url = https://github.com/ByteHamster-etc/malloc_count.git
-	branch = aligned_alloc
-[submodule "extlib/googletest"]
-	path = external/googletest
-	url = https://github.com/google/googletest.git
+[submodule "external/string-utils"]
+	path = external/string-utils
+	url = ../string-utils.git
+[submodule "external/compact-texts"]
+	path = external/compact-texts
+	url = ../compact-texts.git

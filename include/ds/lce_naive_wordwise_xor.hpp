@@ -15,7 +15,7 @@
 #include <cstdint>
 #include <utility>
 
-#include "util/memory.hpp"
+#include <compact_texts/common.hpp>
 
 namespace lce::ds {
 
@@ -113,7 +113,7 @@ class lce_naive_wordwise_xor {
     size_t lce_val = 0;
 
     while (lce_val < max_blks &&
-           util::load_u64(text_l + lce_val * blk_size) == util::load_u64(text_r + lce_val * blk_size)) {
+           compact_texts::load_u64(text_l + lce_val * blk_size) == compact_texts::load_u64(text_r + lce_val * blk_size)) {
       lce_val++;
     }
 
@@ -127,7 +127,7 @@ class lce_naive_wordwise_xor {
       return lce_val;
     }
 
-    const uint64_t diff = util::load_u64(text_l + lce_val * blk_size) ^ util::load_u64(text_r + lce_val * blk_size);
+    const uint64_t diff = compact_texts::load_u64(text_l + lce_val * blk_size) ^ compact_texts::load_u64(text_r + lce_val * blk_size);
     return lce_val * blk_size + std::countr_zero(diff) / (8 * sizeof(char_type));
   }
 

@@ -9,14 +9,19 @@
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 #ifdef LCE_BENCHMARK_SPACE
-#include <malloc_count/malloc_count.h>
+#include <malloc_count.h>
 #endif
 
 #include <omp.h>
 
 #include <algorithm>
 #include <filesystem>
-#include "util/memory.hpp"
+#include <fstream>
+#include <misc/packed_integers.hpp>
+#include <misc/bits.hpp>
+#include <misc/files.hpp>
+#include <misc/log.hpp>
+#include <misc/memory.hpp>
 #include <iostream>
 #include <string>
 #include <tlx/cmdline_parser.hpp>
@@ -36,8 +41,6 @@
 #include "ds/lce_sss.hpp"
 #include "ds/lce_sss_naive.hpp"
 #include "ds/lce_sss_noss.hpp"
-#include "util/io.hpp"
-#include "util/timer.hpp"
 
 namespace fs = std::filesystem;
 
@@ -103,7 +106,7 @@ class benchmark {
   std::vector<uint8_t> text;
 
   fs::path queries_path;
-  std::vector<size_t> queries;
+  no_init_vector<size_t> queries;
   size_t num_queries = size_t{1'000'000};
   size_t lce_from = 0;
   size_t lce_to = 20;
@@ -149,16 +152,20 @@ class benchmark {
   }
 
   void load_text() {
-    lce::util::timer t;
+    auto t = now();
     if (text.empty()) {
-      text = lce::util::load_vector<uint8_t>(
-          text_path, std::numeric_limits<size_t>::max(), 4096 * 4, 8);
+      // the text, padded with zeros to a multiple of 8 bytes
+      const uint64_t size = fs::file_size(text_path);
+      text.reserve(div_ceil<uint64_t>(size, 8) * 8 + 4096 * 4);
+      text.resize(div_ceil<uint64_t>(size, 8) * 8);
+      std::ifstream in(text_path, std::ios::binary);
+      read_in_chunks(in, (char*) text.data(), size);
       assert(text.size() != 0);
       assert(text.size() % 8 == 0);
     }
     fmt::print(" text={}", text_path.filename().string());
     fmt::print(" text_size={}", text.size());
-    fmt::print(" text_time={}", t.get());
+    fmt::print(" text_time={}", time_diff_ns(t) / 1'000'000);
   }
 
   template <typename ds_type, typename... ctor_args_t>
@@ -167,10 +174,10 @@ class benchmark {
     malloc_count_reset_peak();
     size_t mem_before = malloc_count_current();
 #endif
-    lce::util::timer t;
+    auto t = now();
     ds_type ds(text, ctor_args...);
     fmt::print(" threads={}", omp_get_max_threads());
-    fmt::print(" c_time={}", t.get());
+    fmt::print(" c_time={}", time_diff_ns(t) / 1'000'000);
 #ifdef LCE_BENCHMARK_SPACE
     fmt::print(" c_mem={}", malloc_count_current() - mem_before);
     fmt::print(" c_mempeak={}", malloc_count_peak() - mem_before);
@@ -179,11 +186,13 @@ class benchmark {
   }
 
   void load_queries(size_t lce_cur) {
-    lce::util::timer t;
+    auto t = now();
     // First load queries from file
     fs::path cur_query_path = queries_path;
     cur_query_path.append(fmt::format("lce_{}", lce_cur));
-    queries = lce::util::load_vector<size_t>(cur_query_path);
+    resize_no_init(queries, fs::file_size(cur_query_path) / sizeof(size_t));
+    std::ifstream in(cur_query_path, std::ios::binary);
+    read_in_chunks(in, (char*) queries.data(), queries.size() * sizeof(size_t));
 
     // Now clone queries until there are num_queries many
     if (queries.size() != 0) {
@@ -197,7 +206,7 @@ class benchmark {
 
     assert(queries.size() == 0 || queries.size() == num_queries * 2);
     fmt::print(" q_size={}", queries.size() / 2);
-    fmt::print(" q_load_time={}", t.get());
+    fmt::print(" q_load_time={}", time_diff_ns(t) / 1'000'000);
   }
 
   template <typename ds_type>
@@ -206,12 +215,12 @@ class benchmark {
       return;
     }
     size_t check_sum = 0;
-    lce::util::timer t;
+    auto t = now();
     for (size_t i = 0; i < queries.size(); i += 2) {
       check_sum += ds.lce(queries[i], queries[i + 1]);
     }
 
-    fmt::print(" q_time={}", t.get());
+    fmt::print(" q_time={}", time_diff_ns(t) / 1'000'000);
     fmt::print(" check_sum={}", check_sum);
   }
 
@@ -309,7 +318,6 @@ int main(int argc, char** argv) {
   }
 
   using namespace lce::ds;
-  using lce::util::uint40_t;
 
   b.run<lce_naive<>>("naive");
   b.run<lce_naive_std<>>("naive_std");

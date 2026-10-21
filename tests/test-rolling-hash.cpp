@@ -14,7 +14,7 @@
 
 #include "rolling_hash/mersenne_modular_arithmetic.hpp"
 #include "rolling_hash/rolling_hash.hpp"
-#include "util/memory.hpp"
+#include <misc/packed_integers.hpp>
 
 #include "test-progress.hpp"
 #include "test-strings.hpp"
@@ -194,10 +194,10 @@ TEST(test_rolling_hash, rolling_hash_int) {
        switch (it % 6) {
          case 0: verify_rolling_hash_int<61, uint16_t>(gen, 400000, UINT16_MAX); break;
          case 1: verify_rolling_hash_int<61, uint32_t>(gen, 400000, UINT32_MAX); break;
-         case 2: verify_rolling_hash_int<61, uint64_t>(gen, 400000, lce::util::uint40_t::max); break;
+         case 2: verify_rolling_hash_int<61, uint64_t>(gen, 400000, uint40_t::max); break;
          case 3: verify_rolling_hash_int<107, uint16_t>(gen, 400000, UINT16_MAX); break;
          case 4: verify_rolling_hash_int<107, uint32_t>(gen, 400000, UINT32_MAX); break;
-         case 5: verify_rolling_hash_int<107, uint64_t>(gen, 400000, lce::util::uint40_t::max); break;
+         case 5: verify_rolling_hash_int<107, uint64_t>(gen, 400000, uint40_t::max); break;
        }
      }, true},
   }, fuzz_iterations(100000));
@@ -210,7 +210,7 @@ TEST(test_rolling_hash, rolling_hash_mersenne61) {
          case 0: verify_rolling_hash_mersenne61<uint8_t>(gen, 400000, UINT8_MAX); break;
          case 1: verify_rolling_hash_mersenne61<uint16_t>(gen, 400000, UINT16_MAX); break;
          case 2: verify_rolling_hash_mersenne61<uint32_t>(gen, 400000, UINT32_MAX); break;
-         case 3: verify_rolling_hash_mersenne61<uint64_t>(gen, 400000, lce::util::uint40_t::max); break;
+         case 3: verify_rolling_hash_mersenne61<uint64_t>(gen, 400000, uint40_t::max); break;
        }
      }, true},
   }, fuzz_iterations(200000));

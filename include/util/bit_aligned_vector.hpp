@@ -33,7 +33,7 @@
 #include <cstring>
 #include <vector>
 
-#include "util/memory.hpp"
+#include <misc/memory.hpp>
 
 namespace lce::util {
 
@@ -60,8 +60,8 @@ public:
         , m_mask((uint64_t(1) << m_width) - 1)
         , m_size(size)
     {
-        lce::util::no_init_resize(m_data, (size * m_width) / 64 + 4);
-        lce::util::advise_huge_pages(m_data.data(), m_data.size() * 8);
+        resize_no_init(m_data, (size * m_width) / 64 + 4);
+        advise_huge_pages(m_data.data(), m_data.size() * 8);
     }
 
     void reset(uint64_t capacity, uint64_t max_value)
@@ -72,8 +72,8 @@ public:
         m_word = 0;
         m_acc = 0;
         m_used = 0;
-        lce::util::no_init_resize(m_data, (capacity * m_width) / 64 + 4);
-        lce::util::advise_huge_pages(m_data.data(), m_data.size() * 8);
+        resize_no_init(m_data, (capacity * m_width) / 64 + 4);
+        advise_huge_pages(m_data.data(), m_data.size() * 8);
     }
 
     inline void push_back(uint64_t value)
@@ -97,7 +97,7 @@ public:
         if (m_used != 0) m_data[m_word] = m_acc;
         m_data.resize((m_size * m_width) / 64 + 4);
         m_data.shrink_to_fit();
-        lce::util::advise_huge_pages(m_data.data(), m_data.size() * 8);
+        advise_huge_pages(m_data.data(), m_data.size() * 8);
     }
 
     inline uint64_t operator[](uint64_t i) const
@@ -192,7 +192,7 @@ private:
         while (!ref.compare_exchange_weak(old, (old & ~mask) | value, std::memory_order_relaxed)) { }
     }
 
-    std::vector<uint64_t> m_data;
+    no_init_vector<uint64_t> m_data;
     uint64_t m_word = 0;
     uint64_t m_acc = 0;
     uint8_t m_used = 0;
