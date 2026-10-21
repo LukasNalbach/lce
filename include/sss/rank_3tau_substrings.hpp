@@ -20,8 +20,8 @@
 #include "sss/string_synchronizing_set.hpp"
 
 #include <ips4o.hpp>
-#include "util/hash.hpp"
-#include "util/memory.hpp"
+#include <misc/memory.hpp>
+#include <compact_texts/common.hpp>
 
 #include <libsais40_types.hpp>
 
@@ -29,9 +29,8 @@
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 
-#include "util/timer.hpp"
 #ifdef LCE_BENCHMARK_SPACE
-#include <malloc_count/malloc_count.h>
+#include <malloc_count.h>
 #endif
 #endif
 
@@ -50,7 +49,7 @@ struct __attribute__((packed)) rank_rep {
 };
 
 template <typename t_key_index>
-void sort_rank_keys(std::vector<rank_key<t_key_index>>& keys) {
+void sort_rank_keys(no_init_vector<rank_key<t_key_index>>& keys) {
   ips4o::parallel::sort(keys.begin(), keys.end(), [](const rank_key<t_key_index>& lhs, const rank_key<t_key_index>& rhs) {
     const uint64_t l = lhs.hash;
     const uint64_t r = rhs.hash;
@@ -76,7 +75,7 @@ struct rank_rep_less {
 };
 
 template <typename t_rank, typename t_key_index, typename t_text, typename sss_type>
-std::vector<t_rank> rank_3tau_substrings_impl(t_text const& text, sss_type const& sync_set) {
+no_init_vector<t_rank> rank_3tau_substrings_impl(t_text const& text, sss_type const& sync_set) {
   using index_type = typename sss_type::index_type;
   const uint64_t n = text.size();
   const uint64_t len = 3 * sync_set.tau();
@@ -108,14 +107,14 @@ std::vector<t_rank> rank_3tau_substrings_impl(t_text const& text, sss_type const
 
   using key_t = rank_key<t_key_index>;
 
-  std::vector<key_t> keys;
-  lce::util::no_init_resize(keys, m);
+  no_init_vector<key_t> keys;
+  resize_no_init(keys, m);
 
 #pragma omp parallel for schedule(static)
   for (uint64_t i = 0; i < m; ++i) {
     const uint64_t pos = sss[i];
     const uint64_t run = uint64_t(sync_set.get_run_info(pos));
-    keys[i] = key_t{lce::util::hash_mix(text.hash(pos, len), run), t_key_index(i)};
+    keys[i] = key_t{compact_texts::hash_mix(text.hash(pos, len), run), t_key_index(i)};
   }
 
   sort_rank_keys(keys);
@@ -200,10 +199,10 @@ std::vector<t_rank> rank_3tau_substrings_impl(t_text const& text, sss_type const
 
   for (uint64_t c = 0; c < p; ++c) num_starts[c + 1] += num_starts[c];
 
-  std::vector<t_rank> ranks;
-  lce::util::no_init_resize(ranks, s);
-  std::vector<uint64_t> rep_index;
-  lce::util::no_init_resize(rep_index, num_starts[p]);
+  no_init_vector<t_rank> ranks;
+  resize_no_init(ranks, s);
+  no_init_vector<uint64_t> rep_index;
+  resize_no_init(rep_index, num_starts[p]);
 
 #pragma omp parallel for num_threads(p) schedule(static, 1)
   for (uint64_t c = 0; c < p; ++c) {
@@ -247,8 +246,8 @@ std::vector<t_rank> rank_3tau_substrings_impl(t_text const& text, sss_type const
 
   using rep_t = rank_rep<index_type, t_key_index>;
 
-  std::vector<rep_t> reps;
-  lce::util::no_init_resize(reps, u);
+  no_init_vector<rep_t> reps;
+  resize_no_init(reps, u);
 
 #pragma omp parallel for num_threads(p) schedule(static)
   for (uint64_t k = 0; k < u; ++k) reps[k] = rep_t{index_type(sss[rep_index[k]]), t_key_index(k)};
@@ -257,8 +256,8 @@ std::vector<t_rank> rank_3tau_substrings_impl(t_text const& text, sss_type const
 
   ips4o::parallel::sort(reps.begin(), reps.end(), rank_rep_less<t_text, sss_type, rep_t>{text, sync_set, n, len});
 
-  std::vector<t_key_index> rank_of_id;
-  lce::util::no_init_resize(rank_of_id, u);
+  no_init_vector<t_key_index> rank_of_id;
+  resize_no_init(rank_of_id, u);
 
 #pragma omp parallel for num_threads(p) schedule(static)
   for (uint64_t k = 0; k < u; ++k) rank_of_id[uint64_t(reps[k].id)] = t_key_index(k + 1);
@@ -272,7 +271,7 @@ std::vector<t_rank> rank_3tau_substrings_impl(t_text const& text, sss_type const
 }
 
 template <typename t_rank, typename t_text, typename sss_type>
-std::vector<t_rank> rank_3tau_substrings(t_text const& text, sss_type const& sync_set) {
+no_init_vector<t_rank> rank_3tau_substrings(t_text const& text, sss_type const& sync_set) {
   if (sync_set.get_sss().size() <= uint64_t(std::numeric_limits<uint32_t>::max())) {
     return rank_3tau_substrings_impl<t_rank, uint32_t>(text, sync_set);
   }

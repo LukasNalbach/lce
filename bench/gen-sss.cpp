@@ -9,20 +9,24 @@
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 
-#include "util/memory.hpp"
+#include <filesystem>
+#include <fstream>
+#include <misc/packed_integers.hpp>
+#include <misc/files.hpp>
+#include <misc/memory.hpp>
 #include <string>
 #include <tlx/cmdline_parser.hpp>
 
 #include "sss/string_synchronizing_set.hpp"
-#include "util/io.hpp"
 
 namespace fs = std::filesystem;
 
 template <typename sss_t>
 static void write_sss(const fs::path& path, const sss_t& sss) {
-  std::vector<lce::util::uint40_t> positions(sss.size());
+  std::vector<uint40_t> positions(sss.size());
   for (size_t i = 0; i < positions.size(); ++i) positions[i] = sss[i];
-  lce::util::write_vector(path, positions);
+  std::ofstream out(path, std::ios::binary);
+  write_in_chunks(out, (const char*) positions.data(), positions.size() * sizeof(uint40_t));
 }
 
 int main(int argc, char** argv) {
@@ -30,7 +34,7 @@ int main(int argc, char** argv) {
                                       "sss2048"};
 
   std::filesystem::path text_path;
-  std::vector<uint8_t> text;
+  no_init_vector<uint8_t> text;
   std::filesystem::path output_path;
   std::string algorithm{"sss512"};
 
@@ -70,9 +74,11 @@ int main(int argc, char** argv) {
     }
   }
 
-  text = lce::util::load_vector<uint8_t>(text_path,
-    std::numeric_limits<size_t>::max(), 4096 * 4);
-  using lce::util::uint40_t;
+  const uint64_t size = fs::file_size(text_path);
+  text.reserve(size + 4096 * 4);
+  resize_no_init(text, size);
+  std::ifstream in(text_path, std::ios::binary);
+  read_in_chunks(in, (char*) text.data(), size);
 
   if(output_path == "") {
     output_path = text_path;

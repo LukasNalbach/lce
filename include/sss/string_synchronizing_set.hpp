@@ -24,9 +24,10 @@
 #endif
 
 #include "rolling_hash/rolling_hash.hpp"
-#include "text/direct_text.hpp"
+#include <compact_texts/direct_text.hpp>
 #include "util/bit_aligned_vector.hpp"
-#include "util/memory.hpp"
+#include <misc/memory.hpp>
+#include <compact_texts/common.hpp>
 
 namespace lce::sss {
 
@@ -43,16 +44,16 @@ class string_synchronizing_set {
     requires(sizeof(t_char_type) == 1)
   string_synchronizing_set(t_char_type const* text, size_t size, uint64_t tau, bool calculate_fps = false)
       : string_synchronizing_set(
-            lce::text::direct_text<t_char_type>(const_cast<t_char_type*>(text), size), tau, calculate_fps) {
+            compact_texts::direct_text<t_char_type>(const_cast<t_char_type*>(text), size), tau, calculate_fps) {
   }
 
   template <typename t_container>
-    requires(!lce::text::text_access<t_container> && !std::is_pointer_v<t_container>)
+    requires(!compact_texts::text_access<t_container> && !std::is_pointer_v<t_container>)
   string_synchronizing_set(t_container const& container, uint64_t tau, bool calculate_fps = false)
       : string_synchronizing_set(container.data(), container.size(), tau, calculate_fps) {
   }
 
-  template <lce::text::text_access t_text>
+  template <compact_texts::text_access t_text>
   string_synchronizing_set(t_text const& text, uint64_t tau, bool calculate_fps = false)
       : m_tau(tau), m_fps_calculated(calculate_fps), m_runs_detected(false) {
     if (text.size() > 5 * tau) {
@@ -70,13 +71,13 @@ class string_synchronizing_set {
     return m_sss;
   }
 
-  std::vector<uint128_t> const& get_fps() const {
+  no_init_vector<uint128_t> const& get_fps() const {
     assert(m_fps_calculated);
     return m_fps;
   }
 
   void free_fps() {
-    m_fps = std::vector<uint128_t>{};
+    m_fps = no_init_vector<uint128_t>{};
     m_fps_calculated = false;
   }
 
@@ -171,7 +172,7 @@ class string_synchronizing_set {
 
     m_sss = lce::util::bit_aligned_vector(sss_size, n);
     if (m_fps_calculated) {
-      lce::util::no_init_resize(m_fps, sss_size);
+      resize_no_init(m_fps, sss_size);
     }
 
 #pragma omp parallel for schedule(static, 1)
@@ -247,7 +248,7 @@ class string_synchronizing_set {
   template <typename t_text>
   uint64_t find_period(t_text const& text, const uint64_t x, const uint64_t block,
                        const uint64_t max_period) const {
-    if constexpr (lce::text::is_direct_text_v<t_text> && t_text::is_byte_text) {
+    if constexpr (compact_texts::is_direct_text_v<t_text> && t_text::is_byte_text) {
       const uint8_t* data = reinterpret_cast<const uint8_t*>(text.data());
 #if defined(__AVX2__)
       if (block >= max_period + 40) {
@@ -271,9 +272,9 @@ class string_synchronizing_set {
       }
 #endif
       if (block >= max_period + 8) {
-        const uint64_t head = lce::util::load_u64(data + x);
+        const uint64_t head = compact_texts::load_u64(data + x);
         for (uint64_t p = 1; p <= max_period; ++p) {
-          if (lce::util::load_u64(data + x + p) == head &&
+          if (compact_texts::load_u64(data + x + p) == head &&
               text.lce(x, x + p, block - p) >= block - p) {
             return p;
           }
@@ -517,7 +518,7 @@ class string_synchronizing_set {
 
   uint64_t m_tau;
   lce::util::bit_aligned_vector m_sss;
-  std::vector<uint128_t> m_fps;
+  no_init_vector<uint128_t> m_fps;
   bool m_fps_calculated;
   bool m_runs_detected;
   std::vector<std::pair<uint64_t, int64_t>> m_runs;

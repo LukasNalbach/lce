@@ -9,7 +9,7 @@
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 #ifdef LCE_BENCHMARK_SPACE
-#include <malloc_count/malloc_count.h>
+#include <malloc_count.h>
 #endif
 
 #include <assert.h>
@@ -18,7 +18,10 @@
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
-#include "util/memory.hpp"
+#include <misc/packed_integers.hpp>
+#include <misc/files.hpp>
+#include <misc/log.hpp>
+#include <misc/memory.hpp>
 #include <iostream>
 #include <iterator>
 #include <random>
@@ -41,8 +44,6 @@
 #include "pred/la_vector_index.hpp"
 #endif
 
-#include "util/io.hpp"
-#include "util/timer.hpp"
 
 namespace fs = std::filesystem;
 
@@ -93,18 +94,20 @@ class benchmark {
   }
 
   void load_data() {
-    lce::util::timer t;
-    std::vector<lce::util::uint40_t> data_5byte =
-        lce::util::load_vector<lce::util::uint40_t>(data_path);
+    auto t = now();
+    no_init_vector<uint40_t> data_5byte;
+    resize_no_init(data_5byte, fs::file_size(data_path) / sizeof(uint40_t));
+    std::ifstream in(data_path, std::ios::binary);
+    read_in_chunks(in, (char*) data_5byte.data(), data_5byte.size() * sizeof(uint40_t));
     data = std::vector<uint64_t>(data_5byte.begin(), data_5byte.end());
     assert(data.size() != 0);
     fmt::print(" data={}", data_path.filename().string());
     fmt::print(" data_size={}", data.size());
-    fmt::print(" data_time={}", t.get());
+    fmt::print(" data_time={}", time_diff_ns(t) / 1'000'000);
   }
 
   void load_queries() {
-    lce::util::timer t;
+    auto t = now();
     queries.resize(num_queries);
     // std::random_device rd;
     std::mt19937 gen(1337);
@@ -113,7 +116,7 @@ class benchmark {
       queries[i] = distrib(gen);
     }
     fmt::print(" q_size={}", queries.size());
-    fmt::print(" q_gen_time={}", t.get());
+    fmt::print(" q_gen_time={}", time_diff_ns(t) / 1'000'000);
   }
 
   template <typename pred_ds_type, typename... ctor_args_t>
@@ -122,10 +125,10 @@ class benchmark {
     malloc_count_reset_peak();
     size_t mem_before = malloc_count_current();
 #endif
-    lce::util::timer t;
+    auto t = now();
     pred_ds_type pred_ds(data, ctor_args...);
     fmt::print(" threads={}", omp_get_max_threads());
-    fmt::print(" c_time={}", t.get());
+    fmt::print(" c_time={}", time_diff_ns(t) / 1'000'000);
 #ifdef LCE_BENCHMARK_SPACE
     fmt::print(" c_mem={}", malloc_count_current() - mem_before);
     fmt::print(" c_mempeak={}", malloc_count_peak() - mem_before);
@@ -136,22 +139,22 @@ class benchmark {
   template <typename pred_ds_type>
   void benchmark_queries(pred_ds_type& pred_ds) {
     if (!no_pred) {
-      lce::util::timer t;
+      auto t = now();
       size_t check_sum = 0;
       for (size_t i = 0; i < queries.size(); ++i) {
         check_sum += pred_ds.predecessor(queries[i]).pos;
       }
-      fmt::print(" pred_time={}", t.get());
+      fmt::print(" pred_time={}", time_diff_ns(t) / 1'000'000);
       fmt::print(" check_sum={}", check_sum);
     }
 
     if (!no_succ) {
-      lce::util::timer t;
+      auto t = now();
       size_t check_sum = 0;
       for (size_t i = 0; i < queries.size(); ++i) {
         check_sum += pred_ds.successor(queries[i]).pos;
       }
-      fmt::print(" succ_time={}", t.get());
+      fmt::print(" succ_time={}", time_diff_ns(t) / 1'000'000);
       fmt::print(" check_sum={}", check_sum);
     }
   }

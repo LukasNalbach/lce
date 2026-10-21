@@ -33,7 +33,7 @@ template <typename text_t, typename sss_t>
 static bool check_string_synchronizing_set(text_t const& text, sss_t const& sss_ds) {
   std::vector<typename sss_t::index_type> sss(sss_ds.size());
   for (size_t i = 0; i < sss.size(); i++) sss[i] = sss_ds[i];
-  std::vector<uint128_t> const& fps = sss_ds.get_fps();
+  no_init_vector<uint128_t> const& fps = sss_ds.get_fps();
 
   lce::pred::pred_index<typename sss_t::index_type, typename sss_t::index_type> pred(sss, uint8_t(7));
   const size_t tau = sss_ds.tau();

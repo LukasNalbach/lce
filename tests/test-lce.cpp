@@ -20,7 +20,7 @@
 #include "ds/lce_naive_wordwise.hpp"
 #include "ds/lce_naive_wordwise_xor.hpp"
 #include "ds/lce_sss.hpp"
-#include "util/memory.hpp"
+#include <misc/packed_integers.hpp>
 #include "ds/lce_sss_naive.hpp"
 #include "ds/lce_sss_noss.hpp"
 
@@ -183,8 +183,8 @@ TEST(test_lce, sss) {
          case 1: verify_sss<lce::ds::lce_sss, int8_t, uint32_t, false>(gen, 500000, 400); break;
          case 2: verify_sss<lce::ds::lce_sss, uint8_t, uint32_t, true>(gen, 500000, 400); break;
          case 3: verify_sss<lce::ds::lce_sss, int8_t, uint32_t, true>(gen, 500000, 400); break;
-         case 4: verify_sss<lce::ds::lce_sss, uint8_t, lce::util::uint40_t, false>(gen, 500000, 400); break;
-         case 5: verify_sss<lce::ds::lce_sss, int8_t, lce::util::uint40_t, true>(gen, 500000, 400); break;
+         case 4: verify_sss<lce::ds::lce_sss, uint8_t, uint40_t, false>(gen, 500000, 400); break;
+         case 5: verify_sss<lce::ds::lce_sss, int8_t, uint40_t, true>(gen, 500000, 400); break;
        }
      }, false},
   }, fuzz_iterations(1200));

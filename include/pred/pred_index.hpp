@@ -14,7 +14,7 @@
 #include <algorithm>
 
 #include "pred_result.hpp"
-#include "util/memory.hpp"
+#include <misc/memory.hpp>
 
 namespace lce::pred {
 
@@ -45,7 +45,7 @@ class pred_index {
 #endif
 
     // build an index for high bits
-    lce::util::no_init_resize(m_hi_idx, (m_max >> m_lo_bits) + 2);
+    resize_no_init(m_hi_idx, (m_max >> m_lo_bits) + 2);
     uint64_t p = std::min<uint64_t>(omp_get_max_threads(), m_size);
 
 #pragma omp parallel num_threads(p)
@@ -110,7 +110,7 @@ class pred_index {
   uint64_t m_max;
   uint8_t m_lo_bits;
 
-  std::vector<index_type> m_hi_idx;
+  no_init_vector<index_type> m_hi_idx;
 
  public:
   // finds the greatest element less than OR equal to x

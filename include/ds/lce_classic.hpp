@@ -21,15 +21,15 @@
 
 #include "ds/lce_naive_wordwise_xor.hpp"
 #include "rmq/rmq_n.hpp"
-#include "util/memory.hpp"
+#include <misc/memory.hpp>
+#include <misc/log.hpp>
 
 #ifdef LCE_BENCHMARK_INTERNAL
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 
-#include "util/timer.hpp"
 #ifdef LCE_BENCHMARK_SPACE
-#include <malloc_count/malloc_count.h>
+#include <malloc_count.h>
 #endif
 #endif
 
@@ -108,11 +108,11 @@ class lce_classic {
  private:
   template <typename sa_t>
   void build(char_type const* text, size_t size) {
-    std::vector<sa_t> sa;
-    lce::util::no_init_resize(sa, size);
+    no_init_vector<sa_t> sa;
+    resize_no_init(sa, size);
     // sort sa
 #ifdef LCE_BENCHMARK_INTERNAL
-    lce::util::timer t;
+    auto t = now();
 #ifdef LCE_BENCHMARK_SPACE
     size_t mem_before = malloc_count_current();
     malloc_count_reset_peak();
@@ -120,7 +120,7 @@ class lce_classic {
 #endif
     build_sa(text, size, sa);
 #ifdef LCE_BENCHMARK_INTERNAL
-    fmt::print(" sa_time={}", t.get_and_reset());
+    fmt::print(" sa_time={}", time_diff_ns(std::exchange(t, now())) / 1'000'000);
 #ifdef LCE_BENCHMARK_SPACE
     fmt::print(" sa_mem={}", malloc_count_current() - mem_before);
     fmt::print(" sa_mem_peak={}", malloc_count_peak() - mem_before);
@@ -130,15 +130,15 @@ class lce_classic {
 #endif
 
     // build isa
-    lce::util::no_init_resize(m_isa, size);
-    lce::util::advise_huge_pages(m_isa.data(), m_isa.size() * sizeof(t_index_type));
+    resize_no_init(m_isa, size);
+    advise_huge_pages(m_isa.data(), m_isa.size() * sizeof(t_index_type));
 #pragma omp parallel for
     for (size_t i = 0; i < sa.size(); ++i) {
       m_isa[sa[i]] = i;
     }
 
 #ifdef LCE_BENCHMARK_INTERNAL
-    fmt::print(" isa_time={}", t.get_and_reset());
+    fmt::print(" isa_time={}", time_diff_ns(std::exchange(t, now())) / 1'000'000);
 #ifdef LCE_BENCHMARK_SPACE
     fmt::print(" isa_mem={}", malloc_count_current() - mem_before);
     fmt::print(" isa_mem_peak={}", malloc_count_peak() - mem_before);
@@ -148,7 +148,7 @@ class lce_classic {
 #endif
 
     // build lcp
-    lce::util::no_init_resize(m_lcp, sa.size());
+    resize_no_init(m_lcp, sa.size());
     m_lcp[0] = 0;
 
 #pragma omp parallel
@@ -182,7 +182,7 @@ class lce_classic {
     }
 
 #ifdef LCE_BENCHMARK_INTERNAL
-    fmt::print(" lcp_time={}", t.get_and_reset());
+    fmt::print(" lcp_time={}", time_diff_ns(std::exchange(t, now())) / 1'000'000);
 #ifdef LCE_BENCHMARK_SPACE
     fmt::print(" lcp_mem={}", malloc_count_current() - mem_before);
     fmt::print(" lcp_mem_peak={}", malloc_count_peak() - mem_before);
@@ -195,7 +195,7 @@ class lce_classic {
     m_rmq = lce::rmq::rmq_n<t_index_type>(m_lcp);
 
 #ifdef LCE_BENCHMARK_INTERNAL
-    fmt::print(" rmq_time={}", t.get_and_reset());
+    fmt::print(" rmq_time={}", time_diff_ns(std::exchange(t, now())) / 1'000'000);
 #ifdef LCE_BENCHMARK_SPACE
     fmt::print(" rmq_mem={}", malloc_count_current() - mem_before);
     fmt::print(" rmq_mem_peak={}", malloc_count_peak() - mem_before);
@@ -204,7 +204,7 @@ class lce_classic {
   }
 
   template <typename sa_t>
-  static void build_sa(char_type const* text, size_t size, std::vector<sa_t>& sa) {
+  static void build_sa(char_type const* text, size_t size, no_init_vector<sa_t>& sa) {
     const int64_t threads = omp_get_max_threads();
 
     if constexpr (sizeof(char_type) == 1) {
@@ -224,8 +224,8 @@ class lce_classic {
       ips4o::parallel::sort(alphabet.begin(), alphabet.end());
       alphabet.erase(std::unique(alphabet.begin(), alphabet.end()), alphabet.end());
 
-      std::vector<sa_t> ranks;
-      lce::util::no_init_resize(ranks, size);
+      no_init_vector<sa_t> ranks;
+      resize_no_init(ranks, size);
 
 #pragma omp parallel for
       for (size_t i = 0; i < size; ++i) {
@@ -247,8 +247,8 @@ class lce_classic {
     }
   }
 
-  std::vector<t_index_type> m_isa;
-  std::vector<t_index_type> m_lcp;
+  no_init_vector<t_index_type> m_isa;
+  no_init_vector<t_index_type> m_lcp;
 
   char_type const* m_text;
   size_t m_size;

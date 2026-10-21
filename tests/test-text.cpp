@@ -34,10 +34,10 @@
 #include <vector>
 
 #include "ds/lce_sss.hpp"
-#include "text/direct_text.hpp"
-#include "text/packed_text.hpp"
-#include "text/split_text.hpp"
-#include "util/memory.hpp"
+#include <compact_texts/direct_text.hpp>
+#include <compact_texts/packed_text.hpp>
+#include <compact_texts/split_text.hpp>
+#include <misc/packed_integers.hpp>
 
 #include "test-progress.hpp"
 #include "test-strings.hpp"
@@ -75,73 +75,6 @@ static uint64_t naive_lce(const std::vector<sym_t>& t, uint64_t i, uint64_t j, u
   return k;
 }
 
-template <typename sym_t>
-static uint64_t naive_lce_left(const std::vector<sym_t>& t, uint64_t i, uint64_t j, uint64_t max) {
-  uint64_t k = 0;
-  while (k < max && k <= std::min(i, j) && t[i - k] == t[j - k]) ++k;
-  return k;
-}
-
-static void test_packed_access() {
-  std::vector<uint8_t> t = random_text(200000);
-  const uint64_t n = t.size();
-  lce::text::packed_text<> p(reinterpret_cast<const char*>(t.data()), n, random_num_threads(gen));
-
-  std::vector<bool> used(256, false);
-  for (uint8_t c : t) used[c] = true;
-  const uint64_t sigma = std::count(used.begin(), used.end(), true);
-  EXPECT_EQ(p.sigma(), sigma);
-  EXPECT_EQ(p.width(), std::max<int>(1, std::bit_width(sigma - 1)));
-
-  for (uint64_t i = 0; i < n; ++i) {
-    ASSERT_EQ(p.to_char(p[i]), t[i]) << "i=" << i << " n=" << n;
-    ASSERT_EQ(uint8_t(p.char_at(i)), t[i]);
-  }
-
-  std::uniform_int_distribution<uint64_t> pos(0, n - 1);
-  for (uint64_t q = 0; q < 1000; ++q) {
-    const uint64_t i = pos(gen);
-    const uint64_t j = pos(gen);
-    EXPECT_EQ(p[i] < p[j], t[i] < t[j]);
-    EXPECT_EQ(p.less_char(i, j), t[i] < t[j]);
-  }
-
-  const uint64_t start = pos(gen);
-  auto cursor = p.cursor_at(start);
-  for (uint64_t i = start; i < n; ++i) ASSERT_EQ(cursor.next(), p[i]) << "cursor at " << i;
-}
-
-template <typename text_t, typename sym_t>
-static void check_lce(const text_t& text, const std::vector<sym_t>& t) {
-  const uint64_t n = t.size();
-  std::uniform_int_distribution<uint64_t> pos(0, n - 1);
-  std::uniform_int_distribution<uint64_t> max_distrib(0, n + 1);
-
-  for (uint64_t q = 0; q < 300; ++q) {
-    uint64_t i = pos(gen);
-    uint64_t j = pos(gen);
-
-    if (q % 2 == 0 && n > 1) {
-      const uint64_t shift = random_log_uniform_size(1, n - 1, gen);
-      j = (i + shift) % n;
-    }
-
-    const uint64_t max = q % 3 == 0 ? std::numeric_limits<uint64_t>::max() : max_distrib(gen);
-    EXPECT_EQ(text.lce(i, j, max), naive_lce(t, i, j, max))
-        << "lce(" << i << "," << j << "," << max << ") n=" << n;
-    EXPECT_EQ(text.lce_left(i, j, max), naive_lce_left(t, i, j, max))
-        << "lce_left(" << i << "," << j << "," << max << ") n=" << n;
-  }
-}
-
-static void test_lce() {
-  std::vector<uint8_t> t = random_text(50000);
-  lce::text::direct_text<uint8_t> d(t.data(), t.size());
-  lce::text::packed_text<> p(reinterpret_cast<const char*>(t.data()), t.size(), random_num_threads(gen));
-  check_lce(d, t);
-  check_lce(p, t);
-}
-
 static std::vector<uint8_t> random_maybe_skewed_text(uint64_t max_size) {
   return std::uniform_int_distribution<int>(0, 1)(gen) == 0 ? random_text(max_size) : random_skewed_text(max_size);
 }
@@ -152,7 +85,7 @@ static text_t build_split(const std::vector<uint8_t>& t, uint16_t threads) {
   const uint64_t n = t.size();
   if (std::uniform_int_distribution<int>(0, 3)(gen) == 0) return text_t(data, n, threads);
   typename text_t::histogram_t histogram{};
-  lce::text::packed_text<>::add_char_counts(histogram, data, n, threads);
+  compact_texts::packed_text<>::add_char_counts(histogram, data, n, threads);
   const uint64_t penalty = std::uniform_int_distribution<uint64_t>(0, 16)(gen);
   text_t text(histogram, n, penalty);
   const uint64_t block = text_t::chunk_symbols * random_log_uniform_size(1, n / text_t::chunk_symbols + 1, gen);
@@ -171,88 +104,13 @@ static text_t build_split(const std::vector<uint8_t>& t, uint16_t threads) {
 
 template <typename fnc_t>
 static void with_random_split(const std::vector<uint8_t>& t, uint16_t threads, fnc_t fnc) {
-  fnc(build_split<lce::text::split_text<>>(t, threads));
-}
-
-static void test_split_access() {
-  std::vector<uint8_t> t = random_maybe_skewed_text(200000);
-  const uint64_t n = t.size();
-
-  with_random_split(t, random_num_threads(gen), [&](const auto& s) {
-    std::vector<bool> used(256, false);
-    for (uint8_t c : t) used[c] = true;
-    EXPECT_EQ(s.sigma(), uint64_t(std::count(used.begin(), used.end(), true)));
-    const auto histogram = lce::text::packed_text<>::count_chars(reinterpret_cast<const char*>(t.data()), n, 1);
-    EXPECT_EQ(std::decay_t<decltype(s)>::size_in_bytes_for(histogram, n, s.penalty()), s.size_in_bytes());
-
-    for (uint64_t i = 0; i < n; ++i) {
-      ASSERT_EQ(s.to_char(s[i]), t[i]) << "i=" << i << " n=" << n << " width=" << int(s.width())
-                                       << " payloads=" << s.has_payloads();
-      ASSERT_EQ(uint8_t(s.char_at(i)), t[i]);
-    }
-
-    std::uniform_int_distribution<uint64_t> pos(0, n - 1);
-
-    for (uint64_t q = 0; q < 1000; ++q) {
-      const uint64_t i = pos(gen);
-      const uint64_t j = pos(gen);
-      EXPECT_EQ(s[i] < s[j], t[i] < t[j]);
-      EXPECT_EQ(s.less_char(i, j), t[i] < t[j]);
-    }
-
-    std::vector<uint8_t> out;
-
-    for (uint64_t q = 0; q < 100; ++q) {
-      const uint64_t i = pos(gen);
-      const uint64_t len = random_log_uniform_size(1, n - i, gen);
-      out.assign(len, 0);
-      s.extract(i, len, out.data());
-      ASSERT_TRUE(std::equal(out.begin(), out.end(), t.begin() + i)) << "extract(" << i << "," << len << ") n=" << n;
-    }
-
-    const uint64_t start = pos(gen);
-    auto cursor = s.cursor_at(start);
-    for (uint64_t i = start; i < n; ++i) ASSERT_EQ(cursor.next(), s[i]) << "cursor at " << i;
-  });
-}
-
-static void test_split_lce() {
-  std::vector<uint8_t> t = random_maybe_skewed_text(50000);
-  const uint64_t n = t.size();
-
-  with_random_split(t, random_num_threads(gen), [&](const auto& s) {
-    check_lce(s, t);
-    std::uniform_int_distribution<uint64_t> pos(0, n - 1);
-
-    for (uint64_t q = 0; q < 300; ++q) {
-      const uint64_t i = pos(gen);
-      const uint64_t j = pos(gen);
-      const uint64_t len = std::min<uint64_t>(n - std::max(i, j), random_log_uniform_size(1, n, gen));
-      const bool same = naive_lce(t, i, j, len) == len;
-      EXPECT_EQ(s.equal(i, j, len), same) << "equal(" << i << "," << j << "," << len << ") n=" << n;
-      if (same) EXPECT_EQ(s.hash(i, len), s.hash(j, len)) << "hash(" << i << "," << j << "," << len << ") n=" << n;
-    }
-  });
-}
-
-static void test_reverse() {
-  std::vector<uint8_t> t = random_text(200000);
-  const uint16_t threads = random_num_threads(gen);
-  lce::text::packed_text<> p(reinterpret_cast<const char*>(t.data()), t.size(), threads);
-  std::vector<uint8_t> r = t;
-  lce::text::direct_text<uint8_t> d(r.data(), r.size());
-  p.reverse(threads);
-  d.reverse(threads);
-  std::reverse(t.begin(), t.end());
-  ASSERT_EQ(r, t);
-
-  for (uint64_t i = 0; i < t.size(); ++i) ASSERT_EQ(p.to_char(p[i]), t[i]) << "i=" << i;
+  fnc(build_split<compact_texts::split_text<>>(t, threads));
 }
 
 template <typename text_t, typename sym_t>
 static void check_lce_sss(const text_t& text, const std::vector<sym_t>& t, uint64_t tau) {
   scoped_num_threads threads(random_num_threads(gen));
-  lce::ds::lce_sss<text_t, lce::util::uint40_t> ds(text, tau);
+  lce::ds::lce_sss<text_t, uint40_t> ds(text, tau);
   std::uniform_int_distribution<uint64_t> pos(0, t.size() - 1);
 
   for (uint64_t q = 0; q < 100; ++q) {
@@ -267,7 +125,7 @@ static void test_lce_sss_packed() {
   const uint64_t tau = uint64_t{1} << std::uniform_int_distribution<uint64_t>(2, 6)(gen);
   std::vector<uint8_t> t = random_text(150000);
   const uint16_t threads = random_num_threads(gen);
-  check_lce_sss(lce::text::packed_text<>(reinterpret_cast<const char*>(t.data()), t.size(), threads), t, tau);
+  check_lce_sss(compact_texts::packed_text<>(reinterpret_cast<const char*>(t.data()), t.size(), threads), t, tau);
 }
 
 static void test_lce_sss_split() {
@@ -299,14 +157,14 @@ template <typename text_t>
 static text_t build_int_text(std::vector<uint32_t>& t, uint64_t sigma, uint16_t threads) {
   const uint64_t n = t.size();
 
-  if constexpr (std::is_same_v<text_t, lce::text::direct_text<uint32_t>>) {
+  if constexpr (std::is_same_v<text_t, compact_texts::direct_text<uint32_t>>) {
     return text_t(t.data(), n, sigma);
   } else {
     if (std::uniform_int_distribution<int>(0, 3)(gen) == 0) return text_t(t.data(), n, sigma, threads);
     typename text_t::histogram_t histogram(sigma, 0);
     for (uint32_t c : t) ++histogram[c];
     text_t text = [&]() {
-      if constexpr (std::is_same_v<text_t, lce::text::split_text<uint32_t>>) {
+      if constexpr (std::is_same_v<text_t, compact_texts::split_text<uint32_t>>) {
         return text_t(histogram, n, std::uniform_int_distribution<uint64_t>(0, 16)(gen));
       } else {
         return text_t(histogram, n);
@@ -330,28 +188,28 @@ static text_t build_int_text(std::vector<uint32_t>& t, uint64_t sigma, uint16_t 
 template <typename fnc_t>
 static void with_random_int_text(std::vector<uint32_t>& t, uint64_t sigma, uint16_t threads, fnc_t fnc) {
   switch (std::uniform_int_distribution<int>(0, 5)(gen)) {
-    case 0: fnc(build_int_text<lce::text::direct_text<uint32_t>>(t, sigma, threads), t, sigma); break;
-    case 1: fnc(build_int_text<lce::text::packed_text<uint32_t>>(t, sigma, threads), t, sigma); break;
-    case 2: fnc(build_int_text<lce::text::split_text<uint32_t>>(t, sigma, threads), t, sigma); break;
+    case 0: fnc(build_int_text<compact_texts::direct_text<uint32_t>>(t, sigma, threads), t, sigma); break;
+    case 1: fnc(build_int_text<compact_texts::packed_text<uint32_t>>(t, sigma, threads), t, sigma); break;
+    case 2: fnc(build_int_text<compact_texts::split_text<uint32_t>>(t, sigma, threads), t, sigma); break;
     case 3: {
       std::vector<uint16_t> t16(t.size());
       for (uint64_t i = 0; i < t.size(); ++i) t16[i] = uint16_t(t[i]);
       const uint64_t sigma16 = std::min<uint64_t>(sigma, uint64_t{1} << 16);
-      fnc(lce::text::direct_text<uint16_t>(t16.data(), t16.size(), sigma16), t16, sigma16);
+      fnc(compact_texts::direct_text<uint16_t>(t16.data(), t16.size(), sigma16), t16, sigma16);
       break;
     }
     case 4: {
-      const uint64_t mult = random_log_uniform_size(1, lce::util::uint40_t::max / sigma, gen);
+      const uint64_t mult = random_log_uniform_size(1, uint40_t::max / sigma, gen);
       std::vector<uint64_t> t64(t.size());
       for (uint64_t i = 0; i < t.size(); ++i) t64[i] = uint64_t(t[i]) * mult;
       const uint64_t sigma64 = (sigma - 1) * mult + 1;
-      fnc(lce::text::direct_text<uint64_t>(t64.data(), t64.size(), sigma64), t64, sigma64);
+      fnc(compact_texts::direct_text<uint64_t>(t64.data(), t64.size(), sigma64), t64, sigma64);
       break;
     }
     default: {
-      const uint64_t mult = random_log_uniform_size(1, lce::util::uint40_t::max / sigma, gen);
+      const uint64_t mult = random_log_uniform_size(1, uint40_t::max / sigma, gen);
       std::vector<uint64_t> t64(t.size());
-      std::vector<lce::util::uint40_t> t40(t.size());
+      std::vector<uint40_t> t40(t.size());
 
       for (uint64_t i = 0; i < t.size(); ++i) {
         t64[i] = uint64_t(t[i]) * mult;
@@ -359,77 +217,10 @@ static void with_random_int_text(std::vector<uint32_t>& t, uint64_t sigma, uint1
       }
 
       const uint64_t sigma40 = (sigma - 1) * mult + 1;
-      fnc(lce::text::direct_text<lce::util::uint40_t>(t40.data(), t40.size(), sigma40), t64, sigma40);
+      fnc(compact_texts::direct_text<uint40_t>(t40.data(), t40.size(), sigma40), t64, sigma40);
       break;
     }
   }
-}
-
-static void test_int_access() {
-  uint64_t sigma = 0;
-  std::vector<uint32_t> t = random_int_text(100000, sigma);
-  const uint64_t n = t.size();
-
-  with_random_int_text(t, sigma, random_num_threads(gen), [&](const auto& s, const auto& ref, uint64_t ref_sigma) {
-    using text_t = std::decay_t<decltype(s)>;
-    EXPECT_EQ(s.sigma(), ref_sigma);
-
-    if constexpr (std::is_same_v<text_t, lce::text::split_text<uint32_t>>) {
-      typename text_t::histogram_t histogram(sigma, 0);
-      for (uint32_t c : t) ++histogram[c];
-      EXPECT_EQ(text_t::size_in_bytes_for(histogram, n, s.penalty()), s.size_in_bytes());
-    }
-
-    for (uint64_t i = 0; i < n; ++i) {
-      ASSERT_EQ(uint64_t(s.to_char(s[i])), uint64_t(ref[i])) << "i=" << i << " n=" << n << " sigma=" << ref_sigma;
-      ASSERT_EQ(uint64_t(s.char_at(i)), uint64_t(ref[i]));
-    }
-
-    std::uniform_int_distribution<uint64_t> pos(0, n - 1);
-
-    for (uint64_t q = 0; q < 1000; ++q) {
-      const uint64_t i = pos(gen);
-      const uint64_t j = pos(gen);
-      EXPECT_EQ(s[i] == s[j], ref[i] == ref[j]);
-      EXPECT_EQ(s.less_char(i, j), s[i] < s[j]);
-    }
-
-    if constexpr (requires(uint32_t* out) { s.extract(0, 0, out); }) {
-      std::vector<uint32_t> out;
-
-      for (uint64_t q = 0; q < 100; ++q) {
-        const uint64_t i = pos(gen);
-        const uint64_t len = random_log_uniform_size(1, n - i, gen);
-        out.assign(len, 0);
-        s.extract(i, len, out.data());
-        for (uint64_t k = 0; k < len; ++k) ASSERT_EQ(out[k], s[i + k]) << "extract(" << i << "," << len << ")";
-      }
-    }
-
-    const uint64_t start = pos(gen);
-    auto cursor = s.cursor_at(start);
-    for (uint64_t i = start; i < n; ++i) ASSERT_EQ(cursor.next(), s[i]) << "cursor at " << i;
-  });
-}
-
-static void test_int_lce() {
-  uint64_t sigma = 0;
-  std::vector<uint32_t> t = random_int_text(50000, sigma);
-  const uint64_t n = t.size();
-
-  with_random_int_text(t, sigma, random_num_threads(gen), [&](const auto& s, const auto& ref, uint64_t) {
-    check_lce(s, ref);
-    std::uniform_int_distribution<uint64_t> pos(0, n - 1);
-
-    for (uint64_t q = 0; q < 300; ++q) {
-      const uint64_t i = pos(gen);
-      const uint64_t j = pos(gen);
-      const uint64_t len = std::min<uint64_t>(n - std::max(i, j), random_log_uniform_size(1, n, gen));
-      const bool same = naive_lce(ref, i, j, len) == len;
-      EXPECT_EQ(s.equal(i, j, len), same) << "equal(" << i << "," << j << "," << len << ") n=" << n;
-      if (same) EXPECT_EQ(s.hash(i, len), s.hash(j, len)) << "hash(" << i << "," << j << "," << len << ") n=" << n;
-    }
-  });
 }
 
 static void test_lce_sss_int() {
@@ -441,40 +232,12 @@ static void test_lce_sss_int() {
   });
 }
 
-TEST(test_text, packed_access) {
-  run_fuzz("text", {{"packed-access", [](uint64_t) { test_packed_access(); }, false}}, fuzz_iterations(3000));
-}
-
-TEST(test_text, lce) {
-  run_fuzz("text", {{"lce", [](uint64_t) { test_lce(); }, false}}, fuzz_iterations(3000));
-}
-
-TEST(test_text, reverse) {
-  run_fuzz("text", {{"reverse", [](uint64_t) { test_reverse(); }, false}}, fuzz_iterations(2000));
-}
-
 TEST(test_text, lce_sss_packed) {
   run_fuzz("text", {{"lce-sss-packed", [](uint64_t) { test_lce_sss_packed(); }, false}}, fuzz_iterations(1000));
 }
 
-TEST(test_text, split_access) {
-  run_fuzz("text", {{"split-access", [](uint64_t) { test_split_access(); }, false}}, fuzz_iterations(2000));
-}
-
-TEST(test_text, split_lce) {
-  run_fuzz("text", {{"split-lce", [](uint64_t) { test_split_lce(); }, false}}, fuzz_iterations(3000));
-}
-
 TEST(test_text, lce_sss_split) {
   run_fuzz("text", {{"lce-sss-split", [](uint64_t) { test_lce_sss_split(); }, false}}, fuzz_iterations(1000));
-}
-
-TEST(test_text, int_access) {
-  run_fuzz("text", {{"int-access", [](uint64_t) { test_int_access(); }, false}}, fuzz_iterations(1000));
-}
-
-TEST(test_text, int_lce) {
-  run_fuzz("text", {{"int-lce", [](uint64_t) { test_int_lce(); }, false}}, fuzz_iterations(2000));
 }
 
 TEST(test_text, lce_sss_int) {

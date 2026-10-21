@@ -22,16 +22,16 @@
 
 #include "rmq/rmq_n.hpp"
 #include "util/bit_aligned_vector.hpp"
-#include "util/memory.hpp"
-#include "util/threads.hpp"
+#include <misc/memory.hpp>
+#include <misc/threads.hpp>
+#include <misc/log.hpp>
 
 #ifdef LCE_BENCHMARK_INTERNAL
 #include <fmt/core.h>
 #include <fmt/ranges.h>
 
-#include "util/timer.hpp"
 #ifdef LCE_BENCHMARK_SPACE
-#include <malloc_count/malloc_count.h>
+#include <malloc_count.h>
 #endif
 #endif
 
@@ -44,7 +44,7 @@ class lce_classic_for_sss {
   }
 
   template <typename t_text, typename t_sss, typename t_rank>
-  lce_classic_for_sss(t_text const& text, std::vector<t_rank>& reduced_text,
+  lce_classic_for_sss(t_text const& text, no_init_vector<t_rank>& reduced_text,
                       t_sss const& sss, uint64_t tau)
       : m_size(reduced_text.size()), m_tau(tau) {
     const size_t reduced_size = reduced_text.size();
@@ -53,7 +53,7 @@ class lce_classic_for_sss {
     }
     // sort sa
 #ifdef LCE_BENCHMARK_INTERNAL
-    lce::util::timer t;
+    auto t = now();
 #ifdef LCE_BENCHMARK_SPACE
     size_t mem_before = malloc_count_current();
     malloc_count_reset_peak();
@@ -67,7 +67,7 @@ class lce_classic_for_sss {
 
     auto build = [&](auto& sa) {
 #ifdef LCE_BENCHMARK_INTERNAL
-      fmt::print(" sa_time={}", t.get_and_reset());
+      fmt::print(" sa_time={}", time_diff_ns(std::exchange(t, now())) / 1'000'000);
 #ifdef LCE_BENCHMARK_SPACE
       fmt::print(" sa_mem={}", malloc_count_current() - mem_before);
       fmt::print(" sa_mem_peak={}", malloc_count_peak() - mem_before);
@@ -84,7 +84,7 @@ class lce_classic_for_sss {
       }
 
 #ifdef LCE_BENCHMARK_INTERNAL
-      fmt::print(" isa_time={}", t.get_and_reset());
+      fmt::print(" isa_time={}", time_diff_ns(std::exchange(t, now())) / 1'000'000);
 #ifdef LCE_BENCHMARK_SPACE
       fmt::print(" isa_mem={}", malloc_count_current() - mem_before);
       fmt::print(" isa_mem_peak={}", malloc_count_peak() - mem_before);
@@ -132,7 +132,7 @@ class lce_classic_for_sss {
       }
 
 #ifdef LCE_BENCHMARK_INTERNAL
-      fmt::print(" lcp_time={}", t.get_and_reset());
+      fmt::print(" lcp_time={}", time_diff_ns(std::exchange(t, now())) / 1'000'000);
 #ifdef LCE_BENCHMARK_SPACE
       fmt::print(" lcp_mem={}", malloc_count_current() - mem_before);
       fmt::print(" lcp_mem_peak={}", malloc_count_peak() - mem_before);
@@ -168,7 +168,7 @@ class lce_classic_for_sss {
       m_rmq = lce::rmq::rmq_n<t_index_type, uint32_t, 128, lce::util::bit_aligned_view>(m_lcp);
 
 #ifdef LCE_BENCHMARK_INTERNAL
-      fmt::print(" rmq_time={}", t.get_and_reset());
+      fmt::print(" rmq_time={}", time_diff_ns(std::exchange(t, now())) / 1'000'000);
 #ifdef LCE_BENCHMARK_SPACE
       fmt::print(" rmq_mem={}", malloc_count_current() - mem_before);
       fmt::print(" rmq_mem_peak={}", malloc_count_peak() - mem_before);
@@ -179,36 +179,36 @@ class lce_classic_for_sss {
     constexpr uint64_t max_int32 = uint64_t(std::numeric_limits<int32_t>::max());
 
     if constexpr (std::is_same_v<t_rank, int32_t>) {
-      std::vector<int32_t> sa;
-      lce::util::no_init_resize(sa, reduced_size);
+      no_init_vector<int32_t> sa;
+      resize_no_init(sa, reduced_size);
       if (libsais_int_omp(reduced_text.data(), sa.data(), int32_t(reduced_size), int32_t(max_rank + 1), 0,
-                          lce::util::sais_threads()) != 0) {
+                          int(num_cores_of_omp_team(omp_get_max_threads()))) != 0) {
         throw std::runtime_error("libsais_int_omp failed");
       }
-      reduced_text = std::vector<int32_t>();
+      reduced_text = no_init_vector<int32_t>();
       build(sa);
     } else if (reduced_size < max_int32 && uint64_t(max_rank) < max_int32) {
-      std::vector<int32_t> text32;
-      lce::util::no_init_resize(text32, reduced_size);
+      no_init_vector<int32_t> text32;
+      resize_no_init(text32, reduced_size);
 #pragma omp parallel for
       for (size_t i = 0; i < reduced_size; ++i) text32[i] = int32_t(int64_t(reduced_text[i]));
-      reduced_text = std::vector<t_rank>();
-      std::vector<int32_t> sa;
-      lce::util::no_init_resize(sa, reduced_size);
+      reduced_text = no_init_vector<t_rank>();
+      no_init_vector<int32_t> sa;
+      resize_no_init(sa, reduced_size);
       if (libsais_int_omp(text32.data(), sa.data(), int32_t(reduced_size), int32_t(max_rank + 1), 0,
-                          lce::util::sais_threads()) != 0) {
+                          int(num_cores_of_omp_team(omp_get_max_threads()))) != 0) {
         throw std::runtime_error("libsais_int_omp failed");
       }
-      text32 = std::vector<int32_t>();
+      text32 = no_init_vector<int32_t>();
       build(sa);
     } else {
-      std::vector<sa_int40_t> sa;
-      lce::util::no_init_resize(sa, reduced_size);
+      no_init_vector<sa_int40_t> sa;
+      resize_no_init(sa, reduced_size);
       if (libsais40_impl::libsais40_long_omp(reduced_text.data(), sa.data(), int64_t(reduced_size),
-                                             max_rank + 1, 0, lce::util::sais_threads()) != 0) {
+                                             max_rank + 1, 0, int(num_cores_of_omp_team(omp_get_max_threads()))) != 0) {
         throw std::runtime_error("libsais40_long_omp failed");
       }
-      reduced_text = std::vector<t_rank>();
+      reduced_text = no_init_vector<t_rank>();
       build(sa);
     }
   }
