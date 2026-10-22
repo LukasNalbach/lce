@@ -5,7 +5,7 @@ This repository contains implementations of Longest Common Extension (LCE) data 
 This implementation has been tested on Ubuntu 24.04 with gcc-12 and g++-12 installed.
 
 ```shell
-git clone --recurse-submodules https://github.com/LukasNalbach/lce.git
+git clone https://github.com/LukasNalbach/lce.git
 cd lce
 mkdir build
 cd build
