@@ -53,7 +53,7 @@ The other options and the environment variables (`LCE_HUGE_PAGES`, `LCE_TEST_ITE
 ## Usage in C++
 ### Cmake
 ```cmake
-add_subdirectory(lce/)
+add_subdirectory(lce/ EXCLUDE_FROM_ALL)
 target_link_libraries(<your_target> PRIVATE lce)
 ```
 If the project uses string-utils or compact-texts itself, it adds them first; lce then uses these copies.

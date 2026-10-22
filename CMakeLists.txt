@@ -26,26 +26,50 @@ if(NOT TARGET string_utils)
     include("${CMAKE_CURRENT_SOURCE_DIR}/external/string-utils/cmake/settings.cmake")
   endif()
 
-  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/external/string-utils")
+  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/external/string-utils" EXCLUDE_FROM_ALL)
 endif()
 
 # the text classes
 if(NOT TARGET compact_texts)
   string_utils_fetch_submodules("${CMAKE_CURRENT_SOURCE_DIR}" PATHS external/compact-texts)
-  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/external/compact-texts")
+  add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/external/compact-texts" EXCLUDE_FROM_ALL)
 endif()
-
-string_utils_fetch_submodules("${CMAKE_CURRENT_SOURCE_DIR}" RECURSIVE PATHS
-  external/tlx external/modular_arithmetic external/rk-lce external/PGM-index external/la_vector)
-
-execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory
-                    "${CMAKE_CURRENT_SOURCE_DIR}/patched-files" "${CMAKE_CURRENT_SOURCE_DIR}"
-                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
 
 option(LCE_USE_SDSL "Build the LCE data structures that depend on SDSL" OFF)
 option(LCE_BUILD_LA_VECTOR "Build the predecessor data structure that depends on SDSL" OFF)
 option(LCE_BENCHMARK_INTERNAL "Also benchmark internal data structures" ON)
 option(LCE_BENCHMARK_SPACE "Also benchmark memory and memory peak" ON)
+
+# the libraries of string-utils beyond its core that are used here
+string_utils_add_components(libsais)
+if(LCE_USE_SDSL)
+  string_utils_add_components(sdsl)
+endif()
+
+# the submodules of the options that are on; the files in patched-files/external/<submodule> replace those of the
+# submodule
+set(lce_submodules modular_arithmetic rk-lce PGM-index)
+if(LCE_BUILD_BENCHMARKS)
+  list(APPEND lce_submodules tlx)
+endif()
+
+foreach(submodule IN LISTS lce_submodules)
+  string_utils_fetch_submodules("${CMAKE_CURRENT_SOURCE_DIR}" PATHS external/${submodule})
+endforeach()
+
+if(LCE_BUILD_LA_VECTOR)
+  string_utils_fetch_submodules("${CMAKE_CURRENT_SOURCE_DIR}" RECURSIVE PATHS external/la_vector)
+  list(APPEND lce_submodules la_vector)
+endif()
+
+foreach(submodule IN LISTS lce_submodules)
+  if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/patched-files/external/${submodule}")
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory
+                        "${CMAKE_CURRENT_SOURCE_DIR}/patched-files/external/${submodule}"
+                        "${CMAKE_CURRENT_SOURCE_DIR}/external/${submodule}"
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+  endif()
+endforeach()
 
 set(LCE_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(LCE_EXTERNAL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external)
@@ -53,17 +77,16 @@ set(LCE_EXTERNAL_DIR ${CMAKE_CURRENT_SOURCE_DIR}/external)
 add_library(rk-lce INTERFACE)
 target_include_directories(rk-lce INTERFACE ${LCE_EXTERNAL_DIR}/rk-lce/internal)
 
-add_library(tlx_clp ${LCE_EXTERNAL_DIR}/tlx/tlx/cmdline_parser.cpp ${LCE_EXTERNAL_DIR}/tlx/tlx/string/parse_si_iec_units.cpp)
-target_include_directories(tlx_clp PUBLIC ${LCE_EXTERNAL_DIR}/tlx)
+if(LCE_BUILD_BENCHMARKS)
+  add_library(tlx_clp ${LCE_EXTERNAL_DIR}/tlx/tlx/cmdline_parser.cpp ${LCE_EXTERNAL_DIR}/tlx/tlx/string/parse_si_iec_units.cpp)
+  target_include_directories(tlx_clp PUBLIC ${LCE_EXTERNAL_DIR}/tlx)
+endif()
 
-add_subdirectory(external/modular_arithmetic)
+add_subdirectory(external/modular_arithmetic EXCLUDE_FROM_ALL)
 
-add_subdirectory(external/la_vector)
-foreach(_la_target example tests)
-  if(TARGET ${_la_target})
-    set_target_properties(${_la_target} PROPERTIES EXCLUDE_FROM_ALL 1 EXCLUDE_FROM_DEFAULT_BUILD 1)
-  endif()
-endforeach()
+if(LCE_BUILD_LA_VECTOR)
+  add_subdirectory(external/la_vector EXCLUDE_FROM_ALL)
+endif()
 
 add_library(lce_util INTERFACE)
 target_include_directories(lce_util INTERFACE ${LCE_INCLUDE_DIR})
@@ -237,6 +260,7 @@ endif()
 if(LCE_BUILD_TESTS)
   enable_testing()
   include(GoogleTest)
+  string_utils_add_components(tests)
 
   foreach(s lce pred rmq rolling-hash string-synchronizing-set text)
     string_utils_add_executable("test-${s}" "${CMAKE_CURRENT_SOURCE_DIR}/tests/test-${s}.cpp" "${CMAKE_BINARY_DIR}/tests"
