@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 project(lce LANGUAGES C CXX)
 
-option(LCE_BUILD_BENCHMARKS "Build benchmark cli programs" ${PROJECT_IS_TOP_LEVEL})
+option(LCE_BUILD_BENCHMARKS "Build benchmark cli programs" OFF)
 option(LCE_BUILD_TESTS "Build tests" ${PROJECT_IS_TOP_LEVEL})
 
 if(WIN32)

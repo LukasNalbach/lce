@@ -41,7 +41,7 @@ lce is developed on Linux and its own code is portable C++20. A 64-bit x86 CPU i
 | Option | Default | Effect |
 | --- | --- | --- |
 | `LCE_MARCH_NATIVE` | `ON` | Tune the build for the host CPU (`-march=native`); turn **OFF** for portable binaries |
-| `LCE_BUILD_BENCHMARKS` | `ON` if top-level (`OFF` on Windows) | Build the benchmark/generator CLI tools |
+| `LCE_BUILD_BENCHMARKS` | `OFF` (not available on Windows) | Build the benchmark/generator CLI tools |
 | `LCE_BUILD_TESTS` | `ON` if top-level | Build the test executables |
 | `LCE_USE_MALLOC_COUNT` | `ON` | Track memory usage via malloc_count |
 | `LCE_ENABLE_LTO` | `ON` | Enable link-time optimization (LTO/IPO) for the lce executables |
