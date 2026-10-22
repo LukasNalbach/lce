@@ -6,8 +6,6 @@
  * All rights reserved. Published under the BSD-2 license in the LICENSE file.
  ******************************************************************************/
 
-#include <fmt/core.h>
-#include <fmt/ranges.h>
 #include <gtest/gtest.h>
 #include <libsais.h>
 
@@ -39,8 +37,10 @@ static bool check_string_synchronizing_set(text_t const& text, sss_t const& sss_
   const size_t tau = sss_ds.tau();
 
   if (!std::is_sorted(sss.begin(), sss.end())) {
-    fmt::print("\nString synchronizing set is not sorted.\n");
-    fmt::print("{}", sss);
+    std::cout << "\nString synchronizing set is not sorted.\n";
+    std::cout << "[";
+    for (size_t i = 0; i < sss.size(); i++) std::cout << (i > 0 ? ", " : "") << sss[i];
+    std::cout << "]";
     return false;
   }
 
@@ -85,17 +85,17 @@ static bool check_string_synchronizing_set(text_t const& text, sss_t const& sss_
         size_t pos_in_sss_i = pred.predecessor(sa[i - 1]).pos;
         size_t pos_in_sss_j = pred.predecessor(sa[i]).pos;
         if (sss[pos_in_sss_i] != static_cast<size_t>(sa[i - 1])) {
-          fmt::print("{} should equal {}\n", sss[pos_in_sss_i], sa[i - 1]);
+          std::cout << sss[pos_in_sss_i] << " should equal " << sa[i - 1] << "\n";
           return false;
         }
         if (sss[pos_in_sss_j] != static_cast<size_t>(sa[i])) {
-          fmt::print("{} should equal {}\n", sss[pos_in_sss_j], sa[i]);
+          std::cout << sss[pos_in_sss_j] << " should equal " << sa[i] << "\n";
           return false;
         }
         if (sss_ds.fps_calculated() && (fps[pos_in_sss_i] << 21 != fps[pos_in_sss_j] << 21)) {
-          fmt::print(" fingerprints should be equal: {}:{} != {}:{}\n",
-                     (uint64_t)(fps[pos_in_sss_i] >> 64), (uint64_t)fps[pos_in_sss_i],
-                     (uint64_t)(fps[pos_in_sss_j] >> 64), (uint64_t)fps[pos_in_sss_j]);
+          std::cout << " fingerprints should be equal: "
+                    << (uint64_t)(fps[pos_in_sss_i] >> 64) << ":" << (uint64_t)fps[pos_in_sss_i] << " != "
+                    << (uint64_t)(fps[pos_in_sss_j] >> 64) << ":" << (uint64_t)fps[pos_in_sss_j] << "\n";
           return false;
         }
       }

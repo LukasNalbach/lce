@@ -25,8 +25,7 @@
 #include <misc/log.hpp>
 
 #ifdef LCE_BENCHMARK_INTERNAL
-#include <fmt/core.h>
-#include <fmt/ranges.h>
+#include <iostream>
 
 #ifdef LCE_BENCHMARK_SPACE
 #include <malloc_count.h>
@@ -120,10 +119,10 @@ class lce_classic {
 #endif
     build_sa(text, size, sa);
 #ifdef LCE_BENCHMARK_INTERNAL
-    fmt::print(" sa_time={}", time_diff_ns(std::exchange(t, now())) / 1'000'000);
+    std::cout << " sa_time=" << time_diff_ns(std::exchange(t, now())) / 1'000'000;
 #ifdef LCE_BENCHMARK_SPACE
-    fmt::print(" sa_mem={}", malloc_count_current() - mem_before);
-    fmt::print(" sa_mem_peak={}", malloc_count_peak() - mem_before);
+    std::cout << " sa_mem=" << malloc_count_current() - mem_before;
+    std::cout << " sa_mem_peak=" << malloc_count_peak() - mem_before;
     mem_before = malloc_count_current();
     malloc_count_reset_peak();
 #endif
@@ -138,10 +137,10 @@ class lce_classic {
     }
 
 #ifdef LCE_BENCHMARK_INTERNAL
-    fmt::print(" isa_time={}", time_diff_ns(std::exchange(t, now())) / 1'000'000);
+    std::cout << " isa_time=" << time_diff_ns(std::exchange(t, now())) / 1'000'000;
 #ifdef LCE_BENCHMARK_SPACE
-    fmt::print(" isa_mem={}", malloc_count_current() - mem_before);
-    fmt::print(" isa_mem_peak={}", malloc_count_peak() - mem_before);
+    std::cout << " isa_mem=" << malloc_count_current() - mem_before;
+    std::cout << " isa_mem_peak=" << malloc_count_peak() - mem_before;
     mem_before = malloc_count_current();
     malloc_count_reset_peak();
 #endif
@@ -182,10 +181,10 @@ class lce_classic {
     }
 
 #ifdef LCE_BENCHMARK_INTERNAL
-    fmt::print(" lcp_time={}", time_diff_ns(std::exchange(t, now())) / 1'000'000);
+    std::cout << " lcp_time=" << time_diff_ns(std::exchange(t, now())) / 1'000'000;
 #ifdef LCE_BENCHMARK_SPACE
-    fmt::print(" lcp_mem={}", malloc_count_current() - mem_before);
-    fmt::print(" lcp_mem_peak={}", malloc_count_peak() - mem_before);
+    std::cout << " lcp_mem=" << malloc_count_current() - mem_before;
+    std::cout << " lcp_mem_peak=" << malloc_count_peak() - mem_before;
     mem_before = malloc_count_current();
     malloc_count_reset_peak();
 #endif
@@ -195,10 +194,10 @@ class lce_classic {
     m_rmq = lce::rmq::rmq_n<t_index_type>(m_lcp);
 
 #ifdef LCE_BENCHMARK_INTERNAL
-    fmt::print(" rmq_time={}", time_diff_ns(std::exchange(t, now())) / 1'000'000);
+    std::cout << " rmq_time=" << time_diff_ns(std::exchange(t, now())) / 1'000'000;
 #ifdef LCE_BENCHMARK_SPACE
-    fmt::print(" rmq_mem={}", malloc_count_current() - mem_before);
-    fmt::print(" rmq_mem_peak={}", malloc_count_peak() - mem_before);
+    std::cout << " rmq_mem=" << malloc_count_current() - mem_before;
+    std::cout << " rmq_mem_peak=" << malloc_count_peak() - mem_before;
 #endif
 #endif
   }

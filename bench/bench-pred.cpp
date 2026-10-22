@@ -6,8 +6,6 @@
  * All rights reserved. Published under the BSD-2 license in the LICENSE file.
  ******************************************************************************/
 
-#include <fmt/core.h>
-#include <fmt/ranges.h>
 #ifdef LCE_BENCHMARK_SPACE
 #include <malloc_count.h>
 #endif
@@ -29,6 +27,7 @@
 #include <tlx/cmdline_parser.hpp>
 #include <vector>
 
+#include "format_list.hpp"
 #include "pred/binsearch_std.hpp"
 #include "pred/binsearch_cache.hpp"
 #include "pred/rank_index.hpp"
@@ -79,15 +78,14 @@ class benchmark {
   bool check_parameters() {
     // Check data path
     if (!fs::is_regular_file(data_path) || fs::file_size(data_path) == 0) {
-      fmt::print("Data file {} is empty or does not exist.\n",
-                 data_path.string());
+      std::cout << "Data file " << data_path.string() << " is empty or does not exist.\n";
       return false;
     }
     // Check algorithm
     if (std::find(algorithms.begin(), algorithms.end(), algorithm) ==
         algorithms.end()) {
-      fmt::print("Algorithm {} is not specified.\n Use one of {}\n", algorithm,
-                 algorithms);
+      std::cout << "Algorithm " << algorithm << " is not specified.\n Use one of "
+                << format_list(algorithms) << "\n";
       return false;
     }
     return true;
@@ -101,9 +99,9 @@ class benchmark {
     read_in_chunks(in, (char*) data_5byte.data(), data_5byte.size() * sizeof(uint40_t));
     data = std::vector<uint64_t>(data_5byte.begin(), data_5byte.end());
     assert(data.size() != 0);
-    fmt::print(" data={}", data_path.filename().string());
-    fmt::print(" data_size={}", data.size());
-    fmt::print(" data_time={}", time_diff_ns(t) / 1'000'000);
+    std::cout << " data=" << data_path.filename().string();
+    std::cout << " data_size=" << data.size();
+    std::cout << " data_time=" << time_diff_ns(t) / 1'000'000;
   }
 
   void load_queries() {
@@ -115,8 +113,8 @@ class benchmark {
     for (size_t i = 0; i < num_queries; ++i) {
       queries[i] = distrib(gen);
     }
-    fmt::print(" q_size={}", queries.size());
-    fmt::print(" q_gen_time={}", time_diff_ns(t) / 1'000'000);
+    std::cout << " q_size=" << queries.size();
+    std::cout << " q_gen_time=" << time_diff_ns(t) / 1'000'000;
   }
 
   template <typename pred_ds_type, typename... ctor_args_t>
@@ -127,11 +125,11 @@ class benchmark {
 #endif
     auto t = now();
     pred_ds_type pred_ds(data, ctor_args...);
-    fmt::print(" threads={}", omp_get_max_threads());
-    fmt::print(" c_time={}", time_diff_ns(t) / 1'000'000);
+    std::cout << " threads=" << omp_get_max_threads();
+    std::cout << " c_time=" << time_diff_ns(t) / 1'000'000;
 #ifdef LCE_BENCHMARK_SPACE
-    fmt::print(" c_mem={}", malloc_count_current() - mem_before);
-    fmt::print(" c_mempeak={}", malloc_count_peak() - mem_before);
+    std::cout << " c_mem=" << malloc_count_current() - mem_before;
+    std::cout << " c_mempeak=" << malloc_count_peak() - mem_before;
 #endif
     return pred_ds;
   }
@@ -144,8 +142,8 @@ class benchmark {
       for (size_t i = 0; i < queries.size(); ++i) {
         check_sum += pred_ds.predecessor(queries[i]).pos;
       }
-      fmt::print(" pred_time={}", time_diff_ns(t) / 1'000'000);
-      fmt::print(" check_sum={}", check_sum);
+      std::cout << " pred_time=" << time_diff_ns(t) / 1'000'000;
+      std::cout << " check_sum=" << check_sum;
     }
 
     if (!no_succ) {
@@ -154,8 +152,8 @@ class benchmark {
       for (size_t i = 0; i < queries.size(); ++i) {
         check_sum += pred_ds.successor(queries[i]).pos;
       }
-      fmt::print(" succ_time={}", time_diff_ns(t) / 1'000'000);
-      fmt::print(" check_sum={}", check_sum);
+      std::cout << " succ_time=" << time_diff_ns(t) / 1'000'000;
+      std::cout << " check_sum=" << check_sum;
     }
   }
 
@@ -167,14 +165,14 @@ class benchmark {
     }
 
     // Construction
-    fmt::print("RESULT algo={}", algo_name);
+    std::cout << "RESULT algo=" << algo_name;
     load_data();
     pred_ds_type pred_ds = benchmark_construction<pred_ds_type>(ctor_args...);
 
     // Queries
     load_queries();
     benchmark_queries<pred_ds_type>(pred_ds);
-    fmt::print("\n");
+    std::cout << "\n";
   }
 };
 
@@ -194,8 +192,7 @@ int main(int argc, char** argv) {
 
   cp.add_string(
       'a', "algorithm", b.algorithm,
-      fmt::format("Name of data structure which is benchmarked. Options: {}",
-                  algorithms));
+      "Name of data structure which is benchmarked. Options: " + format_list(algorithms));
 
   if (!cp.process(argc, argv)) {
     std::exit(EXIT_FAILURE);

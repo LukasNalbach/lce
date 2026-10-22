@@ -36,7 +36,7 @@ if(NOT TARGET compact_texts)
 endif()
 
 string_utils_fetch_submodules("${CMAKE_CURRENT_SOURCE_DIR}" RECURSIVE PATHS
-  external/tlx external/fmt external/modular_arithmetic external/rk-lce external/PGM-index external/la_vector)
+  external/tlx external/modular_arithmetic external/rk-lce external/PGM-index external/la_vector)
 
 execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory
                     "${CMAKE_CURRENT_SOURCE_DIR}/patched-files" "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -56,10 +56,6 @@ target_include_directories(rk-lce INTERFACE ${LCE_EXTERNAL_DIR}/rk-lce/internal)
 add_library(tlx_clp ${LCE_EXTERNAL_DIR}/tlx/tlx/cmdline_parser.cpp ${LCE_EXTERNAL_DIR}/tlx/tlx/string/parse_si_iec_units.cpp)
 target_include_directories(tlx_clp PUBLIC ${LCE_EXTERNAL_DIR}/tlx)
 
-if(NOT TARGET fmt::fmt-header-only)
-  add_subdirectory(external/fmt)
-endif()
-
 add_subdirectory(external/modular_arithmetic)
 
 add_subdirectory(external/la_vector)
@@ -71,7 +67,7 @@ endforeach()
 
 add_library(lce_util INTERFACE)
 target_include_directories(lce_util INTERFACE ${LCE_INCLUDE_DIR})
-target_link_libraries(lce_util INTERFACE string_utils compact_texts fmt::fmt-header-only)
+target_link_libraries(lce_util INTERFACE string_utils compact_texts)
 
 add_library(lce_mersenne_modular_arithmetic INTERFACE)
 target_include_directories(lce_mersenne_modular_arithmetic INTERFACE ${LCE_INCLUDE_DIR})
@@ -172,27 +168,27 @@ target_link_libraries(lce_ds INTERFACE lce_fp)
 
 add_library(lce_sss_naive INTERFACE)
 target_include_directories(lce_sss_naive INTERFACE ${LCE_INCLUDE_DIR})
-target_link_libraries(lce_sss_naive INTERFACE lce_string_synchronizing_set lce_pred_index fmt::fmt-header-only)
+target_link_libraries(lce_sss_naive INTERFACE lce_string_synchronizing_set lce_pred_index)
 target_link_libraries(lce_ds INTERFACE lce_sss_naive)
 
 add_library(lce_sss_noss INTERFACE)
 target_include_directories(lce_sss_noss INTERFACE ${LCE_INCLUDE_DIR})
-target_link_libraries(lce_sss_noss INTERFACE lce_string_synchronizing_set lce_pred_index fmt::fmt-header-only)
+target_link_libraries(lce_sss_noss INTERFACE lce_string_synchronizing_set lce_pred_index)
 target_link_libraries(lce_ds INTERFACE lce_sss_noss)
 
 add_library(lce_sss INTERFACE)
 target_include_directories(lce_sss INTERFACE ${LCE_INCLUDE_DIR})
-target_link_libraries(lce_sss INTERFACE lce_string_synchronizing_set lce_rank_3tau_substrings lce_pred_index lce_classic_for_sss ips4o fmt::fmt-header-only)
+target_link_libraries(lce_sss INTERFACE lce_string_synchronizing_set lce_rank_3tau_substrings lce_pred_index lce_classic_for_sss ips4o)
 target_link_libraries(lce_ds INTERFACE lce_sss)
 
 add_library(lce_classic INTERFACE)
 target_include_directories(lce_classic INTERFACE ${LCE_INCLUDE_DIR})
-target_link_libraries(lce_classic INTERFACE lce_util libsais ips4o lce_rmq fmt::fmt-header-only)
+target_link_libraries(lce_classic INTERFACE lce_util libsais ips4o lce_rmq)
 target_link_libraries(lce_ds INTERFACE lce_classic)
 
 add_library(lce_classic_for_sss INTERFACE)
 target_include_directories(lce_classic_for_sss INTERFACE ${LCE_INCLUDE_DIR})
-target_link_libraries(lce_classic_for_sss INTERFACE lce_util libsais40 libsais lce_rmq fmt::fmt-header-only)
+target_link_libraries(lce_classic_for_sss INTERFACE lce_util libsais40 libsais lce_rmq)
 target_link_libraries(lce_ds INTERFACE lce_classic_for_sss)
 
 if(LCE_USE_SDSL)
@@ -208,7 +204,7 @@ target_link_libraries(lce INTERFACE lce_ds lce_rolling_hash lce_pred lce_util lc
 
 if(LCE_BUILD_BENCHMARKS)
   set(lce_bench_dir "${CMAKE_BINARY_DIR}/bench")
-  string_utils_add_executable(bench-lce bench/bench-lce.cpp "${lce_bench_dir}" lce_ds tlx_clp fmt::fmt-header-only)
+  string_utils_add_executable(bench-lce bench/bench-lce.cpp "${lce_bench_dir}" lce_ds tlx_clp)
   if(${LCE_BENCHMARK_SPACE})
     target_compile_definitions(bench-lce PRIVATE -DLCE_BENCHMARK_SPACE)
   endif()
@@ -221,7 +217,7 @@ if(LCE_BUILD_BENCHMARKS)
 
   string_utils_add_executable(gen-queries bench/gen-queries.cpp "${lce_bench_dir}" tlx_clp)
   string_utils_add_executable(gen-sa-lcp bench/gen-sa-lcp.cpp "${lce_bench_dir}" string_utils)
-  string_utils_add_executable(bench-pred bench/bench-pred.cpp "${lce_bench_dir}" lce_pred tlx_clp fmt::fmt-header-only lce_util)
+  string_utils_add_executable(bench-pred bench/bench-pred.cpp "${lce_bench_dir}" lce_pred tlx_clp lce_util)
   if(${LCE_BENCHMARK_SPACE})
     target_compile_definitions(bench-pred PRIVATE -DLCE_BENCHMARK_SPACE)
   endif()
@@ -235,7 +231,7 @@ if(LCE_BUILD_BENCHMARKS)
     target_compile_definitions(bench-pred PRIVATE -DLCE_BUILD_LA_VECTOR)
   endif()
 
-  string_utils_add_executable(gen-sss bench/gen-sss.cpp "${lce_bench_dir}" tlx_clp lce_string_synchronizing_set fmt::fmt-header-only lce_util)
+  string_utils_add_executable(gen-sss bench/gen-sss.cpp "${lce_bench_dir}" tlx_clp lce_string_synchronizing_set lce_util)
 endif()
 
 if(LCE_BUILD_TESTS)

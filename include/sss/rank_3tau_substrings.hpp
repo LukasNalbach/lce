@@ -26,9 +26,6 @@
 #include <libsais40_types.hpp>
 
 #ifdef LCE_BENCHMARK_INTERNAL
-#include <fmt/core.h>
-#include <fmt/ranges.h>
-
 #ifdef LCE_BENCHMARK_SPACE
 #include <malloc_count.h>
 #endif

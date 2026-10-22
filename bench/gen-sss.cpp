@@ -6,17 +6,17 @@
  * All rights reserved. Published under the BSD-2 license in the LICENSE file.
  ******************************************************************************/
 
-#include <fmt/core.h>
-#include <fmt/ranges.h>
 
 #include <filesystem>
 #include <fstream>
+#include <iostream>
 #include <misc/packed_integers.hpp>
 #include <misc/files.hpp>
 #include <misc/memory.hpp>
 #include <string>
 #include <tlx/cmdline_parser.hpp>
 
+#include "format_list.hpp"
 #include "sss/string_synchronizing_set.hpp"
 
 namespace fs = std::filesystem;
@@ -47,8 +47,7 @@ int main(int argc, char** argv) {
   cp.add_param_path("text_path", text_path, "The path to the text.");
   cp.add_string(
       'a', "algorithm", algorithm,
-      fmt::format("Which string synchronizing set (tau) to generate. Options: {}",
-                  algorithms));
+      "Which string synchronizing set (tau) to generate. Options: " + format_list(algorithms));
   cp.add_path('o', "output_folder", output_path, "The output folder.");
   if (!cp.process(argc, argv)) {
     std::exit(EXIT_FAILURE);
@@ -57,19 +56,17 @@ int main(int argc, char** argv) {
   // Check parameters
   {
     if (!fs::is_regular_file(text_path) || fs::file_size(text_path) == 0) {
-      fmt::print("Text file {} is empty or does not exist.\n",
-                 text_path.string());
+      std::cout << "Text file " << text_path.string() << " is empty or does not exist.\n";
       return -1;
     }
     if (std::find(algorithms.begin(), algorithms.end(), algorithm) ==
         algorithms.end()) {
-      fmt::print("Algorithm {} is not specified.\n Use one of {}\n", algorithm,
-                 algorithms);
+      std::cout << "Algorithm " << algorithm << " is not specified.\n Use one of "
+                << format_list(algorithms) << "\n";
       return -1;
     }
     if(!output_path.empty() && !fs::is_directory(output_path)) {
-      fmt::print("Folder {} does not exist.\n",
-                 output_path.string());
+      std::cout << "Folder " << output_path.string() << " does not exist.\n";
       return -1;
     }
   }
