@@ -1,9 +1,6 @@
 [submodule "extlib/tlx"]
 	path = external/tlx
 	url = https://github.com/tlx/tlx.git
-[submodule "extlib/fmt"]
-	path = external/fmt
-	url = https://github.com/fmtlib/fmt.git
 [submodule "extlib/modular_arithmetic"]
 	path = external/modular_arithmetic
 	url = https://github.com/hurchalla/modular_arithmetic.git

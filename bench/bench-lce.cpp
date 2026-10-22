@@ -6,8 +6,6 @@
  * All rights reserved. Published under the BSD-2 license in the LICENSE file.
  ******************************************************************************/
 
-#include <fmt/core.h>
-#include <fmt/ranges.h>
 #ifdef LCE_BENCHMARK_SPACE
 #include <malloc_count.h>
 #endif
@@ -31,6 +29,7 @@
 #include "ds/lce_sdsl_cst.hpp"
 #endif
 
+#include "format_list.hpp"
 #include "ds/lce_classic.hpp"
 #include "ds/lce_fp.hpp"
 #include "ds/lce_naive.hpp"
@@ -116,8 +115,7 @@ class benchmark {
   bool check_parameters() {
     // Check text path
     if (!fs::is_regular_file(text_path) || fs::file_size(text_path) == 0) {
-      fmt::print("Text file {} is empty or does not exist.\n",
-                 text_path.string());
+      std::cout << "Text file " << text_path.string() << " is empty or does not exist.\n";
       return false;
     }
 
@@ -127,14 +125,14 @@ class benchmark {
       queries_path.remove_filename();
     }
     if (!fs::is_directory(queries_path)) {
-      fmt::print("Query directory {} does not exist.\n", queries_path.string());
+      std::cout << "Query directory " << queries_path.string() << " does not exist.\n";
       return false;
     }
     for (size_t i = lce_from; i < lce_to; ++i) {
       fs::path q_path = queries_path;
-      q_path.append(fmt::format("lce_{}", i));
+      q_path.append("lce_" + std::to_string(i));
       if (!fs::is_regular_file(q_path)) {
-        fmt::print("Query file {} does not exist.\n", q_path.string());
+        std::cout << "Query file " << q_path.string() << " does not exist.\n";
         return false;
       }
     }
@@ -144,8 +142,8 @@ class benchmark {
             algorithms.end() &&
         std::find(algorithm_sets.begin(), algorithm_sets.end(), algorithm) ==
             algorithm_sets.end()) {
-      fmt::print("Algorithm {} is not specified.\n Use one of {} or {}\n",
-                 algorithm, algorithms, algorithm_sets);
+      std::cout << "Algorithm " << algorithm << " is not specified.\n Use one of "
+                << format_list(algorithms) << " or " << format_list(algorithm_sets) << "\n";
       return false;
     }
     return true;
@@ -163,9 +161,9 @@ class benchmark {
       assert(text.size() != 0);
       assert(text.size() % 8 == 0);
     }
-    fmt::print(" text={}", text_path.filename().string());
-    fmt::print(" text_size={}", text.size());
-    fmt::print(" text_time={}", time_diff_ns(t) / 1'000'000);
+    std::cout << " text=" << text_path.filename().string();
+    std::cout << " text_size=" << text.size();
+    std::cout << " text_time=" << time_diff_ns(t) / 1'000'000;
   }
 
   template <typename ds_type, typename... ctor_args_t>
@@ -176,11 +174,11 @@ class benchmark {
 #endif
     auto t = now();
     ds_type ds(text, ctor_args...);
-    fmt::print(" threads={}", omp_get_max_threads());
-    fmt::print(" c_time={}", time_diff_ns(t) / 1'000'000);
+    std::cout << " threads=" << omp_get_max_threads();
+    std::cout << " c_time=" << time_diff_ns(t) / 1'000'000;
 #ifdef LCE_BENCHMARK_SPACE
-    fmt::print(" c_mem={}", malloc_count_current() - mem_before);
-    fmt::print(" c_mempeak={}", malloc_count_peak() - mem_before);
+    std::cout << " c_mem=" << malloc_count_current() - mem_before;
+    std::cout << " c_mempeak=" << malloc_count_peak() - mem_before;
 #endif
     return ds;
   }
@@ -189,7 +187,7 @@ class benchmark {
     auto t = now();
     // First load queries from file
     fs::path cur_query_path = queries_path;
-    cur_query_path.append(fmt::format("lce_{}", lce_cur));
+    cur_query_path.append("lce_" + std::to_string(lce_cur));
     resize_no_init(queries, fs::file_size(cur_query_path) / sizeof(size_t));
     std::ifstream in(cur_query_path, std::ios::binary);
     read_in_chunks(in, (char*) queries.data(), queries.size() * sizeof(size_t));
@@ -205,8 +203,8 @@ class benchmark {
     }
 
     assert(queries.size() == 0 || queries.size() == num_queries * 2);
-    fmt::print(" q_size={}", queries.size() / 2);
-    fmt::print(" q_load_time={}", time_diff_ns(t) / 1'000'000);
+    std::cout << " q_size=" << queries.size() / 2;
+    std::cout << " q_load_time=" << time_diff_ns(t) / 1'000'000;
   }
 
   template <typename ds_type>
@@ -220,8 +218,8 @@ class benchmark {
       check_sum += ds.lce(queries[i], queries[i + 1]);
     }
 
-    fmt::print(" q_time={}", time_diff_ns(t) / 1'000'000);
-    fmt::print(" check_sum={}", check_sum);
+    std::cout << " q_time=" << time_diff_ns(t) / 1'000'000;
+    std::cout << " check_sum=" << check_sum;
   }
 
   template <typename ds_type, typename... ctor_args_t>
@@ -250,29 +248,29 @@ class benchmark {
     }
 
     // Benchmark construction
-    fmt::print("RESULT algo={}", algo_name);
+    std::cout << "RESULT algo=" << algo_name;
 
     if (algo_name == "sdsl_cst") {
       std::string text_path_string = text_path.string();
       text = std::vector<uint8_t>(text_path_string.begin(), text_path_string.end());
-      fmt::print(" text={}", text_path.filename().string());
-      fmt::print(" text_size={}", std::filesystem::file_size(text_path));
+      std::cout << " text=" << text_path.filename().string();
+      std::cout << " text_size=" << std::filesystem::file_size(text_path);
     } else {
       load_text();
     }
 
     ds_type ds = benchmark_construction<ds_type>(ctor_args...);
-    fmt::print("\n");
+    std::cout << "\n";
 
     // Benchmark queries
     size_t lce_cur = lce_from;
     while (lce_cur < lce_to) {
-      fmt::print("RESULT algo={}_queries", algo_name);
-      fmt::print(" text={}", text_path.filename().string());
-      fmt::print(" lce_range={}", lce_cur);
+      std::cout << "RESULT algo=" << algo_name << "_queries";
+      std::cout << " text=" << text_path.filename().string();
+      std::cout << " lce_range=" << lce_cur;
       load_queries(lce_cur);
       benchmark_queries<ds_type>(ds);
-      fmt::print("\n");
+      std::cout << "\n";
       ++lce_cur;
     }
   }
@@ -308,8 +306,7 @@ int main(int argc, char** argv) {
 
   cp.add_string(
       'a', "algorithm", b.algorithm,
-      fmt::format("Name of data structure which is benchmarked. Options: {}",
-                  algorithms));
+      "Name of data structure which is benchmarked. Options: " + format_list(algorithms));
   if (!cp.process(argc, argv)) {
     std::exit(EXIT_FAILURE);
   }

@@ -20,8 +20,7 @@
 #include "sss/string_synchronizing_set.hpp"
 
 #ifdef LCE_BENCHMARK_INTERNAL
-#include <fmt/core.h>
-#include <fmt/ranges.h>
+#include <iostream>
 
 #include <misc/log.hpp>
 #include <utility>
@@ -57,12 +56,12 @@ class lce_sss_naive {
     // check_string_synchronizing_set(text, m_sync_set);
 
 #ifdef LCE_BENCHMARK_INTERNAL
-    fmt::print(" sss_time={}", time_diff_ns(std::exchange(t, now())) / 1'000'000);
-    fmt::print(" sss_size={}", m_sync_set.size());
-    fmt::print(" sss_runs={}", m_sync_set.num_runs());
+    std::cout << " sss_time=" << time_diff_ns(std::exchange(t, now())) / 1'000'000;
+    std::cout << " sss_size=" << m_sync_set.size();
+    std::cout << " sss_runs=" << m_sync_set.num_runs();
 #ifdef LCE_BENCHMARK_SPACE
-    fmt::print(" sss_mem={}", malloc_count_current() - mem_before);
-    fmt::print(" sss_mem_peak={}", malloc_count_peak() - mem_before);
+    std::cout << " sss_mem=" << malloc_count_current() - mem_before;
+    std::cout << " sss_mem_peak=" << malloc_count_peak() - mem_before;
     mem_before = malloc_count_current();
     malloc_count_reset_peak();
 #endif
@@ -72,10 +71,10 @@ class lce_sss_naive {
         m_sync_set.get_sss(), uint8_t(std::bit_width(m_tau) - 1));
 
 #ifdef LCE_BENCHMARK_INTERNAL
-    fmt::print(" pred_time={}", time_diff_ns(std::exchange(t, now())) / 1'000'000);
+    std::cout << " pred_time=" << time_diff_ns(std::exchange(t, now())) / 1'000'000;
 #ifdef LCE_BENCHMARK_SPACE
-    fmt::print(" pred_mem={}", malloc_count_current() - mem_before);
-    fmt::print(" pred_mem_peak={}", malloc_count_peak() - mem_before);
+    std::cout << " pred_mem=" << malloc_count_current() - mem_before;
+    std::cout << " pred_mem_peak=" << malloc_count_peak() - mem_before;
 #endif
 #endif
   }
