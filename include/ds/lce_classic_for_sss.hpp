@@ -201,12 +201,21 @@ class lce_classic_for_sss {
       text32 = no_init_vector<int32_t>();
       build(sa);
     } else {
-      no_init_vector<sa_int40_t> sa;
+      // t_rank is sa_int40_t or sa_int48_t
+      no_init_vector<t_rank> sa;
       resize_no_init(sa, reduced_size);
-      if (libsais40_impl::libsais40_long_omp(reduced_text.data(), sa.data(), int64_t(reduced_size),
-                                             max_rank + 1, 0, int(num_cores_of_omp_team(omp_get_max_threads()))) != 0) {
-        throw std::runtime_error("libsais40_long_omp failed");
+      const int threads = int(num_cores_of_omp_team(omp_get_max_threads()));
+      int64_t result;
+
+      if constexpr (std::is_same_v<t_rank, sa_int48_t>) {
+        result = libsais48_impl::libsais48_long_omp(reduced_text.data(), sa.data(), int64_t(reduced_size),
+                                                    max_rank + 1, 0, threads);
+      } else {
+        result = libsais40_impl::libsais40_long_omp(reduced_text.data(), sa.data(), int64_t(reduced_size),
+                                                    max_rank + 1, 0, threads);
       }
+
+      if (result != 0) throw std::runtime_error("libsais failed on the reduced text");
       reduced_text = no_init_vector<t_rank>();
       build(sa);
     }

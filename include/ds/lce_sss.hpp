@@ -97,10 +97,15 @@ class lce_sss {
       m_sss_lce = lce::ds::lce_classic_for_sss<t_index_type>(m_text, reduced_text, sss, m_tau);
     };
 
+    // the ranks are below |sss|, which is at most the largest position
+    constexpr bool has_wide_ranks = max_value_of<t_index_type>() > uint64_t(SA_INT40_MAX_N);
+
     if (sss.size() < uint64_t(std::numeric_limits<int32_t>::max())) {
       build_sss_lce(lce::sss::rank_3tau_substrings<int32_t>(m_text, m_sync_set));
-    } else {
+    } else if (!has_wide_ranks || sss.size() <= uint64_t(SA_INT40_MAX_N)) {
       build_sss_lce(lce::sss::rank_3tau_substrings<sa_int40_t>(m_text, m_sync_set));
+    } else if constexpr (has_wide_ranks) {
+      build_sss_lce(lce::sss::rank_3tau_substrings<sa_int48_t>(m_text, m_sync_set));
     }
   }
 
