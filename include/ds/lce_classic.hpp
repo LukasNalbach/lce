@@ -12,7 +12,7 @@
 #include <cstdint>
 #include <ips4o.hpp>
 #include <libsais.h>
-#include <libsais64.h>
+#include <libsais40.h>
 
 #include <algorithm>
 #include <limits>
@@ -48,8 +48,10 @@ class lce_classic {
   lce_classic(char_type const* text, size_t size) : m_text(text), m_size(size) {
     if (size <= uint64_t(std::numeric_limits<int32_t>::max())) {
       build<int32_t>(text, size);
+    } else if (size <= uint64_t(SA_INT40_MAX_N)) {
+      build<sa_int40_t>(text, size);
     } else {
-      build<int64_t>(text, size);
+      build<sa_int48_t>(text, size);
     }
   }
 
@@ -213,9 +215,13 @@ class lce_classic {
         if (libsais_omp(bytes, sa.data(), int32_t(size), 0, nullptr, int32_t(threads)) != 0) {
           throw std::runtime_error("libsais_omp failed");
         }
+      } else if constexpr (std::is_same_v<sa_t, sa_int40_t>) {
+        if (libsais40_impl::libsais40_omp(bytes, sa.data(), int64_t(size), 0, nullptr, threads) != 0) {
+          throw std::runtime_error("libsais40_omp failed");
+        }
       } else {
-        if (libsais64_omp(bytes, sa.data(), int64_t(size), 0, nullptr, threads) != 0) {
-          throw std::runtime_error("libsais64_omp failed");
+        if (libsais48_impl::libsais48_omp(bytes, sa.data(), int64_t(size), 0, nullptr, threads) != 0) {
+          throw std::runtime_error("libsais48_omp failed");
         }
       }
     } else {
@@ -237,10 +243,15 @@ class lce_classic {
                             int32_t(alphabet.size()), 0, int32_t(threads)) != 0) {
           throw std::runtime_error("libsais_int_omp failed");
         }
+      } else if constexpr (std::is_same_v<sa_t, sa_int40_t>) {
+        if (libsais40_impl::libsais40_long_omp(ranks.data(), sa.data(), int64_t(size),
+                                               int64_t(alphabet.size()), 0, threads) != 0) {
+          throw std::runtime_error("libsais40_long_omp failed");
+        }
       } else {
-        if (libsais64_long_omp(ranks.data(), sa.data(), int64_t(size),
-                               int64_t(alphabet.size()), 0, threads) != 0) {
-          throw std::runtime_error("libsais64_long_omp failed");
+        if (libsais48_impl::libsais48_long_omp(ranks.data(), sa.data(), int64_t(size),
+                                               int64_t(alphabet.size()), 0, threads) != 0) {
+          throw std::runtime_error("libsais48_long_omp failed");
         }
       }
     }

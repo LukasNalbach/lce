@@ -206,12 +206,12 @@ target_link_libraries(lce_ds INTERFACE lce_sss)
 
 add_library(lce_classic INTERFACE)
 target_include_directories(lce_classic INTERFACE ${LCE_INCLUDE_DIR})
-target_link_libraries(lce_classic INTERFACE lce_util libsais ips4o lce_rmq)
+target_link_libraries(lce_classic INTERFACE lce_util libsais libsais40 libsais48 ips4o lce_rmq)
 target_link_libraries(lce_ds INTERFACE lce_classic)
 
 add_library(lce_classic_for_sss INTERFACE)
 target_include_directories(lce_classic_for_sss INTERFACE ${LCE_INCLUDE_DIR})
-target_link_libraries(lce_classic_for_sss INTERFACE lce_util libsais40 libsais lce_rmq)
+target_link_libraries(lce_classic_for_sss INTERFACE lce_util libsais40 libsais48 libsais lce_rmq)
 target_link_libraries(lce_ds INTERFACE lce_classic_for_sss)
 
 if(LCE_USE_SDSL)
