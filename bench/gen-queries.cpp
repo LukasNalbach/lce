@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2022 Patrick Dinklage <patrick.dinklage@tu-dortmund.de>
  *
- * All rights reserved. Published under the BSD-2 license in the LICENSE file.
+ * Published under the MIT license in the LICENSE file.
  ******************************************************************************/
 
 #include <fcntl.h>

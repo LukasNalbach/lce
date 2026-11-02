@@ -113,5 +113,5 @@ Algorithms (SODA) 2018, pages 1496-1508. ([arxiv.org](https://arxiv.org/abs/1608
 
 ## License
 
-This project is licensed under the BSD 2-Clause License, see [LICENSE](LICENSE) and [AUTHORS](AUTHORS). The
+This project is licensed under the MIT License, see [LICENSE](LICENSE) and [AUTHORS](AUTHORS). The
 submodules in [external/](external/) have their own licenses.
