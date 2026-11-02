@@ -3,7 +3,7 @@
  *
  * Copyright (C) 2019 Florian Kurpicz <florian.kurpicz@tu-dortmund.de>
  *
- * All rights reserved. Published under the BSD-2 license in the LICENSE file.
+ * Published under the MIT license in the LICENSE file.
  ******************************************************************************/
 
 /* Based on
