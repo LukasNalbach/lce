@@ -37,7 +37,7 @@ class rmq_n {
 #pragma omp parallel for
     for (size_t block = 0; block < num_sampled_elements; ++block) {
       index_type min_index = block * t_block_size;
-      index_type end = std::min(((1 + block) * t_block_size), m_size);
+      index_type end = std::min<uint64_t>(((1 + block) * t_block_size), m_size);
       for (size_t i = min_index; i < end; ++i) {
         min_index = data[min_index] <= data[i] ? min_index : i;
       }
