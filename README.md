@@ -22,8 +22,8 @@ The LCE data structures take a text as an array or as one of the text classes of
 
 ## Build
 
-Requirements: a C++20 compiler on a 64-bit x86 CPU, CMake 3.21 or later and OpenMP. Tested on Ubuntu 24.04 with
-GCC 12. The library and the tests also build on Windows with Clang or MinGW-w64.
+Requirements: a C++20 compiler on a 64-bit x86 or ARM CPU, CMake 3.21 or later and OpenMP. Tested on Ubuntu 24.04 with GCC 12.
+The library and the tests also build on Windows with Clang or MinGW-w64 and on macOS with Apple Clang.
 
 ```shell
 git clone https://github.com/LukasNalbach/lce.git
@@ -41,7 +41,7 @@ libsais, malloc_count, sdsl-lite and googletest), tlx, PGM-index, la_vector, rk-
 
 | Option | Description |
 | --- | --- |
-| `LCE_BUILD_BENCHMARKS` | build the benchmark tools (`OFF`; not on Windows) |
+| `LCE_BUILD_BENCHMARKS` | build the benchmark tools (`OFF`; only on Linux) |
 | `LCE_BUILD_TESTS` | build the tests (`ON` if lce is the top-level project) |
 | `LCE_USE_SDSL` | build the LCE data structures that need SDSL (`OFF`) |
 | `LCE_BUILD_LA_VECTOR` | build the predecessor data structure that needs SDSL (`OFF`) |
@@ -49,6 +49,19 @@ libsais, malloc_count, sdsl-lite and googletest), tlx, PGM-index, la_vector, rk-
 
 The other options (`LCE_MARCH_NATIVE`, `LCE_USE_MALLOC_COUNT`, ...) and the environment variables are described in
 string-utils (with the prefix `LCE`).
+
+### macOS
+
+Apple Clang has no OpenMP runtime; install LLVM's `libomp` and the build tools with [Homebrew](https://brew.sh) (the
+compiler comes with Xcode or the Command Line Tools, `xcode-select --install`):
+
+```shell
+brew install cmake ninja libomp
+```
+
+Then build as above. The benchmark tools are only built on Linux. CMake finds `libomp` in Homebrew or MacPorts, or in
+the prefix given with `-DOpenMP_ROOT=<prefix>`; see [string-utils](https://github.com/LukasNalbach/string-utils#macos)
+for the details and the differences from Linux. Tested on Apple silicon with Apple Clang 21 (macOS 26).
 
 ## Command-line tools
 

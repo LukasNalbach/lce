@@ -39,8 +39,7 @@ class lce_sss {
   __extension__ typedef unsigned __int128 uint128_t;
   lce_sss() : m_size(0), m_tau(0) {}
 
-  lce_sss(char_type const* text, size_t size, uint64_t tau)
-    requires(compact_texts::is_direct_text_v<text_type>)
+  lce_sss(char_type const* text, size_t size, uint64_t tau) requires(compact_texts::is_direct_text_v<text_type>)
       : lce_sss(text_type(const_cast<char_type*>(text), size), tau) {}
 
   lce_sss(text_type const& text, uint64_t tau)

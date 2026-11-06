@@ -4,7 +4,8 @@ project(lce LANGUAGES C CXX)
 option(LCE_BUILD_BENCHMARKS "Build benchmark cli programs" OFF)
 option(LCE_BUILD_TESTS "Build tests" ${PROJECT_IS_TOP_LEVEL})
 
-if(WIN32)
+# the benchmarks are only built on Linux
+if(WIN32 OR APPLE)
   set(LCE_BUILD_BENCHMARKS OFF CACHE BOOL "" FORCE)
 endif()
 

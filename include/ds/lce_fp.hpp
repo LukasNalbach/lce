@@ -247,7 +247,7 @@ class lce_fp {
     uint64_t comp_block_j =
         (block_j << offset_lce2) + ((block_j2 >> 1) >> (63 - offset_lce2));
 
-    const uint64_t max_block_naive = std::min(t_naive_scan, max_lce) / 8;
+    const uint64_t max_block_naive = std::min<uint64_t>(t_naive_scan, max_lce) / 8;
     while (lce < max_block_naive) {
       if (comp_block_i != comp_block_j) {
         break;
