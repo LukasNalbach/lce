@@ -175,6 +175,7 @@ int main(int argc, char** argv) {
   // init
   size_t constexpr max_lcp_exp = 20;
   size_t const n = std::filesystem::file_size(options.file_text);
+  size_t const n_sa = std::filesystem::file_size(options.file_sa) / options.width;
 
   // open inputs
   int fd_sa = open(options.file_sa.c_str(), O_RDONLY);
@@ -204,7 +205,7 @@ int main(int argc, char** argv) {
   auto sa_prev = sa.read();
   lcp.read();
 
-  for (size_t i = 1; i < n && !cancel; i++) {
+  for (size_t i = 1; i < n_sa && !cancel; i++) {
     // progress
     if (options.show_progress) {
       if (i >= next_progress) {
@@ -224,7 +225,8 @@ int main(int argc, char** argv) {
 
     // find which query output to write to
     auto const x = std::min<uint64_t>(std::bit_width(lcp_i), (uint64_t)max_lcp_exp);
-    if (count[x] < options.limit) {
+    // skip the suffix of the sentinel that gen-sa-lcp appends (position n)
+    if (sa_prev < n && sa_i < n && count[x] < options.limit) {
       ++count[x];
 
       // write query to file
